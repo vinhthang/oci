@@ -1,0 +1,15 @@
+# Your OCI Tenancy OCID
+tenancy_ocid     = "ocid1.tenancy.oc1..your_tenancy_ocid_here"
+compartment_ocid = "ocid1.tenancy.oc1..your_compartment_ocid_here"
+
+# Target Region
+region = "ap-tokyo-1"
+
+# Compute Shape (Always Free AMD 1GB or Ampere ARM 24GB)
+instance_shape = "VM.Standard.E2.1.Micro"
+
+# SSH Public Key (Paste the contents of ~/.ssh/id_ed25519.pub)
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... user@host"
+
+# DuckDNS Domain
+duckdns_domain = "your-domain.duckdns.org"

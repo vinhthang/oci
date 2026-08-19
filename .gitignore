@@ -1,0 +1,17 @@
+# Terraform local state and cache
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Sensitive variable files
+terraform.tfvars
+*.auto.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# OS metadata
+.DS_Store

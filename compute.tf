@@ -32,7 +32,7 @@ data "template_file" "user_data" {
 resource "oci_core_instance" "main_instance" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = local.compartment_id
-  display_name        = "instance-oracle-linux-10"
+  display_name        = "amd10"
   shape               = var.instance_shape
 
   dynamic "shape_config" {

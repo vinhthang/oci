@@ -70,4 +70,5 @@ oci compute instance launch \
 * **Swagger UI**: `https://<your-domain>.duckdns.org/swagger-ui/`
 * **AdGuard Home Dashboard**: `https://adguard.<your-domain>.duckdns.org`
 * **Navidrome Music Server**: `https://music.<your-domain>.duckdns.org`
+* **FileBrowser Cloud Drive**: `https://files.<your-domain>.duckdns.org`
 * **Android Private DNS (DoT)**: `<your-domain>.duckdns.org` (Port 853)

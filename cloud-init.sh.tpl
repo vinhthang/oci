@@ -113,7 +113,35 @@ ExecStop=/usr/bin/podman stop -t 10 navidrome
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 9. Deploying Caddy Web Server Configuration ==="
+echo "=== 9. Deploying FileBrowser Personal Cloud File Manager ==="
+mkdir -p /opt/filebrowser/config /opt/filebrowser/srv/Storage /opt/filebrowser/srv/Music
+touch /opt/filebrowser/config/filebrowser.db
+tee /etc/systemd/system/filebrowser.service <<'SERVICE_EOF'
+[Unit]
+Description=FileBrowser Personal Cloud File Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+Restart=always
+RestartSec=5s
+ExecStartPre=-/usr/bin/podman stop -t 10 filebrowser
+ExecStartPre=-/usr/bin/podman rm -f filebrowser
+ExecStart=/usr/bin/podman run --name filebrowser \
+  -v /opt/filebrowser/srv:/srv:Z \
+  -v /opt/navidrome/music:/srv/Music:Z \
+  -v /opt/filebrowser/config/filebrowser.db:/database/filebrowser.db:Z \
+  -p 127.0.0.1:8082:8080/tcp \
+  docker.io/filebrowser/filebrowser:latest \
+  --address 0.0.0.0 --port 8080
+ExecStop=/usr/bin/podman stop -t 10 filebrowser
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+
+echo "=== 10. Deploying Caddy Web Server Configuration ==="
 mkdir -p /etc/caddy
 tee /etc/caddy/Caddyfile <<CADDY_EOF
 ${duckdns_domain} {
@@ -126,6 +154,10 @@ adguard.${duckdns_domain} {
 
 music.${duckdns_domain} {
     reverse_proxy 127.0.0.1:4533
+}
+
+files.${duckdns_domain} {
+    reverse_proxy 127.0.0.1:8082
 }
 CADDY_EOF
 
@@ -149,8 +181,8 @@ RestartSec=3s
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 10. Starting and Enabling All Services ==="
+echo "=== 11. Starting and Enabling All Services ==="
 systemctl daemon-reload
-systemctl enable --now vietcalendar adguardhome navidrome caddy
+systemctl enable --now vietcalendar adguardhome navidrome filebrowser caddy
 
 echo "=== Cloud Init Completed Successfully! ==="

@@ -28,6 +28,11 @@ output "navidrome_https_url" {
   value       = "https://music.${var.duckdns_domain}"
 }
 
+output "filebrowser_https_url" {
+  description = "FileBrowser Personal Cloud Storage URL"
+  value       = "https://files.${var.duckdns_domain}"
+}
+
 output "mcp_endpoint_url" {
   description = "Universal MCP Endpoint for AI clients"
   value       = "https://${var.duckdns_domain}/mcp/sse"

@@ -188,7 +188,7 @@ theme = 'PaperMod'
 
   [params.homeInfoParams]
     Title = "👋 Hi, I'm Thang"
-    Content = "Welcome to my personal tech blog! This entire blog is — and will mostly be — written by my AI assistant **Antigravity** guided by my prompts. I love prompt engineering and exploring what autonomous AI pair-programming can build on Always Free cloud infrastructure."
+    Content = "Welcome to my personal tech blog! This entire blog is — and will mostly be — written by my AI assistant **Antigravity** guided by my prompts. I love prompt engineering and exploring what autonomous AI pair-programming can build on Always Free cloud infrastructure.<br><br>🗓️ *Launched: August 21, 2026, 00:36 (GMT+7) • Hosted on `amd10` in Tokyo.*"
 
   [[params.socialIcons]]
     name = "github"

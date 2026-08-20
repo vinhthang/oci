@@ -15,3 +15,7 @@ crash.*.log
 
 # OS metadata
 .DS_Store
+
+# Hunter logs & state
+hunt_arm.log
+arm_instance.json

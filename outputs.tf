@@ -33,6 +33,11 @@ output "filebrowser_https_url" {
   value       = "https://files.${var.duckdns_domain}"
 }
 
+output "blog_https_url" {
+  description = "Hugo PaperMod Tech Blog URL"
+  value       = "https://blog.${var.duckdns_domain}"
+}
+
 output "mcp_endpoint_url" {
   description = "Universal MCP Endpoint for AI clients"
   value       = "https://${var.duckdns_domain}/mcp/sse"

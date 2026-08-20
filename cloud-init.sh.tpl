@@ -141,7 +141,37 @@ ExecStop=/usr/bin/podman stop -t 10 filebrowser
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 10. Deploying Caddy Web Server Configuration ==="
+echo "=== 10. Deploying Hugo Blog with PaperMod Theme ==="
+dnf install -y git
+HUGO_VER=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | grep 'tag_name' | cut -d '"' -f 4 | tr -d 'v')
+[ -z "$HUGO_VER" ] && HUGO_VER="0.144.2"
+curl -sL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VER}/hugo_extended_${HUGO_VER}_linux-amd64.tar.gz" -o /tmp/hugo.tar.gz
+tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo
+chmod +x /usr/local/bin/hugo
+rm -f /tmp/hugo.tar.gz
+
+mkdir -p /opt/hugo-blog/content/posts /opt/hugo-blog/themes /opt/hugo-blog/public
+if [ ! -d /opt/hugo-blog/themes/PaperMod ]; then
+    git clone --depth=1 https://github.com/adityatelange/hugo-PaperMod.git /opt/hugo-blog/themes/PaperMod
+fi
+
+tee /etc/systemd/system/hugo-watcher.service <<'SERVICE_EOF'
+[Unit]
+Description=Hugo Blog Live Auto-Rebuilder
+After=network.target
+
+[Service]
+Type=simple
+User=opc
+ExecStart=/usr/local/bin/hugo --minify --watch -s /opt/hugo-blog -d /opt/hugo-blog/public
+Restart=always
+RestartSec=3s
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+
+echo "=== 11. Deploying Caddy Web Server Configuration ==="
 mkdir -p /etc/caddy
 tee /etc/caddy/Caddyfile <<CADDY_EOF
 ${duckdns_domain} {
@@ -157,7 +187,13 @@ music.${duckdns_domain} {
 }
 
 files.${duckdns_domain} {
-    reverse_proxy 127.0.0.1:8082
+    reverse_proxy 127.0.0.1:4180
+}
+
+blog.${duckdns_domain} {
+    root * /opt/hugo-blog/public
+    file_server
+    encode gzip zstd
 }
 CADDY_EOF
 
@@ -181,8 +217,8 @@ RestartSec=3s
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 11. Starting and Enabling All Services ==="
+echo "=== 12. Starting and Enabling All Services ==="
 systemctl daemon-reload
-systemctl enable --now vietcalendar adguardhome navidrome filebrowser caddy
+systemctl enable --now vietcalendar adguardhome navidrome filebrowser hugo-watcher caddy
 
 echo "=== Cloud Init Completed Successfully! ==="

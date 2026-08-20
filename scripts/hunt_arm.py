@@ -23,8 +23,9 @@ INSTANCE_NAME = "instance-oracle-linux-10-arm"
 OCPUS = 4
 MEMORY_GBS = 24
 
-# Base interval between attempts (seconds)
-BASE_INTERVAL = 60
+# Polling interval range (random between 3 to 5 minutes)
+MIN_INTERVAL = 180  # 3 minutes
+MAX_INTERVAL = 300  # 5 minutes
 
 def notify_success(instance_id):
     msg = f"🎉 ARM Instance Successfully Created! ID: {instance_id}"
@@ -60,7 +61,7 @@ def main():
     print("="*70, flush=True)
     print(f"🚀 OCI ARM Capacity Hunter started at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
     print(f"📍 Target: Tokyo ({AVAILABILITY_DOMAIN}) | {OCPUS} OCPUs | {MEMORY_GBS} GB RAM", flush=True)
-    print(f"⏱️ Polling interval: ~{BASE_INTERVAL}s", flush=True)
+    print(f"⏱️ Polling interval: Randomized 3 to 5 minutes (180s – 300s)", flush=True)
     print("="*70, flush=True)
     
     attempt = 1
@@ -85,18 +86,23 @@ def main():
             break
         else:
             err_output = res.stderr or res.stdout
+            sleep_time = random.randint(MIN_INTERVAL, MAX_INTERVAL)
+            mins = sleep_time // 60
+            secs = sleep_time % 60
+            
             if "Out of host capacity" in err_output or "InternalError" in err_output:
-                print(" -> Out of capacity. Retrying...", flush=True)
+                print(f" -> Out of capacity. (Next attempt in {mins}m {secs:02d}s)", flush=True)
             elif "TooManyRequests" in err_output:
-                print(" -> Rate limited by Oracle API. Backing off 60s...", flush=True)
-                time.sleep(60)
+                sleep_time += 60
+                mins = sleep_time // 60
+                secs = sleep_time % 60
+                print(f" -> Rate limited by Oracle API. (Backing off for {mins}m {secs:02d}s)", flush=True)
             elif "RequestException" in err_output or "Connection" in err_output:
-                print(" -> Network timeout/retry. Continuing...", flush=True)
+                print(f" -> Network timeout. (Retrying in {mins}m {secs:02d}s)", flush=True)
             else:
-                print(f" -> Error: {err_output[:90]}...", flush=True)
+                print(f" -> Error: {err_output[:60]}... (Retrying in {mins}m {secs:02d}s)", flush=True)
         
         attempt += 1
-        sleep_time = BASE_INTERVAL + random.randint(-5, 5)
         time.sleep(sleep_time)
 
 if __name__ == "__main__":

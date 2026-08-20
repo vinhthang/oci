@@ -23,6 +23,11 @@ output "adguard_https_url" {
   value       = "https://adguard.${var.duckdns_domain}"
 }
 
+output "navidrome_https_url" {
+  description = "Navidrome Lossless Music Server URL"
+  value       = "https://music.${var.duckdns_domain}"
+}
+
 output "mcp_endpoint_url" {
   description = "Universal MCP Endpoint for AI clients"
   value       = "https://${var.duckdns_domain}/mcp/sse"

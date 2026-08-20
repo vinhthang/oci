@@ -85,7 +85,35 @@ ExecStop=/usr/bin/podman stop -t 10 adguardhome
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 8. Deploying Caddy Web Server Configuration ==="
+echo "=== 8. Deploying Navidrome Lossless Music Server ==="
+mkdir -p /opt/navidrome/data /opt/navidrome/music
+tee /etc/systemd/system/navidrome.service <<'SERVICE_EOF'
+[Unit]
+Description=Navidrome Lossless Music Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+Restart=always
+RestartSec=5s
+ExecStartPre=-/usr/bin/podman stop -t 10 navidrome
+ExecStartPre=-/usr/bin/podman rm -f navidrome
+ExecStart=/usr/bin/podman run --name navidrome \
+  -v /opt/navidrome/data:/data:Z \
+  -v /opt/navidrome/music:/music:ro,Z \
+  -e ND_SCANSCHEDULE=1h \
+  -e ND_LOGLEVEL=info \
+  -e ND_BASEURL=https://music.${duckdns_domain} \
+  -p 127.0.0.1:4533:4533/tcp \
+  docker.io/deluan/navidrome:latest
+ExecStop=/usr/bin/podman stop -t 10 navidrome
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+
+echo "=== 9. Deploying Caddy Web Server Configuration ==="
 mkdir -p /etc/caddy
 tee /etc/caddy/Caddyfile <<CADDY_EOF
 ${duckdns_domain} {
@@ -94,6 +122,10 @@ ${duckdns_domain} {
 
 adguard.${duckdns_domain} {
     reverse_proxy 127.0.0.1:3000
+}
+
+music.${duckdns_domain} {
+    reverse_proxy 127.0.0.1:4533
 }
 CADDY_EOF
 
@@ -117,8 +149,8 @@ RestartSec=3s
 WantedBy=multi-user.target
 SERVICE_EOF
 
-echo "=== 9. Starting and Enabling All Services ==="
+echo "=== 10. Starting and Enabling All Services ==="
 systemctl daemon-reload
-systemctl enable --now vietcalendar adguardhome caddy
+systemctl enable --now vietcalendar adguardhome navidrome caddy
 
 echo "=== Cloud Init Completed Successfully! ==="

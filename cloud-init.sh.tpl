@@ -155,6 +155,56 @@ if [ ! -d /opt/hugo-blog/themes/PaperMod ]; then
     git clone --depth=1 https://github.com/adityatelange/hugo-PaperMod.git /opt/hugo-blog/themes/PaperMod
 fi
 
+tee /opt/hugo-blog/hugo.toml <<'HUGO_EOF'
+baseURL = 'https://blog.${duckdns_domain}/'
+languageCode = 'en-us'
+title = "Thang's Tech Notes"
+theme = 'PaperMod'
+
+[pagination]
+  pagerSize = 5
+
+[params]
+  env = 'production'
+  title = "Thang's Tech Notes"
+  description = "A tech blog co-crafted with prompt engineering and AI pair-programming on Oracle Cloud."
+  author = "Thang Hoang & Antigravity"
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = true
+  ShowRssButtonInSectionTermList = true
+  UseHugoToc = true
+  disableSpecial1stPost = false
+  disableScrollToTop = false
+  comments = false
+  hidemeta = false
+  hideSummary = false
+  showtoc = true
+  tocopen = false
+
+  [params.homeInfoParams]
+    Title = "👋 Hi, I'm Thang"
+    Content = "Welcome to my personal tech blog! This entire blog is — and will mostly be — written by my AI assistant **Antigravity** guided by my prompts. I love prompt engineering and exploring what autonomous AI pair-programming can build on Always Free cloud infrastructure."
+
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/vinhthang"
+
+[menu]
+  [[menu.main]]
+    identifier = "posts"
+    name = "Posts"
+    url = "/posts/"
+    weight = 10
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+HUGO_EOF
+
 tee /etc/systemd/system/hugo-watcher.service <<'SERVICE_EOF'
 [Unit]
 Description=Hugo Blog Live Auto-Rebuilder

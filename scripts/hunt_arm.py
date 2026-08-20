@@ -88,8 +88,8 @@ def main():
             if "Out of host capacity" in err_output or "InternalError" in err_output:
                 print(" -> Out of capacity. Retrying...", flush=True)
             elif "TooManyRequests" in err_output:
-                print(" -> Rate limited. Backing off 30s...", flush=True)
-                time.sleep(30)
+                print(" -> Rate limited by Oracle API. Backing off 60s...", flush=True)
+                time.sleep(60)
             else:
                 print(f" -> Error: {err_output[:90]}...", flush=True)
         

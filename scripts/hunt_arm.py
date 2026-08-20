@@ -90,6 +90,8 @@ def main():
             elif "TooManyRequests" in err_output:
                 print(" -> Rate limited by Oracle API. Backing off 60s...", flush=True)
                 time.sleep(60)
+            elif "RequestException" in err_output or "Connection" in err_output:
+                print(" -> Network timeout/retry. Continuing...", flush=True)
             else:
                 print(f" -> Error: {err_output[:90]}...", flush=True)
         

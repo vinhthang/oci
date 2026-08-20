@@ -23,9 +23,9 @@ INSTANCE_NAME = "instance-oracle-linux-10-arm"
 OCPUS = 4
 MEMORY_GBS = 24
 
-# Polling interval range (random between 3 to 5 minutes)
-MIN_INTERVAL = 180  # 3 minutes
-MAX_INTERVAL = 300  # 5 minutes
+# Polling interval range (5 to 8 minutes for smooth rate limit compliance)
+MIN_INTERVAL = 300  # 5 minutes
+MAX_INTERVAL = 480  # 8 minutes
 
 def notify_success(instance_id):
     msg = f"🎉 ARM Instance Successfully Created! ID: {instance_id}"
@@ -61,7 +61,7 @@ def main():
     print("="*70, flush=True)
     print(f"🚀 OCI ARM Capacity Hunter started at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
     print(f"📍 Target: Tokyo ({AVAILABILITY_DOMAIN}) | {OCPUS} OCPUs | {MEMORY_GBS} GB RAM", flush=True)
-    print(f"⏱️ Polling interval: Randomized 3 to 5 minutes (180s – 300s)", flush=True)
+    print(f"⏱️ Polling interval: Randomized 5 to 8 minutes (300s – 480s)", flush=True)
     print("="*70, flush=True)
     
     attempt = 1
@@ -87,20 +87,25 @@ def main():
         else:
             err_output = res.stderr or res.stdout
             sleep_time = random.randint(MIN_INTERVAL, MAX_INTERVAL)
-            mins = sleep_time // 60
-            secs = sleep_time % 60
             
-            if "Out of host capacity" in err_output or "InternalError" in err_output:
-                print(f" -> Out of capacity. (Next attempt in {mins}m {secs:02d}s)", flush=True)
-            elif "TooManyRequests" in err_output:
-                sleep_time += 60
+            if "TooManyRequests" in err_output or "429" in err_output:
+                sleep_time = 600 + random.randint(0, 60)  # 10 to 11 minutes
                 mins = sleep_time // 60
                 secs = sleep_time % 60
-                print(f" -> Rate limited by Oracle API. (Backing off for {mins}m {secs:02d}s)", flush=True)
-            elif "RequestException" in err_output or "Connection" in err_output:
+                print(f" -> Rate limited (429). Cooling down for {mins}m {secs:02d}s...", flush=True)
+            elif "Out of host capacity" in err_output or "InternalError" in err_output:
+                mins = sleep_time // 60
+                secs = sleep_time % 60
+                print(f" -> Out of capacity. (Next check in {mins}m {secs:02d}s)", flush=True)
+            elif "RequestException" in err_output:
+                mins = sleep_time // 60
+                secs = sleep_time % 60
                 print(f" -> Network timeout. (Retrying in {mins}m {secs:02d}s)", flush=True)
             else:
-                print(f" -> Error: {err_output[:60]}... (Retrying in {mins}m {secs:02d}s)", flush=True)
+                mins = sleep_time // 60
+                secs = sleep_time % 60
+                first_line = err_output.strip().split("\n")[0]
+                print(f" -> {first_line[:50]}... (Retrying in {mins}m {secs:02d}s)", flush=True)
         
         attempt += 1
         time.sleep(sleep_time)

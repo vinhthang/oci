@@ -19,9 +19,9 @@ SUBNET_ID = "ocid1.subnet.oc1.ap-tokyo-1.aaaaaaaa5t4jmnwgxe4ffr523py245mdfuzz6g5
 SSH_KEY_FILE = "/Users/thanghoang/.ssh/id_ed25519.pub"
 INSTANCE_NAME = "instance-oracle-linux-10-arm"
 
-# Default configuration: 4 OCPUs, 24 GB RAM
-OCPUS = 4
-MEMORY_GBS = 24
+# Target configuration: 2 OCPUs, 12 GB RAM (Easier to catch capacity!)
+OCPUS = 2
+MEMORY_GBS = 12
 
 # Polling interval range (5 to 8 minutes for smooth rate limit compliance)
 MIN_INTERVAL = 300  # 5 minutes
@@ -67,7 +67,7 @@ def main():
     attempt = 1
     while True:
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] Attempt #{attempt:04d}: Requesting 4 OCPUs / 24 GB RAM in Tokyo...", end="", flush=True)
+        print(f"[{timestamp}] Attempt #{attempt:04d}: Requesting {OCPUS} OCPUs / {MEMORY_GBS} GB RAM in Tokyo...", end="", flush=True)
         
         res = try_launch()
         

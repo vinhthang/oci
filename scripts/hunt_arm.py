@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Oracle Cloud Infrastructure (OCI) Always Free ARM Capacity Hunter
-Automatically polls Oracle Cloud API until a 2-Core / 12 GB RAM (Ampere A1) slot opens up.
+Automatically polls Oracle Cloud API until a 1-Core / 6 GB RAM (Ampere A1) slot opens up.
 """
 
 import subprocess
@@ -19,9 +19,9 @@ SUBNET_ID = "ocid1.subnet.oc1.ap-tokyo-1.aaaaaaaa5t4jmnwgxe4ffr523py245mdfuzz6g5
 SSH_KEY_FILE = "/Users/thanghoang/.ssh/id_ed25519.pub"
 INSTANCE_NAME = "arm10"
 
-# Target configuration: 2 OCPUs, 12 GB RAM (Easier to catch capacity!)
-OCPUS = 2
-MEMORY_GBS = 12
+# Target configuration: 1 OCPU, 6 GB RAM (Fastest way to catch open capacity in Tokyo!)
+OCPUS = 1
+MEMORY_GBS = 6
 
 # Polling interval range (5 to 8 minutes for smooth rate limit compliance)
 MIN_INTERVAL = 300  # 5 minutes
@@ -93,14 +93,14 @@ def main():
                 mins = sleep_time // 60
                 secs = sleep_time % 60
                 print(f" -> Rate limited (429). Cooling down for {mins}m {secs:02d}s...", flush=True)
-            elif "Out of host capacity" in err_output or "InternalError" in err_output:
+            elif "Out of host capacity" in err_output or "InternalError" in err_output or "500" in err_output:
                 mins = sleep_time // 60
                 secs = sleep_time % 60
                 print(f" -> Out of capacity. (Next check in {mins}m {secs:02d}s)", flush=True)
-            elif "RequestException" in err_output:
+            elif "RequestException" in err_output or "Timeout" in err_output or "MaxRetryError" in err_output or "Traceback" in err_output:
                 mins = sleep_time // 60
                 secs = sleep_time % 60
-                print(f" -> Network timeout. (Retrying in {mins}m {secs:02d}s)", flush=True)
+                print(f" -> Network timeout / API busy. (Retrying in {mins}m {secs:02d}s)", flush=True)
             else:
                 mins = sleep_time // 60
                 secs = sleep_time % 60

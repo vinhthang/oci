@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Oracle Cloud Infrastructure (OCI) Always Free ARM Capacity Hunter
-Automatically polls Oracle Cloud API until a 4-Core / 24 GB RAM (Ampere A1) slot opens up.
+Automatically polls Oracle Cloud API until a 2-Core / 12 GB RAM (Ampere A1) slot opens up.
 """
 
 import subprocess
@@ -17,7 +17,7 @@ SHAPE = "VM.Standard.A1.Flex"
 IMAGE_ID = "ocid1.image.oc1.ap-tokyo-1.aaaaaaaa3s2rfaecsenoi3dtku4mkgxjgxqfugtpbpcmdnyhwur7rembctva"
 SUBNET_ID = "ocid1.subnet.oc1.ap-tokyo-1.aaaaaaaa5t4jmnwgxe4ffr523py245mdfuzz6g5nhwhn6tog6cuyqakrqtfq"
 SSH_KEY_FILE = "/Users/thanghoang/.ssh/id_ed25519.pub"
-INSTANCE_NAME = "instance-oracle-linux-10-arm"
+INSTANCE_NAME = "arm10"
 
 # Target configuration: 2 OCPUs, 12 GB RAM (Easier to catch capacity!)
 OCPUS = 2

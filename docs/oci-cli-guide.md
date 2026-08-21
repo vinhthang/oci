@@ -127,14 +127,14 @@ INSTANCE_ID=$(oci compute instance launch \
   --query 'data.id' --raw-output)
 ```
 
-### Or Launch Ampere A1 ARM Shape (`VM.Standard.A1.Flex` - 4 OCPUs / 24 GB RAM):
+### Or Launch Ampere A1 ARM Shape (`VM.Standard.A1.Flex` - 2 OCPUs / 12 GB RAM):
 ```bash
 oci compute instance launch \
-  --compartment-id $COMPARTMENT_ID \
-  --availability-domain "tTNg:AP-TOKYO-1-AD-1" \
+  --compartment-id "$COMPARTMENT_ID" \
+  --availability-domain "$AD_NAME" \
   --shape "VM.Standard.A1.Flex" \
-  --shape-config '{"ocpus": 4, "memoryInGBs": 24}' \
-  --display-name "instance-oracle-linux-10-arm" \
+  --shape-config '{"ocpus": 2, "memoryInGBs": 12}' \
+  --display-name "arm10" \
   --image-id "<ARM_IMAGE_OCID>" \
   --subnet-id $SUBNET_ID \
   --assign-public-ip false \

@@ -38,8 +38,8 @@ resource "oci_core_instance" "main_instance" {
   dynamic "shape_config" {
     for_each = var.instance_shape == "VM.Standard.A1.Flex" ? [1] : []
     content {
-      ocpus         = 4
-      memory_in_gbs = 24
+      ocpus         = 2
+      memory_in_gbs = 12
     }
   }
 

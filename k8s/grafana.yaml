@@ -20,14 +20,12 @@ data:
           timeInterval: 30s
           prometheusType: Prometheus
 
-      # 2. VictoriaLogs (Loki Protocol Log Stream)
-      - name: "VictoriaLogs (Logs)"
-        type: loki
+      # 2. VictoriaLogs (Official LogsQL Log Explorer Plugin)
+      - name: "VictoriaLogs"
+        type: victoriametrics-logs-datasource
         access: proxy
-        url: http://victorialogs:9428/select/loki/
+        url: http://victorialogs:9428
         editable: true
-        jsonData:
-          maxLines: 1000
 
       # 3. PostgreSQL 18 - Umami Web Analytics
       - name: "PostgreSQL 18 - Umami Analytics"
@@ -119,6 +117,10 @@ spec:
             - containerPort: 3000
               name: http
           env:
+            - name: GF_INSTALL_PLUGINS
+              value: "victoriametrics-logs-datasource"
+            - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
+              value: "victoriametrics-logs-datasource"
             - name: GF_SECURITY_ADMIN_USER
               value: "admin"
             - name: GF_SECURITY_ADMIN_PASSWORD

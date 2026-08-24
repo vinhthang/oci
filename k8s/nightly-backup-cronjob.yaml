@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-fleet-backup
+  labels:
+    app: nightly-fleet-backup
+spec:
+  schedule: "0 19 * * *"  # Runs at 19:00 UTC daily (02:00 AM Indochina Time)
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: nightly-fleet-backup
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: arm10
+          containers:
+            - name: backup
+              image: docker.io/pgvector/pgvector:pg18
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  set -euo pipefail
+                  DATE=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_DIR="/backup/daily"
+                  mkdir -p "$BACKUP_DIR"
+
+                  echo "💾 [Backup] 1. Dumping PostgreSQL 18 databases..."
+                  pg_dumpall -h postgres -U postgres > "/tmp/pg_dump_$DATE.sql"
+
+                  echo "📦 [Backup] 2. Archiving database dumps and SQLite stores..."
+                  tar -czf "$BACKUP_DIR/fleet-backup-$DATE.tar.gz" \
+                    -C /tmp "pg_dump_$DATE.sql" \
+                    -C /opt/uptime-kuma kuma.db 2>/dev/null || true
+
+                  rm -f "/tmp/pg_dump_$DATE.sql"
+
+                  echo "🧹 [Backup] 3. Pruning backups older than 7 days..."
+                  find "$BACKUP_DIR" -name "fleet-backup-*.tar.gz" -mtime +7 -delete || true
+
+                  echo "✅ [Backup] Backup created successfully: $BACKUP_DIR/fleet-backup-$DATE.tar.gz"
+                  ls -lh "$BACKUP_DIR"
+              volumeMounts:
+                - name: host-backups
+                  mountPath: /backup/daily
+                - name: kuma-storage
+                  mountPath: /opt/uptime-kuma
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: host-backups
+              hostPath:
+                path: /opt/backups
+                type: DirectoryOrCreate
+            - name: kuma-storage
+              hostPath:
+                path: /opt/uptime-kuma
+                type: Directory

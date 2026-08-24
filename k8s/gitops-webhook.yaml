@@ -4,13 +4,22 @@ metadata:
   name: gitops-webhook
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gitops-deployer
+rules:
+  - apiGroups: ["", "apps", "batch", "extensions", "networking.k8s.io", "rbac.authorization.k8s.io"]
+    resources: ["deployments", "services", "configmaps", "secrets", "serviceaccounts", "daemonsets", "cronjobs", "jobs", "pods", "endpoints", "roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: gitops-webhook
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  name: gitops-deployer
 subjects:
   - kind: ServiceAccount
     name: gitops-webhook

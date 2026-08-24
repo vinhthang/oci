@@ -8,22 +8,16 @@ data:
   datasources.yaml: |
     apiVersion: 1
     datasources:
-      - name: "PostgreSQL 18 Telemetry"
-        type: postgres
+      - name: "VictoriaMetrics"
+        type: prometheus
         access: proxy
-        url: postgres:5432
-        database: telemetry
-        user: postgres
-        secureJsonData:
-          password: "postgres_master_pass_2026"
-        jsonData:
-          sslmode: disable
-          maxOpenConns: 5
-          maxIdleConns: 2
-          connMaxLifetime: 14400
-          postgresVersion: 1600
+        url: http://victoriametrics:8428
         isDefault: true
         editable: true
+        jsonData:
+          httpMethod: POST
+          timeInterval: 30s
+          prometheusType: Prometheus
 ---
 apiVersion: apps/v1
 kind: Deployment

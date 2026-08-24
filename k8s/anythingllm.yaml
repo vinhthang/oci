@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: arm10
       containers:
         - name: anythingllm
-          image: docker.io/mintplexlabs/anythingllm:latest
+          image: docker.io/mintplexlabs/anythingllm:1.16.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001

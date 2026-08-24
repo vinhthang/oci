@@ -8,11 +8,74 @@ data:
   datasources.yaml: |
     apiVersion: 1
     datasources:
-      - name: "VictoriaMetrics"
+      # 1. VictoriaMetrics (Default PromQL Metrics TSDB)
+      - name: "VictoriaMetrics (PromQL)"
         type: prometheus
         access: proxy
         url: http://victoriametrics:8428
         isDefault: true
+        editable: true
+        jsonData:
+          httpMethod: POST
+          timeInterval: 30s
+          prometheusType: Prometheus
+
+      # 2. PostgreSQL 18 - Umami Web Analytics
+      - name: "PostgreSQL 18 - Umami Analytics"
+        type: postgres
+        access: proxy
+        url: postgres:5432
+        database: umami
+        user: postgres
+        secureJsonData:
+          password: "postgres_master_pass_2026"
+        jsonData:
+          sslmode: disable
+          maxOpenConns: 5
+          maxIdleConns: 2
+          connMaxLifetime: 14400
+          postgresVersion: 1600
+        editable: true
+
+      # 3. PostgreSQL 18 - Memos AI Journal
+      - name: "PostgreSQL 18 - Memos Notes"
+        type: postgres
+        access: proxy
+        url: postgres:5432
+        database: memos
+        user: postgres
+        secureJsonData:
+          password: "postgres_master_pass_2026"
+        jsonData:
+          sslmode: disable
+          maxOpenConns: 5
+          maxIdleConns: 2
+          connMaxLifetime: 14400
+          postgresVersion: 1600
+        editable: true
+
+      # 4. PostgreSQL 18 - AI Vector Store (pgvector)
+      - name: "PostgreSQL 18 - AI Vector Store"
+        type: postgres
+        access: proxy
+        url: postgres:5432
+        database: vector_db
+        user: postgres
+        secureJsonData:
+          password: "postgres_master_pass_2026"
+        jsonData:
+          sslmode: disable
+          maxOpenConns: 5
+          maxIdleConns: 2
+          connMaxLifetime: 14400
+          postgresVersion: 1600
+        editable: true
+
+      # 5. OpenTelemetry Collector Pipeline
+      - name: "OpenTelemetry Collector"
+        type: prometheus
+        access: proxy
+        url: http://otel-collector:8889
         editable: true
         jsonData:
           httpMethod: POST

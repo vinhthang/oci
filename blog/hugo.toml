@@ -1,6 +1,6 @@
 baseURL = 'https://vinhthang.dev/'
 languageCode = 'en-us'
-title = "Vinh Thang's Tech Notes"
+title = "Vinh Thang's AI Tech Notes"
 theme = 'PaperMod'
 enableRobotsTXT = true
 
@@ -9,7 +9,7 @@ enableRobotsTXT = true
 
 [params]
   env = 'production'
-  title = "Vinh Thang's Tech Notes"
+  title = "Vinh Thang's AI Tech Notes"
   description = "Engineering insights on Kubernetes, Autonomous AI Agents, DevOps, and Always Free Cloud Architecture."
   keywords = ["Kubernetes", "K3s", "Oracle Cloud", "OCI", "AI", "LLM", "AnythingLLM", "Antigravity", "DevOps", "Terraform", "PostgreSQL", "Cloudflare WARP"]
   author = "Thang Hoang & Antigravity"

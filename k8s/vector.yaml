@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vector
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+      - pods
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vector
+subjects:
+  - kind: ServiceAccount
+    name: vector
+    namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+data:
+  vector.yaml: |
+    data_dir: /var/lib/vector
+
+    sources:
+      k8s_logs:
+        type: kubernetes_logs
+        auto_partial_merge: true
+
+    transforms:
+      format_logs:
+        type: remap
+        inputs:
+          - k8s_logs
+        source: |
+          .container = .kubernetes.container_name || "unknown"
+          .pod = .kubernetes.pod_name || "unknown"
+          .namespace = .kubernetes.pod_namespace || "default"
+          .node = .kubernetes.node_name || "unknown"
+          .stream = .stream || "stdout"
+
+    sinks:
+      victorialogs:
+        type: loki
+        inputs:
+          - format_logs
+        endpoint: "http://victorialogs:9428"
+        path: "/insert/loki/api/v1/push"
+        healthcheck:
+          enabled: false
+        encoding:
+          codec: text
+        labels:
+          container: "{{ `{{ container }}` }}"
+          pod: "{{ `{{ pod }}` }}"
+          namespace: "{{ `{{ namespace }}` }}"
+          node: "{{ `{{ node }}` }}"
+          stream: "{{ `{{ stream }}` }}"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vector
+  labels:
+    app: vector
+spec:
+  selector:
+    matchLabels:
+      app: vector
+  template:
+    metadata:
+      labels:
+        app: vector
+    spec:
+      serviceAccountName: vector
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: vector
+          image: docker.io/timberio/vector:0.45.0-alpine
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config"
+            - "/etc/vector/vector.yaml"
+          env:
+            - name: VECTOR_LOG
+              value: "info"
+            - name: VECTOR_SELF_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: config
+              mountPath: /etc/vector
+              readOnly: true
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/vector
+          resources:
+            requests:
+              cpu: 10m
+              memory: 15Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: config
+          configMap:
+            name: vector-config
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: data
+          hostPath:
+            path: /var/lib/vector
+            type: DirectoryOrCreate

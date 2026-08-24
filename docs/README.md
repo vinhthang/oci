@@ -17,13 +17,14 @@
 | [**ADR-0006**](adr/0006-in-cluster-gitops-webhook-and-blog-pipeline.md) | **In-Cluster GitOps Webhook & Event-Driven Hugo Rebuild** | 🟢 Accepted | CI/CD / GitOps | Zero-touch deployment on `git push` via in-cluster webhook controller in 1.4s. |
 | [**ADR-0007**](adr/0007-autonomous-daily-ai-briefing-cronjob.md) | **Autonomous Daily AI Briefing Pipeline** | 🟢 Accepted | AI / Automation | Daily 07:00 AM VN Time CronJob querying VietCalendar, telemetry, and tech briefs. |
 | [**ADR-0008**](adr/0008-superpowers-security-hardening-rbac-and-disaster-recovery.md) | **Superpowers Security Hardening, Scoped RBAC & Disaster Recovery** | 🟢 Accepted | Security / Reliability | Scoped RBAC (`gitops-deployer`), secretKeyRef hygiene, and automated nightly backups. |
+| [**ADR-0009**](adr/0009-migrate-promtail-to-vector-rust-log-shipper.md) | **Migration from Promtail (EOL) to Vector (Rust) Log Harvester** | 🟢 Accepted | Logging / Rust | 50% memory reduction (< 15MB RAM), native K8s enrichment, and high-speed VictoriaLogs streaming. |
 
 ---
 
 ## 🏛️ System Invariants & Golden Rules for Future Agents
 
 1. **Hardware Memory Boundaries**:
-   * `amd10` (Edge) & `amd11` (Worker) have **1 GB RAM each**. Never schedule heavy Node.js or Java containers on these nodes.
+   * `amd10` (Edge Gateway) & `amd11` (Worker) are strictly capped at **1 GB RAM**. Never schedule heavy Node.js or Java containers on these nodes.
    * `arm10` (Control Plane) has **10 GB RAM**. All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
 2. **GitOps & Deployment Rule**:
    * Do not run ad-hoc manual `docker run` commands on production nodes. All workloads must be codified in [`charts/vinhthang-fleet/`](../charts/vinhthang-fleet/) or [`k8s/`](../k8s/) and pushed to `main`.

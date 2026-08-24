@@ -125,15 +125,15 @@ victoriaLogs:
     limits:
       memory: 128Mi
 
-promtail:
+vector:
   enabled: true
-  image: docker.io/grafana/promtail:3.0.0
+  image: docker.io/timberio/vector:0.45.0-alpine
   resources:
     requests:
       cpu: 10m
-      memory: 30Mi
+      memory: 15Mi
     limits:
-      memory: 80Mi
+      memory: 64Mi
 
 otelCollector:
   enabled: true

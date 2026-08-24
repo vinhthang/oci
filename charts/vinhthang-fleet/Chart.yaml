@@ -2,8 +2,8 @@ apiVersion: v2
 name: vinhthang-fleet
 description: Production Helm Chart for the complete vinhthang.dev Cloud & AI Fleet
 type: application
-version: 1.0.0
-appVersion: "2026.08"
+version: 1.0.1
+appVersion: "2026.08.25"
 maintainers:
   - name: Thang Hoang & Antigravity
     url: https://vinhthang.dev

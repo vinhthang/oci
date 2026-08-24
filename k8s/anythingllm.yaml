@@ -18,13 +18,16 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: arm10
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
         - name: anythingllm
           image: docker.io/mintplexlabs/anythingllm:1.16.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
-              hostPort: 3001
               name: http
           env:
             - name: STORAGE_DIR

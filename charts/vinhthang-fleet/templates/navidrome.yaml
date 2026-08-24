@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  labels:
+    app: navidrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: navidrome
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+        - name: navidrome
+          image: docker.io/deluan/navidrome:0.63.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4533
+              name: http
+          env:
+            - name: ND_MUSICFOLDER
+              value: "/music"
+            - name: ND_DATAFOLDER
+              value: "/data"
+            - name: ND_PROMETHEUS_METRICSPATH
+              value: "/metrics"
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: music-data
+              mountPath: /music
+            - name: navidrome-db
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 384Mi
+      volumes:
+        - name: music-data
+          hostPath:
+            path: /opt/navidrome/music
+            type: Directory
+        - name: navidrome-db
+          hostPath:
+            path: /opt/navidrome/data
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: navidrome
+spec:
+  type: NodePort
+  selector:
+    app: navidrome
+  ports:
+    - protocol: TCP
+      port: 4533
+      targetPort: 4533
+      nodePort: 30007

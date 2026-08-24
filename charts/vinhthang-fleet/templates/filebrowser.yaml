@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  labels:
+    app: filebrowser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: amd11
+      containers:
+        - name: filebrowser
+          image: docker.io/filebrowser/filebrowser:v2.63.23
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config"
+            - "/config/.filebrowser.json"
+          ports:
+            - containerPort: 8082
+              hostPort: 8082
+              name: http
+          volumeMounts:
+            - name: filebrowser-config
+              mountPath: /config
+            - name: music-storage
+              mountPath: /srv/Music
+          resources:
+            requests:
+              cpu: 20m
+              memory: 40Mi
+            limits:
+              memory: 150Mi
+      volumes:
+        - name: filebrowser-config
+          hostPath:
+            path: /opt/filebrowser/config
+            type: Directory
+        - name: music-storage
+          hostPath:
+            path: /opt/navidrome/music
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filebrowser
+spec:
+  selector:
+    app: filebrowser
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082

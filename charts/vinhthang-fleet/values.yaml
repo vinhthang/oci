@@ -1,0 +1,156 @@
+# Default values for vinhthang-fleet master Helm chart.
+
+global:
+  domain: vinhthang.dev
+  armNodeHostname: arm10
+  amdArchitecture: amd64
+
+anythingllm:
+  enabled: true
+  image: docker.io/mintplexlabs/anythingllm:1.16.0
+  nodePort: 30001
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1024Mi
+
+uptimeKuma:
+  enabled: true
+  image: docker.io/louislam/uptime-kuma:2.5.3
+  nodePort: 30002
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+umami:
+  enabled: true
+  image: ghcr.io/umami-software/umami:postgresql-v2.13.0
+  nodePort: 30003
+  resources:
+    requests:
+      cpu: 30m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
+
+oauth2Proxy:
+  enabled: true
+  image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+  nodePort: 30004
+  resources:
+    requests:
+      cpu: 10m
+      memory: 20Mi
+    limits:
+      memory: 64Mi
+
+memos:
+  enabled: true
+  image: docker.io/neosmemo/memos:0.30.0
+  nodePort: 30005
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+vietcalendar:
+  enabled: true
+  image: ghcr.io/vinhthang/vietcalendar:latest
+  nodePort: 30006
+  resources:
+    requests:
+      cpu: 10m
+      memory: 20Mi
+    limits:
+      memory: 80Mi
+
+navidrome:
+  enabled: true
+  image: docker.io/deluan/navidrome:0.63.2
+  nodePort: 30007
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 384Mi
+
+grafana:
+  enabled: true
+  image: docker.io/grafana/grafana:11.5.0
+  nodePort: 30008
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+postgres:
+  enabled: true
+  image: docker.io/pgvector/pgvector:pg18
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+victoriaMetrics:
+  enabled: true
+  image: docker.io/victoriametrics/victoria-metrics:v1.109.1
+  retentionPeriod: 30d
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+victoriaLogs:
+  enabled: true
+  image: docker.io/victoriametrics/victoria-logs:v1.51.1
+  retentionPeriod: 30d
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+promtail:
+  enabled: true
+  image: docker.io/grafana/promtail:3.0.0
+  resources:
+    requests:
+      cpu: 10m
+      memory: 30Mi
+    limits:
+      memory: 80Mi
+
+otelCollector:
+  enabled: true
+  image: docker.io/otel/opentelemetry-collector-contrib:0.119.0
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+filebrowser:
+  enabled: true
+  image: docker.io/filebrowser/filebrowser:v2.63.23
+  resources:
+    requests:
+      cpu: 10m
+      memory: 20Mi
+    limits:
+      memory: 80Mi

@@ -2,11 +2,11 @@
 set -euo pipefail
 
 echo "=================================================="
-echo "🚀 OCI Fleet GitOps Synchronizer"
+echo "🚀 OCI Fleet Helm & GitOps Synchronizer"
 echo "=================================================="
 
-echo "📦 1. Applying all Kubernetes manifests to oci-k3s..."
-kubectl apply -f k8s/ --context oci-k3s
+echo "📦 1. Upgrading entire fleet via Helm Chart (charts/vinhthang-fleet)..."
+helm upgrade --install fleet ./charts/vinhthang-fleet --kube-context oci-k3s --take-ownership --force-conflicts
 
 echo "📝 2. Synchronizing Blog to Edge Gateway (amd10)..."
 ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "
@@ -20,5 +20,5 @@ ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "
 "
 
 echo "=================================================="
-echo "✅ GitOps Synchronization Complete! All services live!"
+echo "✅ Helm Fleet Synchronization Complete! All services live!"
 echo "=================================================="

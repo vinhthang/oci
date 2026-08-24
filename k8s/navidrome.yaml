@@ -32,7 +32,7 @@ spec:
             - name: ND_LOGLEVEL
               value: "info"
             - name: ND_BASEURL
-              value: "https://music.thang-gcloud.duckdns.org"
+              value: "https://music.vinhthang.dev"
             - name: ND_ENABLEINSIGHTSCOLLECTOR
               value: "false"
           volumeMounts:

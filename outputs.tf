@@ -48,29 +48,39 @@ output "arm10_ssh_command" {
 }
 
 # ==============================================================================
-# Service HTTPS Endpoints
+# Service HTTPS Endpoints (Custom Domain: vinhthang.dev)
 # ==============================================================================
-output "vietcalendar_https_url" {
-  description = "VietCalendar API & Swagger UI URL"
-  value       = "https://${var.duckdns_domain}"
+output "blog_https_url" {
+  description = "Hugo PaperMod Tech Blog URL"
+  value       = "https://${var.domain_name}"
 }
 
-output "adguard_https_url" {
-  description = "AdGuard Home Web Dashboard URL"
-  value       = "https://adguard.${var.duckdns_domain}"
+output "vietcalendar_https_url" {
+  description = "VietCalendar API & Swagger UI URL"
+  value       = "https://api.${var.domain_name}"
+}
+
+output "memos_https_url" {
+  description = "Memos AI Digital Notebook URL"
+  value       = "https://memos.${var.domain_name}"
+}
+
+output "anythingllm_https_url" {
+  description = "AnythingLLM Document RAG & Agent URL"
+  value       = "https://ai.${var.domain_name}"
 }
 
 output "navidrome_https_url" {
   description = "Navidrome Lossless Music Server URL"
-  value       = "https://music.${var.duckdns_domain}"
+  value       = "https://music.${var.domain_name}"
 }
 
 output "filebrowser_https_url" {
   description = "FileBrowser Personal Cloud Storage URL"
-  value       = "https://files.${var.duckdns_domain}"
+  value       = "https://files.${var.domain_name}"
 }
 
-output "blog_https_url" {
-  description = "Hugo PaperMod Tech Blog URL"
-  value       = "https://blog.${var.duckdns_domain}"
+output "adguard_https_url" {
+  description = "AdGuard Home Web Dashboard URL"
+  value       = "https://adguard.${var.domain_name}"
 }

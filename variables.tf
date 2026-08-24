@@ -26,8 +26,14 @@ variable "ssh_public_key" {
   type        = string
 }
 
-variable "duckdns_domain" {
-  description = "DuckDNS domain name (e.g. your-domain.duckdns.org)"
+variable "domain_name" {
+  description = "Custom domain name (e.g. vinhthang.dev)"
   type        = string
-  default     = "your-domain.duckdns.org"
+  default     = "vinhthang.dev"
+}
+
+variable "duckdns_domain" {
+  description = "Legacy DuckDNS domain name fallback"
+  type        = string
+  default     = "thang-gcloud.duckdns.org"
 }

@@ -25,6 +25,10 @@ spec:
           args:
             - "--config"
             - "/config/.filebrowser.json"
+          ports:
+            - containerPort: 8082
+              hostPort: 8082
+              name: http
           volumeMounts:
             - name: filebrowser-config
               mountPath: /config
@@ -36,26 +40,6 @@ spec:
               memory: 40Mi
             limits:
               memory: 150Mi
-
-        - name: oauth2-proxy
-          image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
-          imagePullPolicy: IfNotPresent
-          args:
-            - "--config=/etc/oauth2-proxy/oauth2-proxy.cfg"
-          ports:
-            - containerPort: 4180
-              hostPort: 4180
-              name: proxy-http
-          volumeMounts:
-            - name: oauth2-config
-              mountPath: /etc/oauth2-proxy
-          resources:
-            requests:
-              cpu: 20m
-              memory: 40Mi
-            limits:
-              memory: 120Mi
-
       volumes:
         - name: filebrowser-config
           hostPath:
@@ -64,10 +48,6 @@ spec:
         - name: music-storage
           hostPath:
             path: /opt/navidrome/music
-            type: Directory
-        - name: oauth2-config
-          hostPath:
-            path: /opt/oauth2-proxy
             type: Directory
 ---
 apiVersion: v1
@@ -79,5 +59,5 @@ spec:
     app: filebrowser
   ports:
     - protocol: TCP
-      port: 4180
-      targetPort: 4180
+      port: 8082
+      targetPort: 8082

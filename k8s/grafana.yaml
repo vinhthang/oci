@@ -20,7 +20,16 @@ data:
           timeInterval: 30s
           prometheusType: Prometheus
 
-      # 2. PostgreSQL 18 - Umami Web Analytics
+      # 2. VictoriaLogs (Loki Protocol Log Stream)
+      - name: "VictoriaLogs (Logs)"
+        type: loki
+        access: proxy
+        url: http://victorialogs:9428/select/loki/
+        editable: true
+        jsonData:
+          maxLines: 1000
+
+      # 3. PostgreSQL 18 - Umami Web Analytics
       - name: "PostgreSQL 18 - Umami Analytics"
         type: postgres
         access: proxy
@@ -37,7 +46,7 @@ data:
           postgresVersion: 1600
         editable: true
 
-      # 3. PostgreSQL 18 - Memos AI Journal
+      # 4. PostgreSQL 18 - Memos AI Journal
       - name: "PostgreSQL 18 - Memos Notes"
         type: postgres
         access: proxy
@@ -54,7 +63,7 @@ data:
           postgresVersion: 1600
         editable: true
 
-      # 4. PostgreSQL 18 - AI Vector Store (pgvector)
+      # 5. PostgreSQL 18 - AI Vector Store (pgvector)
       - name: "PostgreSQL 18 - AI Vector Store"
         type: postgres
         access: proxy
@@ -71,7 +80,7 @@ data:
           postgresVersion: 1600
         editable: true
 
-      # 5. OpenTelemetry Collector Pipeline
+      # 6. OpenTelemetry Collector Pipeline
       - name: "OpenTelemetry Collector"
         type: prometheus
         access: proxy

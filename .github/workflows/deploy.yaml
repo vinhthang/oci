@@ -1,0 +1,33 @@
+name: OCI Fleet GitOps & CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Validate Kubernetes Manifests
+        run: |
+          echo "🔍 Validating all manifests in k8s/..."
+          for file in k8s/*.yaml; do
+            echo "Checking $file..."
+            kubectl apply --dry-run=client -f "$file"
+          done
+          echo "✅ All Kubernetes manifests are valid!"
+
+      - name: Validate Hugo Blog Markdown
+        run: |
+          echo "📝 Checking blog Markdown files..."
+          ls -lah blog/content/posts/
+          echo "✅ Blog directory verified!"

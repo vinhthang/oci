@@ -26,21 +26,38 @@ spec:
             - containerPort: 3000
               name: http
           env:
-            - name: DATABASE_TYPE
-              value: "postgresql"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: UMAMI_DATABASE_URL
+            - name: DATABASE_TYPE
+              value: "postgresql"
             - name: APP_SECRET
-              value: "super_secret_app_key_umami_2026_tokyo"
+              value: "super_secret_umami_app_salt_2026_tokyo"
+            - name: DISABLE_TELEMETRY
+              value: "1"
+          livenessProbe:
+            httpGet:
+              path: /api/heartbeat
+              port: http
+            initialDelaySeconds: 25
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/heartbeat
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
           resources:
             requests:
               cpu: 30m
               memory: 128Mi
             limits:
-              memory: 512Mi
+              memory: 384Mi
 ---
 apiVersion: v1
 kind: Service

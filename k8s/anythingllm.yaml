@@ -52,6 +52,21 @@ spec:
               value: "antigravity-agent"
             - name: GENERIC_OPEN_AI_API_KEY
               value: "agy-local-key"
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
           volumeMounts:
             - name: anythingllm-storage
               mountPath: /app/server/storage

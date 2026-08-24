@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anythingllm
+  labels:
+    app: anythingllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anythingllm
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: anythingllm
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      containers:
+        - name: anythingllm
+          image: docker.io/mintplexlabs/anythingllm:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+              hostPort: 3001
+              name: http
+          env:
+            - name: STORAGE_DIR
+              value: "/app/server/storage"
+            - name: SERVER_PORT
+              value: "3001"
+            - name: JWT_SECRET
+              value: "super_secret_jwt_key_anythingllm_2026_tokyo"
+          volumeMounts:
+            - name: anythingllm-storage
+              mountPath: /app/server/storage
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 1024Mi
+      volumes:
+        - name: anythingllm-storage
+          hostPath:
+            path: /opt/anythingllm
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anythingllm
+spec:
+  selector:
+    app: anythingllm
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001

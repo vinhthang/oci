@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memos
+  labels:
+    app: memos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memos
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: memos
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      containers:
+        - name: memos
+          image: docker.io/neosmemo/memos:stable
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5230
+              hostPort: 5230
+              name: http
+          env:
+            - name: MEMOS_MODE
+              value: "prod"
+            - name: MEMOS_PORT
+              value: "5230"
+            - name: MEMOS_DRIVER
+              value: "postgres"
+            - name: MEMOS_DSN
+              value: "postgres://postgres:postgres_master_pass_2026@postgres:5432/memos?sslmode=disable"
+          volumeMounts:
+            - name: memos-storage
+              mountPath: /var/opt/memos
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: memos-storage
+          hostPath:
+            path: /opt/memos
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memos
+spec:
+  selector:
+    app: memos
+  ports:
+    - protocol: TCP
+      port: 5230
+      targetPort: 5230

@@ -12,12 +12,13 @@
 | [**ADR-0001**](adr/0001-hybrid-k3s-multi-arch-topology.md) | **3-Node Hybrid Multi-Architecture K3s Cluster** | 🟢 Accepted | K3s / Infrastructure | Unify ARM64 (10GB) + AMD64 (1GB) into 1 cluster with strict nodeSelectors. |
 | [**ADR-0002**](adr/0002-caddy-edge-gateway-and-google-oauth2-sso.md) | **Caddy Edge Gateway & Google OAuth2 SSO** | 🟢 Accepted | Security / Ingress | Single public IPv4 entrypoint with cookie-based forward_auth SSO. |
 | [**ADR-0003**](adr/0003-victoriametrics-and-victorialogs-observability.md) | **Ultra-Lightweight Observability (VictoriaMetrics + VictoriaLogs)** | 🟢 Accepted | Observability / Telemetry | PromQL + LogsQL full-text streaming in < 80MB total RAM vs heavy Prometheus/Loki. |
-| [**ADR-0004**](adr/0004-postgresql-18-pgvector-and-decoupled-state.md) | **PostgreSQL 18.6 `pgvector` & Decoupled State Architecture** | 🟢 Accepted | Databases / Persistence | Persistent AI vector embeddings + relational storage; isolated SQLite for Uptime Kuma. |
+| [**ADR-0004**](adr/0004-postgresql-18-pgvector-and-decoupled-state.md) | **PostgreSQL 18.6 `pgvector` & Decoupled State Architecture** | 🟢 Accepted | Databases / Persistence | Persistent AI vector embeddings + relational storage; stateless in-memory VietCalendar. |
 | [**ADR-0005**](adr/0005-master-helm-chart-and-self-healing-probes.md) | **Master Umbrella Helm Chart & Self-Healing Probes** | 🟢 Accepted | Packaging / Reliability | Single `values.yaml` control plane with automated liveness/readiness recovery. |
 | [**ADR-0006**](adr/0006-in-cluster-gitops-webhook-and-blog-pipeline.md) | **In-Cluster GitOps Webhook & Event-Driven Hugo Rebuild** | 🟢 Accepted | CI/CD / GitOps | Zero-touch deployment on `git push` via in-cluster webhook controller in 1.4s. |
 | [**ADR-0007**](adr/0007-autonomous-daily-ai-briefing-cronjob.md) | **Autonomous Daily AI Briefing Pipeline** | 🟢 Accepted | AI / Automation | Daily 07:00 AM VN Time CronJob querying VietCalendar, telemetry, and tech briefs. |
 | [**ADR-0008**](adr/0008-superpowers-security-hardening-rbac-and-disaster-recovery.md) | **Superpowers Security Hardening, Scoped RBAC & Disaster Recovery** | 🟢 Accepted | Security / Reliability | Scoped RBAC (`gitops-deployer`), secretKeyRef hygiene, and automated nightly backups. |
 | [**ADR-0009**](adr/0009-migrate-promtail-to-vector-rust-log-shipper.md) | **Migration from Promtail (EOL) to Vector (Rust) Log Harvester** | 🟢 Accepted | Logging / Rust | 50% memory reduction (< 15MB RAM), native K8s enrichment, and high-speed VictoriaLogs streaming. |
+| [**ADR-0010**](adr/0010-consolidate-uptime-monitoring-into-grafana.md) | **Consolidation of Synthetic Uptime Monitoring into Grafana 11** | 🟢 Accepted | Observability / Telemetry | Retired Uptime Kuma; unified HTTP/SSL probing into OTel Collector + Grafana 11. |
 
 ---
 

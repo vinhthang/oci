@@ -6,6 +6,10 @@ metadata:
     app: otel-collector
 data:
   config.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
     receivers:
       otlp:
         protocols:
@@ -13,16 +17,29 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-      prometheus:
-        config:
-          scrape_configs:
-            - job_name: 'uptime-kuma'
-              scrape_interval: 30s
-              static_configs:
-                - targets: ['uptime-kuma:3001']
-              basic_auth:
-                username: 'scraper'
-                password: 'uk1_otel2026'
+      httpcheck:
+        collection_interval: 15s
+        targets:
+          - endpoint: "https://vinhthang.dev"
+            method: GET
+          - endpoint: "https://api.vinhthang.dev/health"
+            method: GET
+          - endpoint: "https://music.vinhthang.dev"
+            method: GET
+          - endpoint: "https://files.vinhthang.dev"
+            method: GET
+          - endpoint: "https://analytics.vinhthang.dev"
+            method: GET
+          - endpoint: "https://grafana.vinhthang.dev"
+            method: GET
+          - endpoint: "https://ai.vinhthang.dev"
+            method: GET
+          - endpoint: "https://memos.vinhthang.dev"
+            method: GET
+          - endpoint: "https://webhook.vinhthang.dev"
+            method: GET
+          - endpoint: "https://auth.vinhthang.dev/ping"
+            method: GET
 
     processors:
       batch:
@@ -36,9 +53,10 @@ data:
         verbosity: basic
 
     service:
+      extensions: [health_check]
       pipelines:
         metrics:
-          receivers: [otlp, prometheus]
+          receivers: [otlp, httpcheck]
           processors: [batch]
           exporters: [prometheus, debug]
         traces:
@@ -74,27 +92,43 @@ spec:
         - name: otel-collector
           image: docker.io/otel/opentelemetry-collector-contrib:0.119.0
           imagePullPolicy: IfNotPresent
-          args: ["--config=/etc/otelcol-contrib/config.yaml"]
+          args:
+            - "--config=/etc/otelcol-contrib/config.yaml"
           ports:
-            - containerPort: 4317
-              name: otlp-grpc
-            - containerPort: 4318
-              name: otlp-http
-            - containerPort: 8889
-              name: prom-export
-            - containerPort: 8888
-              name: self-metrics
+            - name: otlp-grpc
+              containerPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+            - name: metrics
+              containerPort: 8888
+            - name: prom-export
+              containerPort: 8889
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
           volumeMounts:
-            - name: config-vol
+            - name: config
               mountPath: /etc/otelcol-contrib
           resources:
             requests:
               cpu: 20m
-              memory: 32Mi
+              memory: 64Mi
             limits:
-              memory: 128Mi
+              memory: 256Mi
       volumes:
-        - name: config-vol
+        - name: config
           configMap:
             name: otel-collector-config
 ---
@@ -103,22 +137,19 @@ kind: Service
 metadata:
   name: otel-collector
 spec:
+  type: ClusterIP
   selector:
     app: otel-collector
   ports:
-    - name: otlp-grpc
-      protocol: TCP
+    - name: grpc
       port: 4317
       targetPort: 4317
-    - name: otlp-http
-      protocol: TCP
+    - name: http
       port: 4318
       targetPort: 4318
-    - name: prom-export
-      protocol: TCP
-      port: 8889
-      targetPort: 8889
-    - name: self-metrics
-      protocol: TCP
+    - name: metrics
       port: 8888
       targetPort: 8888
+    - name: prom-export
+      port: 8889
+      targetPort: 8889

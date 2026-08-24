@@ -16,17 +16,6 @@ anythingllm:
     limits:
       memory: 1024Mi
 
-uptimeKuma:
-  enabled: true
-  image: docker.io/louislam/uptime-kuma:2.5.3
-  nodePort: 30002
-  resources:
-    requests:
-      cpu: 20m
-      memory: 64Mi
-    limits:
-      memory: 256Mi
-
 umami:
   enabled: true
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0

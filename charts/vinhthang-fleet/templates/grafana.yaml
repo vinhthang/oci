@@ -8,85 +8,30 @@ data:
   datasources.yaml: |
     apiVersion: 1
     datasources:
-      # 1. VictoriaMetrics (Default PromQL Metrics TSDB)
-      - name: "VictoriaMetrics (PromQL)"
+      - name: VictoriaMetrics
         type: prometheus
         access: proxy
         url: http://victoriametrics:8428
         isDefault: true
-        editable: true
         jsonData:
           httpMethod: POST
-          timeInterval: 30s
+          timeInterval: 15s
           prometheusType: Prometheus
 
-      # 2. VictoriaLogs (Official LogsQL Log Explorer Plugin)
-      - name: "VictoriaLogs"
+      - name: VictoriaLogs
         type: victoriametrics-logs-datasource
         access: proxy
         url: http://victorialogs:9428
-        editable: true
-
-      # 3. PostgreSQL 18 - Umami Web Analytics
-      - name: "PostgreSQL 18 - Umami Analytics"
-        type: postgres
-        access: proxy
-        url: postgres:5432
-        database: umami
-        user: postgres
-        secureJsonData:
-          password: "postgres_master_pass_2026"
         jsonData:
-          sslmode: disable
-          maxOpenConns: 5
-          maxIdleConns: 2
-          connMaxLifetime: 14400
-          postgresVersion: 1600
-        editable: true
+          customQueryParameters: ""
 
-      # 4. PostgreSQL 18 - Memos AI Journal
-      - name: "PostgreSQL 18 - Memos Notes"
-        type: postgres
-        access: proxy
-        url: postgres:5432
-        database: memos
-        user: postgres
-        secureJsonData:
-          password: "postgres_master_pass_2026"
-        jsonData:
-          sslmode: disable
-          maxOpenConns: 5
-          maxIdleConns: 2
-          connMaxLifetime: 14400
-          postgresVersion: 1600
-        editable: true
-
-      # 5. PostgreSQL 18 - AI Vector Store (pgvector)
-      - name: "PostgreSQL 18 - AI Vector Store"
-        type: postgres
-        access: proxy
-        url: postgres:5432
-        database: vector_db
-        user: postgres
-        secureJsonData:
-          password: "postgres_master_pass_2026"
-        jsonData:
-          sslmode: disable
-          maxOpenConns: 5
-          maxIdleConns: 2
-          connMaxLifetime: 14400
-          postgresVersion: 1600
-        editable: true
-
-      # 6. OpenTelemetry Collector Pipeline
-      - name: "OpenTelemetry Collector"
+      - name: OpenTelemetry APM
         type: prometheus
         access: proxy
         url: http://otel-collector:8889
-        editable: true
         jsonData:
-          httpMethod: POST
-          timeInterval: 30s
+          httpMethod: GET
+          timeInterval: 15s
           prometheusType: Prometheus
 ---
 apiVersion: apps/v1
@@ -127,6 +72,10 @@ spec:
               value: "super_secret_grafana_pass_2026"
             - name: GF_SECURITY_ALLOW_EMBEDDING
               value: "true"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Viewer"
             - name: GF_AUTH_PROXY_ENABLED
               value: "true"
             - name: GF_AUTH_PROXY_HEADER_NAME
@@ -141,6 +90,21 @@ spec:
               value: "Admin"
             - name: GF_SERVER_ROOT_URL
               value: "https://grafana.vinhthang.dev"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
           volumeMounts:
             - name: grafana-data
               mountPath: /var/lib/grafana

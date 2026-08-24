@@ -1,18 +1,55 @@
-output "instance_id" {
-  description = "OCID of the compute instance"
-  value       = oci_core_instance.main_instance.id
+# ==============================================================================
+# Node 1: amd10 (Gateway) Outputs
+# ==============================================================================
+output "amd10_instance_id" {
+  description = "OCID of amd10"
+  value       = oci_core_instance.amd10.id
 }
 
-output "public_ip" {
-  description = "Reserved Static Public IPv4 Address"
+output "amd10_public_ip" {
+  description = "Reserved Static Public IPv4 Address for amd10"
   value       = oci_core_public_ip.reserved_ip.ip_address
 }
 
-output "ssh_command" {
-  description = "Command to SSH into the instance"
+output "amd10_ssh_command" {
+  description = "SSH Command to connect to amd10"
   value       = "ssh -i ~/.ssh/id_ed25519 opc@${oci_core_public_ip.reserved_ip.ip_address}"
 }
 
+# ==============================================================================
+# Node 2: amd11 (Storage Node) Outputs
+# ==============================================================================
+output "amd11_instance_id" {
+  description = "OCID of amd11"
+  value       = oci_core_instance.amd11.id
+}
+
+output "amd11_ssh_command" {
+  description = "SSH Command to connect to amd11 via ProxyJump"
+  value       = "ssh -o ProxyJump=opc@${oci_core_public_ip.reserved_ip.ip_address} -i ~/.ssh/id_ed25519 opc@${oci_core_instance.amd11.private_ip}"
+}
+
+# ==============================================================================
+# Node 3: arm10 (K3s Master Powerhouse) Outputs
+# ==============================================================================
+output "arm10_instance_id" {
+  description = "OCID of arm10"
+  value       = oci_core_instance.arm10.id
+}
+
+output "arm10_public_ip" {
+  description = "Public IPv4 Address of arm10"
+  value       = oci_core_instance.arm10.public_ip
+}
+
+output "arm10_ssh_command" {
+  description = "SSH Command to connect to arm10"
+  value       = "ssh -i ~/.ssh/id_ed25519 opc@${oci_core_instance.arm10.public_ip}"
+}
+
+# ==============================================================================
+# Service HTTPS Endpoints
+# ==============================================================================
 output "vietcalendar_https_url" {
   description = "VietCalendar API & Swagger UI URL"
   value       = "https://${var.duckdns_domain}"
@@ -36,9 +73,4 @@ output "filebrowser_https_url" {
 output "blog_https_url" {
   description = "Hugo PaperMod Tech Blog URL"
   value       = "https://blog.${var.duckdns_domain}"
-}
-
-output "mcp_endpoint_url" {
-  description = "Universal MCP Endpoint for AI clients"
-  value       = "https://${var.duckdns_domain}/mcp/sse"
 }

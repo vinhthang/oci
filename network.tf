@@ -182,6 +182,34 @@ resource "oci_core_security_list" "main_security_list" {
     }
   }
 
+  # Ingress: WireGuard Mesh VPN (51820)
+  ingress_security_rules {
+    protocol    = "17" # UDP
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "WireGuard Mesh VPN 51820"
+
+    udp_options {
+      min = 51820
+      max = 51820
+    }
+  }
+
+  # Ingress: K3s Kubernetes API (6443)
+  ingress_security_rules {
+    protocol    = "6" # TCP
+    source      = "10.0.0.0/16"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "K3s Kubernetes API (Internal VCN) 6443"
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+
   # Ingress: Internal Subnet Traffic
   ingress_security_rules {
     protocol    = "all"

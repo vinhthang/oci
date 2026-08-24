@@ -3,7 +3,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -11,7 +11,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 1,
-      "title": "🌐 1. Microservices Uptime & Live Latency (VictoriaMetrics / PromQL)",
+      "title": "🌐 1. Live Production Service Health & Uptime (VictoriaMetrics)",
       "type": "row"
     },
     {
@@ -19,18 +19,25 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [
-            { "options": { "0": { "color": "red", "text": "DOWN 🔴" }, "1": { "color": "green", "text": "UP 🟢" } }, "type": "value" }
+            { "options": { "0": { "color": "red", "text": "OFFLINE 🔴" }, "1": { "color": "green", "text": "ONLINE 🟢" } }, "type": "value" }
           ],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
         },
         "overrides": []
       },
-      "gridPos": { "h": 5, "w": 14, "x": 0, "y": 1 },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 1 },
       "id": 2,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
       "pluginVersion": "11.5.0",
-      "targets": [{ "editorMode": "code", "expr": "monitor_status", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
-      "title": "🟢 Live Production Service Health",
+      "targets": [{ "editorMode": "code", "expr": "max by (monitor_name) (monitor_status)", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
+      "title": "🟢 Service Health Status Matrix (Real-Time)",
       "type": "stat"
     },
     {
@@ -44,12 +51,12 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 5, "w": 5, "x": 14, "y": 1 },
+      "gridPos": { "h": 5, "w": 12, "x": 0, "y": 7 },
       "id": 3,
       "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "pluginVersion": "11.5.0",
       "targets": [{ "editorMode": "code", "expr": "min(monitor_cert_days_remaining)", "legendFormat": "Days Left", "range": true, "refId": "A" }],
-      "title": "🔒 SSL Expiration Countdown",
+      "title": "🔒 Cloudflare SSL Certificate Validity",
       "type": "gauge"
     },
     {
@@ -62,12 +69,12 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 1 },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 7 },
       "id": 4,
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "11.5.0",
       "targets": [{ "editorMode": "code", "expr": "avg(monitor_uptime_ratio{window=\"30d\"}) * 100", "legendFormat": "Fleet Average", "range": true, "refId": "A" }],
-      "title": "⏱️ Fleet 30-Day Uptime",
+      "title": "⏱️ Fleet 30-Day Uptime Reliability",
       "type": "stat"
     },
     {
@@ -79,25 +86,25 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 12 },
       "id": 5,
-      "options": { "legend": { "calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "options": { "legend": { "calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "11.5.0",
-      "targets": [{ "editorMode": "code", "expr": "monitor_response_time", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
-      "title": "⚡ Live Service Response Time Latency (ms)",
+      "targets": [{ "editorMode": "code", "expr": "max by (monitor_name) (monitor_response_time)", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
+      "title": "⚡ Live Microservice Response Times (Milliseconds)",
       "type": "timeseries"
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
       "id": 6,
-      "title": "🐘 2. PostgreSQL 18 & Application Data (SQL)",
+      "title": "🐘 2. PostgreSQL 18 Databases & Storage Health (SQL)",
       "type": "row"
     },
     {
       "datasource": { "type": "postgres", "uid": "P41FAF20C988566B4" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 15 },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 22 },
       "id": 7,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "11.5.0",
@@ -108,18 +115,18 @@
     {
       "datasource": { "type": "postgres", "uid": "P4CD6AA6E0D515D6C" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 15 },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 22 },
       "id": 8,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "11.5.0",
       "targets": [{ "format": "table", "rawSql": "SELECT count(*) as total_events FROM website_event;", "refId": "A" }],
-      "title": "📊 Umami Tracked Events",
+      "title": "📊 Umami Tracked Analytics Events",
       "type": "stat"
     },
     {
       "datasource": { "type": "postgres", "uid": "P41FAF20C988566B4" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 20 }] } }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 15 },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 22 },
       "id": 9,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "11.5.0",
@@ -136,5 +143,5 @@
   "timezone": "browser",
   "title": "🌟 Vinh Thang Cloud Fleet - Command Center",
   "uid": "fleet-command-center",
-  "version": 1
+  "version": 2
 }

@@ -26,7 +26,6 @@ spec:
             - "--config=/etc/oauth2-proxy/oauth2-proxy.cfg"
           ports:
             - containerPort: 4180
-              hostPort: 4180
               name: http
           volumeMounts:
             - name: oauth2-config
@@ -48,9 +47,11 @@ kind: Service
 metadata:
   name: central-oauth2-proxy
 spec:
+  type: NodePort
   selector:
     app: central-oauth2-proxy
   ports:
     - protocol: TCP
       port: 4180
       targetPort: 4180
+      nodePort: 30004

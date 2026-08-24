@@ -61,9 +61,11 @@ kind: Service
 metadata:
   name: navidrome
 spec:
+  type: NodePort
   selector:
     app: navidrome
   ports:
     - protocol: TCP
       port: 4533
       targetPort: 4533
+      nodePort: 30007

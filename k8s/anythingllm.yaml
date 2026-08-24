@@ -36,6 +36,22 @@ spec:
               value: "3001"
             - name: JWT_SECRET
               value: "super_secret_jwt_key_anythingllm_2026_tokyo"
+            - name: VECTOR_DB
+              value: "pgvector"
+            - name: PGVECTOR_CONNECTION_STRING
+              value: "postgresql://postgres:postgres_master_pass_2026@postgres:5432/vector_db"
+            - name: PGVECTOR_TABLE_NAME
+              value: "anythingllm_vectors"
+            - name: EMBEDDING_ENGINE
+              value: "native"
+            - name: LLM_PROVIDER
+              value: "generic-openai"
+            - name: GENERIC_OPEN_AI_BASE_PATH
+              value: "http://10.0.0.216:8000/v1"
+            - name: GENERIC_OPEN_AI_MODEL_PREF
+              value: "antigravity-agent"
+            - name: GENERIC_OPEN_AI_API_KEY
+              value: "agy-local-key"
           volumeMounts:
             - name: anythingllm-storage
               mountPath: /app/server/storage

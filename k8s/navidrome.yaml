@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: amd11
       containers:
         - name: navidrome
-          image: docker.io/deluan/navidrome:latest
+          image: docker.io/deluan/navidrome:0.63.2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4533

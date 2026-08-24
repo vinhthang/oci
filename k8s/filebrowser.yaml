@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: amd11
       containers:
         - name: filebrowser
-          image: docker.io/filebrowser/filebrowser:latest
+          image: docker.io/filebrowser/filebrowser:v2.63.23
           imagePullPolicy: IfNotPresent
           args:
             - "--config"

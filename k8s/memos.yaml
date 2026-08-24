@@ -36,7 +36,10 @@ spec:
             - name: MEMOS_DRIVER
               value: "postgres"
             - name: MEMOS_DSN
-              value: "postgres://postgres:postgres_master_pass_2026@postgres:5432/memos?sslmode=disable"
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: MEMOS_DSN
           volumeMounts:
             - name: memos-storage
               mountPath: /var/opt/memos

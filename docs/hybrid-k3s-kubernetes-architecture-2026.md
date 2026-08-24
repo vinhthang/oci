@@ -30,7 +30,7 @@ Instead of treating these machines as isolated Docker boxes, we unified them int
                                             ▼
                           ┌─────────────────────────────────────┐
                           │    amd10 (Edge Ingress Gateway)     │
-                          │   Static Public IP: 152.70.101.162  │
+                          │   Edge Domain: vinhthang.dev  │
                           │  • Caddy Reverse Proxy & Let's Encrypt│
                           │  • AdGuard Home DNS-over-TLS (853)  │
                           │  • Hugo PaperMod Tech Blog Engine   │

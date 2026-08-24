@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitops-webhook
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gitops-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: gitops-webhook
+    namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-webhook
+  labels:
+    app: gitops-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitops-webhook
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: gitops-webhook
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      serviceAccountName: gitops-webhook
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 8.8.8.8
+      containers:
+        - name: webhook
+          image: docker.io/alpine/k8s:1.31.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              apk add --no-cache git python3 py3-pip helm curl
+              
+              mkdir -p /repo
+              cd /repo
+              if [ ! -d "/repo/.git" ]; then
+                git clone https://github.com/vinhthang/oci.git .
+              fi
+
+              python3 -u - << 'EOF'
+              import http.server
+              import subprocess
+              import os
+              import json
+
+              class WebhookHandler(http.server.BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      self.send_response(200)
+                      self.send_header("Content-Type", "application/json")
+                      self.end_headers()
+                      self.wfile.write(b'{"status":"ready","service":"OCI GitOps Webhook Controller","version":"1.0.0"}')
+
+                  def do_POST(self):
+                      print("📥 [GitOps] Received GitHub Webhook event...")
+                      try:
+                          # 1. Pull latest git repository
+                          print("🔄 [GitOps] Pulling latest commits from origin/main...")
+                          pull_res = subprocess.run(["git", "-C", "/repo", "pull", "origin", "main"], capture_output=True, text=True)
+                          print(pull_res.stdout)
+
+                          # 2. Run Helm upgrade
+                          print("📦 [GitOps] Upgrading Helm release fleet...")
+                          cmd = ["helm", "upgrade", "--install", "fleet", "/repo/charts/vinhthang-fleet"]
+                          res = subprocess.run(cmd, capture_output=True, text=True)
+                          print(res.stdout)
+                          if res.returncode != 0:
+                              print("Helm error:", res.stderr)
+
+                          self.send_response(200)
+                          self.send_header("Content-Type", "application/json")
+                          self.end_headers()
+                          self.wfile.write(json.dumps({"status": "success", "message": "Fleet upgraded successfully via GitOps"}).encode("utf-8"))
+                          print("✅ [GitOps] Fleet update completed successfully!")
+                      except Exception as e:
+                          print("❌ [GitOps] Webhook error:", str(e))
+                          self.send_response(500)
+                          self.end_headers()
+                          self.wfile.write(str(e).encode("utf-8"))
+
+              server = http.server.HTTPServer(("0.0.0.0", 9000), WebhookHandler)
+              print("🚀 GitOps Webhook Server listening on port 9000...")
+              server.serve_forever()
+              EOF
+          ports:
+            - containerPort: 9000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitops-webhook
+spec:
+  type: NodePort
+  selector:
+    app: gitops-webhook
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+      nodePort: 30009

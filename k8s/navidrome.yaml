@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  labels:
+    app: navidrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: navidrome
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: amd11
+      containers:
+        - name: navidrome
+          image: docker.io/deluan/navidrome:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4533
+              hostPort: 4533
+              name: http
+          env:
+            - name: ND_SCANSCHEDULE
+              value: "5m"
+            - name: ND_LOGLEVEL
+              value: "info"
+            - name: ND_BASEURL
+              value: "https://music.thang-gcloud.duckdns.org"
+            - name: ND_ENABLEINSIGHTSCOLLECTOR
+              value: "false"
+          volumeMounts:
+            - name: navidrome-data
+              mountPath: /data
+            - name: music-library
+              mountPath: /music
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              memory: 350Mi
+      volumes:
+        - name: navidrome-data
+          hostPath:
+            path: /opt/navidrome/data
+            type: Directory
+        - name: music-library
+          hostPath:
+            path: /opt/navidrome/music
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: navidrome
+spec:
+  selector:
+    app: navidrome
+  ports:
+    - protocol: TCP
+      port: 4533
+      targetPort: 4533

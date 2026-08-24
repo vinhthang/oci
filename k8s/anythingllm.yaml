@@ -19,20 +19,18 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: arm10
       containers:
+        # Container 1: AnythingLLM Core
         - name: anythingllm
           image: docker.io/mintplexlabs/anythingllm:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
-              hostPort: 3001
-              name: http
+              name: app-http
           env:
             - name: STORAGE_DIR
               value: "/app/server/storage"
             - name: SERVER_PORT
               value: "3001"
-            - name: JWT_SECRET
-              value: "super_secret_jwt_key_anythingllm_2026_tokyo"
           volumeMounts:
             - name: anythingllm-storage
               mountPath: /app/server/storage
@@ -42,10 +40,35 @@ spec:
               memory: 256Mi
             limits:
               memory: 1024Mi
+
+        # Container 2: Google OAuth2 Single Sign-On Proxy
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--config=/etc/oauth2-proxy/oauth2-proxy.cfg"
+          ports:
+            - containerPort: 4181
+              hostPort: 4181
+              name: proxy-http
+          volumeMounts:
+            - name: oauth2-config
+              mountPath: /etc/oauth2-proxy
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+
       volumes:
         - name: anythingllm-storage
           hostPath:
             path: /opt/anythingllm
+            type: Directory
+        - name: oauth2-config
+          hostPath:
+            path: /opt/oauth2-proxy
             type: Directory
 ---
 apiVersion: v1
@@ -57,5 +80,5 @@ spec:
     app: anythingllm
   ports:
     - protocol: TCP
-      port: 3001
-      targetPort: 3001
+      port: 4181
+      targetPort: 4181

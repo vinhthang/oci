@@ -146,7 +146,7 @@ filebrowser:
 
 vaultwarden:
   enabled: true
-  image: docker.io/vaultwarden/server:1.33.2-alpine
+  image: docker.io/vaultwarden/server:1.37.2-alpine
   nodePort: 30010
   signupsAllowed: true
   invitationsAllowed: true

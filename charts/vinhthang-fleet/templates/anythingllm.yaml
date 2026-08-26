@@ -119,7 +119,7 @@ data:
       "gemini-embedding-001": 2048,
     };
 
-    const DAILY_MAX_REQUESTS = 850;
+    const DAILY_MAX_REQUESTS = 1000;
     const BUDGET_FILE = path.resolve(__dirname, "../../../storage/gemini_quota_budget.json");
 
     function getDailyBudget() {
@@ -157,7 +157,7 @@ data:
           baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
         });
 
-        this.maxConcurrentChunks = 64;
+        this.maxConcurrentChunks = 96;
         this.embeddingMaxChunkLength = MODEL_MAP[this.model] || 2_048;
         this.log(
           `Initialized with ${this.model} - Max Size: ${this.embeddingMaxChunkLength}` +

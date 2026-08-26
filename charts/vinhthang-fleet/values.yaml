@@ -148,8 +148,8 @@ vaultwarden:
   enabled: true
   image: docker.io/vaultwarden/server:1.33.2-alpine
   nodePort: 30010
-  signupsAllowed: false
-  invitationsAllowed: false
+  signupsAllowed: true
+  invitationsAllowed: true
   websocketEnabled: true
   resources:
     requests:

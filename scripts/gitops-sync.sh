@@ -19,6 +19,14 @@ ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "
   cd /opt/hugo-blog && hugo --minify
 "
 
+echo "🌐 4. Synchronizing Declarative Caddyfile to Edge Gateway (amd10)..."
+scp -i ~/.ssh/id_ed25519 caddy/Caddyfile opc@152.70.101.162:/tmp/Caddyfile
+ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "
+  sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
+  sudo /usr/local/bin/caddy reload --config /etc/caddy/Caddyfile
+"
+
 echo "=================================================="
-echo "✅ Helm Fleet Synchronization Complete! All services live!"
+echo "✅ Helm Fleet & Edge Ingress Synchronization Complete! All services live!"
 echo "=================================================="
+

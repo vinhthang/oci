@@ -20,6 +20,7 @@
 | [**ADR-0009**](adr/0009-migrate-promtail-to-vector-rust-log-shipper.md) | **Migration from Promtail (EOL) to Vector (Rust) Log Harvester** | 🟢 Accepted | Logging / Rust | 50% memory reduction (< 15MB RAM), native K8s enrichment, and high-speed VictoriaLogs streaming. |
 | [**ADR-0010**](adr/0010-consolidate-uptime-monitoring-into-grafana.md) | **Consolidation of Synthetic Uptime Monitoring into Grafana 11** | 🟢 Accepted | Observability / Telemetry | Retired Uptime Kuma; unified HTTP/SSL probing into OTel Collector + Grafana 11. |
 | [**ADR-0011**](adr/0011-deploy-vaultwarden-password-manager.md) | **Deployment of Vaultwarden Self-Hosted Password Manager** | 🟢 Accepted | Security / Passwords | Rust Bitwarden (<30MB RAM) on `amd11` with zero-knowledge encryption & client sync. |
+| [**ADR-0012**](adr/0012-gitops-automated-edge-caddyfile-sync.md) | **GitOps Automated Edge Caddyfile Synchronization** | 🟢 Accepted | GitOps / Ingress | Declarative `caddy/Caddyfile` in Git with automated edge sync & hot-reload. |
 
 ---
 

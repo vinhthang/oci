@@ -145,7 +145,7 @@ data:
                 "type": "prometheus",
                 "uid": "VictoriaMetrics"
               },
-              "expr": "(sum(httpcheck_status{http_status_class=\"2xx\"} == 1) / count(httpcheck_status{http_status_class=\"2xx\"})) * 100",
+              "expr": "(sum(max by (http_url) ((httpcheck_status{http_status_class=\"2xx\"} == 1) or (httpcheck_status{http_status_class=\"3xx\"} == 1))) / count(count by (http_url) (httpcheck_status))) * 100",
               "refId": "A"
             }
           ],
@@ -204,7 +204,7 @@ data:
                 "type": "prometheus",
                 "uid": "VictoriaMetrics"
               },
-              "expr": "sum(httpcheck_status{http_status_class=\"2xx\"} == 1)",
+              "expr": "sum(max by (http_url) ((httpcheck_status{http_status_class=\"2xx\"} == 1) or (httpcheck_status{http_status_class=\"3xx\"} == 1)))",
               "refId": "A"
             }
           ],
@@ -361,7 +361,7 @@ data:
                 "type": "prometheus",
                 "uid": "VictoriaMetrics"
               },
-              "expr": "httpcheck_status{http_status_class=\"2xx\"}",
+              "expr": "max by (http_url) ((httpcheck_status{http_status_class=\"2xx\"} == 1) or (httpcheck_status{http_status_class=\"3xx\"} == 1))",
               "legendFormat": "{{http_url}}",
               "refId": "A"
             }

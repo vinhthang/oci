@@ -6,7 +6,7 @@ echo "🚀 OCI Fleet Helm & GitOps Synchronizer"
 echo "=================================================="
 
 echo "📦 1. Upgrading entire fleet via Helm Chart (charts/vinhthang-fleet)..."
-helm upgrade --install fleet ./charts/vinhthang-fleet --kube-context oci-k3s --take-ownership --force-conflicts
+helm upgrade --install fleet ./charts/vinhthang-fleet --kube-context oci-k3s
 
 echo "📝 2. Synchronizing Blog to Edge Gateway (amd10)..."
 ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "

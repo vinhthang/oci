@@ -24,9 +24,18 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  echo "🚀 [$(date)] Starting Daily Gemini Batch Embedding Schedule (Max 800 reqs/day)..."
+                  echo "🚀 [$(date)] Starting Daily Gemini Batch Embedding Job (Max 850 reqs/day, 64-chunk batches)..."
+                  
+                  echo "📚 Indexing 'my-workspace' (Distributed Systems & DDIA)..."
                   curl -s -X POST http://anythingllm:3001/api/v1/workspace/my-workspace/update-embeddings \
                     -H "Content-Type: application/json" \
                     -H "Authorization: Bearer anythingllm-test-key-2026" \
-                    -d '{"adds":["custom-documents/Distributed_Systems_4.pdf-b4b15a80-f479-4175-a5ef-8ade40566381.json","custom-documents/Designing-Data-Intensive-Applications-2nd-Edition-(Martin-Kleppmann-Chris-Riccomini)-(z-library.sk-1lib.sk-z-lib.sk).pdf-fc5d71c6-f9cc-4ff0-813b-c29860379b48.json","custom-documents/How-Countries-Go-Broke-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-c8014e95-b4cc-4f81-a310-619f167ca99b.json","custom-documents/Principles-Life-and-Work-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-f5b7b2db-c5fa-4a35-a843-d7449eecf12f.json","custom-documents/The-Changing-World-Order-Why-nations-succeed-and-fail-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-cfa1e33e-f1f9-4404-b661-612f66a9f80c.json"],"deletes":[]}'
-                  echo "✅ [$(date)] Daily Gemini Batch Embedding Triggered Successfully!"
+                    -d '{"adds":["custom-documents/Distributed_Systems_4.pdf-b4b15a80-f479-4175-a5ef-8ade40566381.json","custom-documents/Designing-Data-Intensive-Applications-2nd-Edition-(Martin-Kleppmann-Chris-Riccomini)-(z-library.sk-1lib.sk-z-lib.sk).pdf-fc5d71c6-f9cc-4ff0-813b-c29860379b48.json"],"deletes":[]}'
+                  
+                  echo "📚 Indexing 'life-and-work' (Ray Dalio Trilogy)..."
+                  curl -s -X POST http://anythingllm:3001/api/v1/workspace/life-and-work/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer anythingllm-test-key-2026" \
+                    -d '{"adds":["custom-documents/How-Countries-Go-Broke-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-c8014e95-b4cc-4f81-a310-619f167ca99b.json","custom-documents/Principles-Life-and-Work-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-f5b7b2db-c5fa-4a35-a843-d7449eecf12f.json","custom-documents/The-Changing-World-Order-Why-nations-succeed-and-fail-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-cfa1e33e-f1f9-4404-b661-612f66a9f80c.json"],"deletes":[]}'
+                  
+                  echo "✅ [$(date)] Daily Gemini Batch Embedding Schedule Completed!"

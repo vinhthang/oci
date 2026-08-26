@@ -63,26 +63,27 @@ spec:
             httpGet:
               path: /api/ping
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 45
             periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
+            timeoutSeconds: 10
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /api/ping
               port: http
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 10
+            failureThreshold: 5
           volumeMounts:
             - name: anythingllm-storage
               mountPath: /app/server/storage
           resources:
             requests:
-              cpu: 50m
-              memory: 256Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              memory: 1024Mi
+              memory: 3072Mi
       volumes:
         - name: anythingllm-storage
           hostPath:

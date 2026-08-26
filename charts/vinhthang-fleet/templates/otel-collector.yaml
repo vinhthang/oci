@@ -22,7 +22,7 @@ data:
         targets:
           - endpoint: "https://vinhthang.dev"
             method: GET
-          - endpoint: "https://api.vinhthang.dev/health"
+          - endpoint: "https://api.vinhthang.dev/"
             method: GET
           - endpoint: "https://music.vinhthang.dev"
             method: GET

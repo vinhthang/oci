@@ -8,11 +8,13 @@ echo "=================================================="
 echo "📦 1. Upgrading entire fleet via Helm Chart (charts/vinhthang-fleet)..."
 helm upgrade --install fleet ./charts/vinhthang-fleet --kube-context oci-k3s
 
-echo "📝 2. Synchronizing Blog to Edge Gateway (amd10)..."
+echo "📝 2. Synchronizing Blog & Analytics Tracker to Edge Gateway (amd10)..."
 ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "
-  mkdir -p /opt/hugo-blog/content/posts
+  mkdir -p /opt/hugo-blog/content/posts /opt/hugo-blog/layouts/partials
 "
 rsync -avz -e "ssh -i ~/.ssh/id_ed25519" blog/content/posts/ opc@152.70.101.162:/opt/hugo-blog/content/posts/
+rsync -avz -e "ssh -i ~/.ssh/id_ed25519" blog/layouts/ opc@152.70.101.162:/opt/hugo-blog/layouts/
+scp -i ~/.ssh/id_ed25519 blog/hugo.toml opc@152.70.101.162:/opt/hugo-blog/hugo.toml
 
 echo "🔨 3. Rebuilding Hugo Static Site on amd10..."
 ssh -i ~/.ssh/id_ed25519 opc@152.70.101.162 "

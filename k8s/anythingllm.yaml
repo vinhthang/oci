@@ -111,11 +111,38 @@ metadata:
     app: anythingllm
 data:
   index.js: |
+    const fs = require("fs");
+    const path = require("path");
     const { toChunks, reportEmbeddingProgress } = require("../../helpers");
 
     const MODEL_MAP = {
       "gemini-embedding-001": 2048,
     };
+
+    const DAILY_MAX_REQUESTS = 800;
+    const BUDGET_FILE = path.resolve(__dirname, "../../../storage/gemini_quota_budget.json");
+
+    function getDailyBudget() {
+      try {
+        if (fs.existsSync(BUDGET_FILE)) {
+          const data = JSON.parse(fs.readFileSync(BUDGET_FILE, "utf8"));
+          const today = new Date().toISOString().split("T")[0];
+          if (data.date === today) return data;
+        }
+      } catch (e) {}
+      return { date: new Date().toISOString().split("T")[0], count: 0 };
+    }
+
+    function incrementDailyBudget(increment = 1) {
+      try {
+        const budget = getDailyBudget();
+        budget.count += increment;
+        fs.writeFileSync(BUDGET_FILE, JSON.stringify(budget, null, 2), "utf8");
+        return budget.count;
+      } catch (e) {
+        return 0;
+      }
+    }
 
     class GeminiEmbedder {
       constructor() {
@@ -162,12 +189,18 @@ data:
       }
 
       async embedChunks(textChunks = []) {
-        this.log(`Embedding ${textChunks.length} chunks with Gemini in 16-chunk batches...`);
+        this.log(`Embedding ${textChunks.length} chunks with Gemini in 16-chunk batches (Daily Cap: ${DAILY_MAX_REQUESTS} reqs)...`);
         const allData = [];
         const batches = toChunks(textChunks, this.maxConcurrentChunks);
         let chunksProcessed = 0;
 
         for (const batch of batches) {
+          const currentBudget = getDailyBudget();
+          if (currentBudget.count >= DAILY_MAX_REQUESTS) {
+            console.warn(`[GeminiEmbedder] Daily quota budget reached (${currentBudget.count}/${DAILY_MAX_REQUESTS} reqs). Pausing for daily schedule.`);
+            throw new Error(`Daily Gemini embedding budget reached (${DAILY_MAX_REQUESTS} requests/day). Next scheduled batch runs tomorrow at 00:05 UTC.`);
+          }
+
           let retries = 5;
           let success = false;
           while (!success && retries > 0) {
@@ -178,6 +211,7 @@ data:
                 dimensions: this.outputDimensions,
               });
               if (res?.data) {
+                incrementDailyBudget(1);
                 allData.push(...res.data);
                 chunksProcessed += batch.length;
                 reportEmbeddingProgress(chunksProcessed, textChunks.length);

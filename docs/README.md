@@ -33,5 +33,9 @@
    * Do not run ad-hoc manual `docker run` commands on production nodes. All workloads must be codified in [`charts/vinhthang-fleet/`](../charts/vinhthang-fleet/) or [`k8s/`](../k8s/) and pushed to `main`.
 3. **Single Sign-On Requirement**:
    * Any new web dashboard or administrative interface must be placed behind Caddy Google OAuth2 Forward-Auth (`auth.vinhthang.dev`) to prevent credential sprawl and public exposure.
-4. **Disaster Recovery**:
+4. **Declarative Ingress Rule**:
+   * All edge subdomain routing, TLS termination, and reverse-proxying MUST be maintained directly in [`caddy/Caddyfile`](../caddy/Caddyfile). Never edit `/etc/caddy/Caddyfile` manually on `amd10`.
+5. **Exact Semantic Versioning**:
+   * Always search and pin exact semantic version tags for container images in `values.yaml` (e.g. `1.37.2-alpine`) — never deploy floating tags like `latest`.
+6. **Disaster Recovery**:
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.

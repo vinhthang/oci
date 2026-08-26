@@ -37,10 +37,11 @@ Before designing, proposing, or implementing any architectural, infrastructure, 
   * `amd10` (Edge Gateway) & `amd11` (Worker) are strictly capped at **1 GB RAM**.
   * `arm10` (Master) has **10 GB RAM**; all relational databases and AI runtimes must be scheduled here.
   * Ingress perimeter is strictly protected via Caddy Google OAuth2 Forward-Auth (`auth.vinhthang.dev`).
+  * **Declarative Ingress**: `caddy/Caddyfile` is the single source of truth for all subdomains and edge proxy rules. Never edit `/etc/caddy/Caddyfile` manually on `amd10`.
 
 ---
 
-## 3. 📜 Mandatory ADR Generation for System Changes
+## 3. 📜 Mandatory Protocol for System & Ingress Changes
 Whenever a major system change occurs, including:
 * Adding or retiring a microservice.
 * Database schema, vector engine, or persistence layer modifications.
@@ -52,4 +53,7 @@ You **MUST PROACTIVELY**:
 1. Create a new Architecture Decision Record in `docs/adr/XXXX-<title>.md` following the standard Nygard format (Context, Decision, Consequences).
 2. Register the new ADR in `docs/README.md` with a clickable link.
 3. Update the Master Helm Chart (`charts/vinhthang-fleet/`) and `k8s/` manifests accordingly.
-4. Commit and push the changes so the in-cluster GitOps webhook can deploy automatically.
+4. **Pin Exact Release Versions**: Always search and pin exact semantic version tags for container images (e.g. `1.37.2-alpine`) — never use floating tags like `latest`.
+5. **Update Declarative `caddy/Caddyfile`**: Add or update the subdomain routing block in `caddy/Caddyfile` for any new service.
+6. Commit and push the changes so the in-cluster GitOps webhook can deploy both the Kubernetes workloads and edge Caddyfile automatically.
+

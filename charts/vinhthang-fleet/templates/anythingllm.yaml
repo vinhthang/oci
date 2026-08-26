@@ -219,9 +219,11 @@ data:
               }
             } catch (err) {
               retries--;
-              console.warn(`[GeminiEmbedder] Google Free Tier rate-limit hit. Cooldown 65s before retry (${retries} retries left)...`);
+              const jitter = Math.floor(Math.random() * 12000) + 2000;
+              const waitTime = 65000 + jitter;
+              console.warn(`[GeminiEmbedder] Google Free Tier rate-limit hit. Jitter cooldown ${Math.round(waitTime/1000)}s before retry (${retries} retries left)...`);
               if (retries > 0) {
-                await new Promise((r) => setTimeout(r, 65000));
+                await new Promise((r) => setTimeout(r, waitTime));
               } else {
                 throw new Error(`Gemini Failed to embed batch: ${err.message}`);
               }

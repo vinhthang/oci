@@ -30,21 +30,16 @@ output "amd11_ssh_command" {
 }
 
 # ==============================================================================
-# Node 3: arm10 (K3s Master Powerhouse) Outputs
+# Node 3: arm10 (K3s Master Powerhouse - Private Subnet)
 # ==============================================================================
 output "arm10_instance_id" {
   description = "OCID of arm10"
   value       = oci_core_instance.arm10.id
 }
 
-output "arm10_public_ip" {
-  description = "Public IPv4 Address of arm10"
-  value       = oci_core_instance.arm10.public_ip
-}
-
 output "arm10_ssh_command" {
-  description = "SSH Command to connect to arm10"
-  value       = "ssh -i ~/.ssh/id_ed25519 opc@${oci_core_instance.arm10.public_ip}"
+  description = "SSH Command to connect to arm10 via Bastion ProxyJump"
+  value       = "ssh -o ProxyJump=opc@${oci_core_public_ip.reserved_ip.ip_address} -i ~/.ssh/id_ed25519 opc@${oci_core_instance.arm10.private_ip}"
 }
 
 # ==============================================================================

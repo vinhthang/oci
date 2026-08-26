@@ -21,6 +21,7 @@
 | [**ADR-0010**](adr/0010-consolidate-uptime-monitoring-into-grafana.md) | **Consolidation of Synthetic Uptime Monitoring into Grafana 11** | 🟢 Accepted | Observability / Telemetry | Retired Uptime Kuma; unified HTTP/SSL probing into OTel Collector + Grafana 11. |
 | [**ADR-0011**](adr/0011-deploy-vaultwarden-password-manager.md) | **Deployment of Vaultwarden Self-Hosted Password Manager** | 🟢 Accepted | Security / Passwords | Rust Bitwarden (<30MB RAM) on `amd11` with zero-knowledge encryption & client sync. |
 | [**ADR-0012**](adr/0012-gitops-automated-edge-caddyfile-sync.md) | **GitOps Automated Edge Caddyfile Synchronization** | 🟢 Accepted | GitOps / Ingress | Declarative `caddy/Caddyfile` in Git with automated edge sync & hot-reload. |
+| [**ADR-0013**](adr/0013-private-subnet-isolation-and-nat-gateway.md) | **Private Subnet Isolation & NAT Gateway Architecture** | 🟢 Accepted | Networking / Security | Isolate `arm10`/`amd11` in private subnet with no public IPs; NAT Gateway egress + ProxyJump. |
 
 ---
 
@@ -28,7 +29,7 @@
 
 1. **Hardware Memory Boundaries**:
    * `amd10` (Edge Gateway) & `amd11` (Worker) are strictly capped at **1 GB RAM**. Never schedule heavy Node.js or Java containers on these nodes.
-   * `arm10` (Control Plane) has **10 GB RAM**. All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
+   * `arm10` (Control Plane) has **12 GB RAM**. All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
 2. **GitOps & Deployment Rule**:
    * Do not run ad-hoc manual `docker run` commands on production nodes. All workloads must be codified in [`charts/vinhthang-fleet/`](../charts/vinhthang-fleet/) or [`k8s/`](../k8s/) and pushed to `main`.
 3. **Single Sign-On Requirement**:
@@ -39,3 +40,5 @@
    * Always search and pin exact semantic version tags for container images in `values.yaml` (e.g. `1.37.2-alpine`) — never deploy floating tags like `latest`.
 6. **Disaster Recovery**:
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.
+7. **Network Perimeter Isolation**:
+   * `amd10` is the **only node with a public IPv4 address** (`152.70.101.162`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.

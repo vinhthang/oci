@@ -17,7 +17,7 @@ spec:
         app: vaultwarden
     spec:
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
       containers:
         - name: vaultwarden
           image: {{ .Values.vaultwarden.image }}

@@ -41,10 +41,10 @@ spec:
                   echo "💾 [Backup] 1. Dumping PostgreSQL 18 databases..."
                   pg_dumpall -h postgres -U postgres > "/tmp/pg_dump_$DATE.sql"
 
-                  echo "📦 [Backup] 2. Archiving database dumps and SQLite stores..."
+                  echo "📦 [Backup] 2. Archiving database dumps and Vaultwarden data..."
                   tar -czf "$BACKUP_DIR/fleet-backup-$DATE.tar.gz" \
                     -C /tmp "pg_dump_$DATE.sql" \
-                    -C /opt/uptime-kuma kuma.db 2>/dev/null || true
+                    -C /opt/vaultwarden data 2>/dev/null || true
 
                   rm -f "/tmp/pg_dump_$DATE.sql"
 
@@ -56,8 +56,8 @@ spec:
               volumeMounts:
                 - name: host-backups
                   mountPath: /backup/daily
-                - name: kuma-storage
-                  mountPath: /opt/uptime-kuma
+                - name: vaultwarden-storage
+                  mountPath: /opt/vaultwarden/data
                   readOnly: true
               resources:
                 requests:
@@ -70,7 +70,7 @@ spec:
               hostPath:
                 path: /opt/backups
                 type: DirectoryOrCreate
-            - name: kuma-storage
+            - name: vaultwarden-storage
               hostPath:
-                path: /opt/uptime-kuma
-                type: Directory
+                path: /opt/vaultwarden/data
+                type: DirectoryOrCreate

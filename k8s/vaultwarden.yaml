@@ -17,7 +17,7 @@ spec:
         app: vaultwarden
     spec:
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: arm10
       containers:
         - name: vaultwarden
           image: docker.io/vaultwarden/server:1.37.2-alpine

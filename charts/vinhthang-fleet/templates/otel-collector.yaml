@@ -40,6 +40,8 @@ data:
             method: GET
           - endpoint: "https://auth.vinhthang.dev/ping"
             method: GET
+          - endpoint: "https://vault.vinhthang.dev/alive"
+            method: GET
 
     processors:
       batch:

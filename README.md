@@ -41,15 +41,15 @@ graph TD
         Grafana["📈 Grafana 11 Command Center (:30008)"]
         OTel["🔭 OpenTelemetry Collector (:4317/:4318)"]
         GitOps["⚡ In-Cluster GitOps Webhook Controller (:30009)"]
-        Promtail1["⚡ Promtail Pod Log Harvester"]
+        VW["🔒 Vaultwarden Rust Bitwarden (:30010)"]
+        VectorMaster["⚡ Vector Pod Log Harvester"]
     end
 
     subgraph K8sWorker["3. K3s Worker Node (amd11 • AMD64 1GB RAM)"]
         VC["🔌 VietCalendar Rust REST API (:30006)"]
         Navi["🎵 Navidrome FLAC Lossless Music (:30007)"]
         Files["📁 FileBrowser Cloud Storage (:8082)"]
-        VW["🔒 Vaultwarden Rust Bitwarden (:30010)"]
-        Vector["⚡ Vector Pod Log Harvester"]
+        VectorWorker["⚡ Vector Pod Log Harvester"]
     end
 ```
 
@@ -64,7 +64,7 @@ graph TD
 | **📈 Umami Analytics** | 👉 [**`analytics.vinhthang.dev`**](https://analytics.vinhthang.dev) | 🔒 Google SSO / Cookieless | Next.js / PostgreSQL 18 Relational | `arm10` |
 | **🤖 AnythingLLM AI** | 👉 [**`ai.vinhthang.dev`**](https://ai.vinhthang.dev) | 🔒 Google SSO Protected | Node.js / PostgreSQL 18 `pgvector` | `arm10` |
 | **📝 Memos AI Journal** | 👉 [**`memos.vinhthang.dev`**](https://memos.vinhthang.dev) | PostgreSQL 18 Persistence | Go / PostgreSQL 18 Relational | `arm10` |
-| **🔒 Vaultwarden** | 👉 [**`vault.vinhthang.dev`**](https://vault.vinhthang.dev) | 🔐 Zero-Knowledge Client Auth | **Pure Rust / SQLite WAL (<30 MB RAM)** | `amd11` |
+| **🔒 Vaultwarden** | 👉 [**`vault.vinhthang.dev`**](https://vault.vinhthang.dev) | 🔐 Zero-Knowledge Client Auth | **Pure Rust / SQLite WAL (<30 MB RAM)** | `arm10` |
 | **📁 FileBrowser Storage** | 👉 [**`files.vinhthang.dev`**](https://files.vinhthang.dev) | 🔒 Google SSO Protected | Go / Local Host Disk Storage | `amd11` |
 | **🎵 Navidrome Lossless** | 👉 [**`music.vinhthang.dev`**](https://music.vinhthang.dev) | Subsonic API / Local Auth | Go / 45 GB FLAC Audio Library | `amd11` |
 | **📝 Hugo Tech Blog** | 👉 [**`vinhthang.dev`**](https://vinhthang.dev) | Public Edge Static CDN | Go Hugo / PaperMod Theme / Minified | `amd10` |

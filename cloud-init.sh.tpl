@@ -240,6 +240,10 @@ files.${duckdns_domain} {
     reverse_proxy 127.0.0.1:4180
 }
 
+vault.${duckdns_domain} {
+    reverse_proxy 127.0.0.1:30010
+}
+
 blog.${duckdns_domain} {
     root * /opt/hugo-blog/public
     file_server

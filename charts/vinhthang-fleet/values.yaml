@@ -143,3 +143,18 @@ filebrowser:
       memory: 20Mi
     limits:
       memory: 80Mi
+
+vaultwarden:
+  enabled: true
+  image: docker.io/vaultwarden/server:1.33.2-alpine
+  nodePort: 30010
+  signupsAllowed: false
+  invitationsAllowed: false
+  websocketEnabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 20Mi
+    limits:
+      memory: 128Mi
+

@@ -48,7 +48,8 @@ graph TD
         VC["🔌 VietCalendar Rust REST API (:30006)"]
         Navi["🎵 Navidrome FLAC Lossless Music (:30007)"]
         Files["📁 FileBrowser Cloud Storage (:8082)"]
-        Promtail2["⚡ Promtail Pod Log Harvester"]
+        VW["🔒 Vaultwarden Rust Bitwarden (:30010)"]
+        Vector["⚡ Vector Pod Log Harvester"]
     end
 ```
 
@@ -63,6 +64,7 @@ graph TD
 | **📈 Umami Analytics** | 👉 [**`analytics.vinhthang.dev`**](https://analytics.vinhthang.dev) | 🔒 Google SSO / Cookieless | Next.js / PostgreSQL 18 Relational | `arm10` |
 | **🤖 AnythingLLM AI** | 👉 [**`ai.vinhthang.dev`**](https://ai.vinhthang.dev) | 🔒 Google SSO Protected | Node.js / PostgreSQL 18 `pgvector` | `arm10` |
 | **📝 Memos AI Journal** | 👉 [**`memos.vinhthang.dev`**](https://memos.vinhthang.dev) | PostgreSQL 18 Persistence | Go / PostgreSQL 18 Relational | `arm10` |
+| **🔒 Vaultwarden** | 👉 [**`vault.vinhthang.dev`**](https://vault.vinhthang.dev) | 🔐 Zero-Knowledge Client Auth | **Pure Rust / SQLite WAL (<30 MB RAM)** | `amd11` |
 | **📁 FileBrowser Storage** | 👉 [**`files.vinhthang.dev`**](https://files.vinhthang.dev) | 🔒 Google SSO Protected | Go / Local Host Disk Storage | `amd11` |
 | **🎵 Navidrome Lossless** | 👉 [**`music.vinhthang.dev`**](https://music.vinhthang.dev) | Subsonic API / Local Auth | Go / 45 GB FLAC Audio Library | `amd11` |
 | **📝 Hugo Tech Blog** | 👉 [**`vinhthang.dev`**](https://vinhthang.dev) | Public Edge Static CDN | Go Hugo / PaperMod Theme / Minified | `amd10` |

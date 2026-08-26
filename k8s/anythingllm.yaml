@@ -157,7 +157,7 @@ data:
           baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
         });
 
-        this.maxConcurrentChunks = 96;
+        this.maxConcurrentChunks = 16;
         this.embeddingMaxChunkLength = MODEL_MAP[this.model] || 2_048;
         this.log(
           `Initialized with ${this.model} - Max Size: ${this.embeddingMaxChunkLength}` +
@@ -189,7 +189,7 @@ data:
       }
 
       async embedChunks(textChunks = []) {
-        this.log(`Embedding ${textChunks.length} chunks with Gemini in 16-chunk batches (Daily Cap: ${DAILY_MAX_REQUESTS} reqs)...`);
+        this.log(`Embedding ${textChunks.length} chunks with Gemini in ${this.maxConcurrentChunks}-chunk batches (Daily Cap: ${DAILY_MAX_REQUESTS} reqs)...`);
         const allData = [];
         const batches = toChunks(textChunks, this.maxConcurrentChunks);
         let chunksProcessed = 0;
@@ -227,7 +227,7 @@ data:
               }
             }
           }
-          await new Promise((r) => setTimeout(r, 1200));
+          await new Promise((r) => setTimeout(r, 2500));
         }
 
         return allData.length > 0 && allData.every((embd) => embd.hasOwnProperty("embedding"))

@@ -78,7 +78,7 @@ ExecStart=/usr/bin/podman run --name adguardhome \
   -p 53:53/tcp -p 53:53/udp \
   -p 127.0.0.1:3000:80/tcp \
   -p 853:853/tcp \
-  docker.io/adguard/adguardhome:latest
+  docker.io/adguard/adguardhome:v0.107.79
 ExecStop=/usr/bin/podman stop -t 10 adguardhome
 
 [Install]
@@ -106,7 +106,7 @@ ExecStart=/usr/bin/podman run --name navidrome \
   -e ND_LOGLEVEL=info \
   -e ND_BASEURL=https://music.${duckdns_domain} \
   -p 127.0.0.1:4533:4533/tcp \
-  docker.io/deluan/navidrome:latest
+  docker.io/deluan/navidrome:0.63.2
 ExecStop=/usr/bin/podman stop -t 10 navidrome
 
 [Install]
@@ -133,7 +133,7 @@ ExecStart=/usr/bin/podman run --name filebrowser \
   -v /opt/navidrome/music:/srv/Music:Z \
   -v /opt/filebrowser/config/filebrowser.db:/database/filebrowser.db:Z \
   -p 127.0.0.1:8082:8080/tcp \
-  docker.io/filebrowser/filebrowser:latest \
+  docker.io/filebrowser/filebrowser:v2.63.23 \
   --address 0.0.0.0 --port 8080
 ExecStop=/usr/bin/podman stop -t 10 filebrowser
 

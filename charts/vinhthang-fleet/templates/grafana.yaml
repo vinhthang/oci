@@ -361,7 +361,7 @@ data:
                 "uid": "VictoriaMetrics"
               },
               "expr": "httpcheck_status{http_status_class=\"2xx\"}",
-              "legendFormat": "{{http_url}}",
+              "legendFormat": "{{ `{{http_url}}` }}",
               "refId": "A"
             }
           ],
@@ -425,7 +425,7 @@ data:
                 "uid": "VictoriaMetrics"
               },
               "expr": "httpcheck_duration_milliseconds",
-              "legendFormat": "{{http_url}}",
+              "legendFormat": "{{ `{{http_url}}` }}",
               "refId": "A"
             }
           ],

@@ -24,23 +24,24 @@
 | [**ADR-0013**](adr/0013-private-subnet-isolation-and-nat-gateway.md) | **Private Subnet Isolation & NAT Gateway Architecture** | 🟢 Accepted | Networking / Security | Isolate `arm10`/`amd11` in private subnet with no public IPs; NAT Gateway egress + ProxyJump. |
 | [**ADR-0014**](adr/0014-cross-cloud-gcp-always-free-oracle-linux-10-node.md) | **Cross-Cloud Topology & GCP Always Free Oracle Linux 10 Node (`gce10`)** | 🟢 Accepted | Multi-Cloud / Infrastructure | Expand fleet to GCP Always Free ($0/mo) with Oracle Linux 10 UEK, RAM hardening, and 140MB/s storage. |
 | [**ADR-0015**](adr/0015-postgresql-ha-cluster-pgpool-read-write-splitting.md) | **PostgreSQL 18 HA Cluster & Pgpool-II Read/Write Splitting** | 🟢 Accepted | Databases / High Availability | 2-Node streaming replication + transparent read/write query splitting via Pgpool. |
+| [**ADR-0016**](adr/0016-active-active-geo-distributed-dual-edge-blog.md) | **Active-Active Geo-Distributed Dual-Edge Ingress for Hugo Blog** | 🟢 Accepted | Multi-Cloud / Ingress | Dual-continent edge (Tokyo `amd10` + Iowa `gce10`) with <15ms global latency and zero-downtime failover. |
 
 ---
 
 ## 🏛️ System Invariants & Golden Rules for Future Agents
 
 1. **Hardware Memory Boundaries**:
-   * `amd10` (Edge Gateway) & `amd11` (Worker) are strictly capped at **1 GB RAM**. Never schedule heavy Node.js or Java containers on these nodes.
+   * `amd10` (Edge Gateway), `amd11` (Worker), and `gce10` (GCP Worker/Edge) are strictly capped at **1 GB RAM**. Never schedule heavy Node.js or Java containers on these nodes.
    * `arm10` (Control Plane) has **12 GB RAM**. All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
 2. **GitOps & Deployment Rule**:
    * Do not run ad-hoc manual `docker run` commands on production nodes. All workloads must be codified in [`charts/vinhthang-fleet/`](../charts/vinhthang-fleet/) or [`k8s/`](../k8s/) and pushed to `main`.
 3. **Single Sign-On Requirement**:
    * Any new web dashboard or administrative interface must be placed behind Caddy Google OAuth2 Forward-Auth (`auth.vinhthang.dev`) to prevent credential sprawl and public exposure.
 4. **Declarative Ingress Rule**:
-   * All edge subdomain routing, TLS termination, and reverse-proxying MUST be maintained directly in [`caddy/Caddyfile`](../caddy/Caddyfile). Never edit `/etc/caddy/Caddyfile` manually on `amd10`.
+   * All edge subdomain routing, TLS termination, and reverse-proxying MUST be maintained directly in [`caddy/Caddyfile`](../caddy/Caddyfile). Never edit `/etc/caddy/Caddyfile` manually on `amd10` or `gce10`.
 5. **Exact Semantic Versioning**:
    * Always search and pin exact semantic version tags for container images in `values.yaml` (e.g. `1.37.2-alpine`) — never deploy floating tags like `latest`.
 6. **Disaster Recovery**:
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.
 7. **Network Perimeter Isolation**:
-   * `amd10` is the **only node with a public IPv4 address** (`152.70.101.162`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.
+   * `amd10` and `gce10` are the **public edge gateways** (`152.70.101.162` and `34.61.16.208`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.

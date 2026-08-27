@@ -26,6 +26,7 @@
 | [**ADR-0015**](adr/0015-postgresql-ha-cluster-pgpool-read-write-splitting.md) | **PostgreSQL 18 HA Cluster & Pgpool-II Read/Write Splitting** | 🟢 Accepted | Databases / High Availability | 2-Node streaming replication + transparent read/write query splitting via Pgpool. |
 | [**ADR-0016**](adr/0016-active-active-geo-distributed-dual-edge-blog.md) | **Active-Active Geo-Distributed Dual-Edge Ingress for Hugo Blog** | 🟢 Accepted | Multi-Cloud / Ingress | Dual-continent edge (Tokyo `amd10` + Iowa `gce10`) with <15ms global latency and zero-downtime failover. |
 | [**ADR-0018**](adr/0018-cluster-wide-namespace-domain-partitioning.md) | **Cluster-Wide Namespace Domain Partitioning (`data`, `apps`, `observability`, `system`)** | 🟢 Accepted | Architecture / Kubernetes | Partition 22+ microservices into 4 isolated domains with scoped RBAC, PVC binding, and zero downtime. |
+| [**ADR-0019**](adr/0019-compact-apache-pulsar-and-in-memory-redis-data-infrastructure.md) | **Compact Apache Pulsar & In-Memory Redis Data Infrastructure** | 🟢 Accepted | Data & Messaging | Deploy compact Pulsar (<400M RAM on `arm10`) and pure in-memory Redis (384M on `amd11`) in `data` namespace. |
 
 ---
 

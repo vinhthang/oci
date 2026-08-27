@@ -1,0 +1,129 @@
+{{- if .Values.pulsar.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pulsar-data-pv
+  labels:
+    type: local
+    app: pulsar
+spec:
+  capacity:
+    storage: {{ .Values.pulsar.persistence.size | default "10Gi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: {{ .Values.pulsar.persistence.hostPath | default "/opt/pulsar-data" }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - {{ .Values.pulsar.nodeHostname | default "arm10" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pulsar-data-pvc
+  namespace: data
+  labels:
+    app: pulsar
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: {{ .Values.pulsar.persistence.size | default "10Gi" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsar
+  namespace: data
+  labels:
+    app: pulsar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pulsar
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pulsar
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.pulsar.nodeHostname | default "arm10" }}
+      containers:
+        - name: pulsar
+          image: {{ .Values.pulsar.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PULSAR_MEM
+              value: "-Xms256m -Xmx384m -XX:MaxDirectMemorySize=128m"
+            - name: PULSAR_GC
+              value: " "
+            - name: PULSAR_STANDALONE_USE_ZOOKEEPER
+              value: "false"
+            - name: PULSAR_PREFIX_useHostNameAsBookieID
+              value: "true"
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "bin/pulsar standalone --no-functions-worker"
+          ports:
+            - containerPort: 6650
+              name: binary
+            - containerPort: 8080
+              name: http-admin
+          livenessProbe:
+            tcpSocket:
+              port: binary
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: binary
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: pulsar-data
+              mountPath: /pulsar/data
+          resources:
+            {{- toYaml .Values.pulsar.resources | nindent 12 }}
+      volumes:
+        - name: pulsar-data
+          persistentVolumeClaim:
+            claimName: pulsar-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsar
+  namespace: data
+  labels:
+    app: pulsar
+spec:
+  type: ClusterIP
+  selector:
+    app: pulsar
+  ports:
+    - name: binary
+      protocol: TCP
+      port: 6650
+      targetPort: 6650
+    - name: http-admin
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+{{- end }}

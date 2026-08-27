@@ -89,6 +89,11 @@ postgres:
   replicaNodeHostname: amd11
   primaryStoragePath: /opt/postgres
   replicaStoragePath: /opt/postgres-replica
+  persistence:
+    enabled: true
+    storageClass: "local-storage"
+    primarySize: 10Gi
+    replicaSize: 5Gi
   resources:
     requests:
       cpu: 50m

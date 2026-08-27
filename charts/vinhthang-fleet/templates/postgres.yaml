@@ -1,4 +1,89 @@
 {{- if .Values.postgres.enabled }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.postgres.persistence.storageClass | default "local-storage" }}
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-primary-pv
+  labels:
+    type: local
+    app: postgres-primary
+spec:
+  capacity:
+    storage: {{ .Values.postgres.persistence.primarySize | default "10Gi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.postgres.persistence.storageClass | default "local-storage" }}
+  local:
+    path: {{ .Values.postgres.primaryStoragePath | default "/opt/postgres" }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - {{ .Values.postgres.primaryNodeHostname | default "arm10" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-primary-pvc
+  labels:
+    app: postgres-primary
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.postgres.persistence.storageClass | default "local-storage" }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.primarySize | default "10Gi" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-replica-pv
+  labels:
+    type: local
+    app: postgres-replica
+spec:
+  capacity:
+    storage: {{ .Values.postgres.persistence.replicaSize | default "5Gi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.postgres.persistence.storageClass | default "local-storage" }}
+  local:
+    path: {{ .Values.postgres.replicaStoragePath | default "/opt/postgres-replica" }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - {{ .Values.postgres.replicaNodeHostname | default "amd11" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-replica-pvc
+  labels:
+    app: postgres-replica
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.postgres.persistence.storageClass | default "local-storage" }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.replicaSize | default "5Gi" }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -88,9 +173,8 @@ spec:
             {{- toYaml .Values.postgres.resources | nindent 12 }}
       volumes:
         - name: postgres-data
-          hostPath:
-            path: {{ .Values.postgres.primaryStoragePath | default "/opt/postgres" }}
-            type: Directory
+          persistentVolumeClaim:
+            claimName: postgres-primary-pvc
         - name: init-scripts
           configMap:
             name: postgres-init-scripts
@@ -207,9 +291,8 @@ spec:
             {{- toYaml (.Values.postgres.replicaResources | default .Values.postgres.resources) | nindent 12 }}
       volumes:
         - name: replica-data
-          hostPath:
-            path: {{ .Values.postgres.replicaStoragePath | default "/opt/postgres-replica" }}
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: postgres-replica-pvc
 ---
 apiVersion: v1
 kind: Service

@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: nightly-fleet-backup
+  namespace: system
   labels:
     app: nightly-fleet-backup
 spec:
@@ -39,7 +40,7 @@ spec:
                   mkdir -p "$BACKUP_DIR"
 
                   echo "💾 [Backup] 1. Dumping PostgreSQL 18 databases..."
-                  pg_dumpall -h postgres -U postgres > "/tmp/pg_dump_$DATE.sql"
+                  pg_dumpall -h postgres.data -U postgres > "/tmp/pg_dump_$DATE.sql"
 
                   echo "📦 [Backup] 2. Archiving database dumps and Vaultwarden data..."
                   tar -czf "$BACKUP_DIR/fleet-backup-$DATE.tar.gz" \
@@ -58,10 +59,9 @@ spec:
                   mountPath: /backup/daily
                 - name: vaultwarden-storage
                   mountPath: /opt/vaultwarden/data
-                  readOnly: true
               resources:
                 requests:
-                  cpu: 20m
+                  cpu: 30m
                   memory: 64Mi
                 limits:
                   memory: 256Mi
@@ -72,5 +72,5 @@ spec:
                 type: DirectoryOrCreate
             - name: vaultwarden-storage
               hostPath:
-                path: /opt/vaultwarden/data
+                path: /opt/vaultwarden
                 type: DirectoryOrCreate

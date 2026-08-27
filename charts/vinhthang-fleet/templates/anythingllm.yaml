@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: anythingllm
+  namespace: apps
   labels:
     app: anythingllm
 spec:
@@ -107,6 +108,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: anythingllm-gemini-embedder
+  namespace: apps
   labels:
     app: anythingllm
 data:
@@ -246,6 +248,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: anythingllm
+  namespace: apps
 spec:
   type: NodePort
   selector:

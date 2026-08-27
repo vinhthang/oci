@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vaultwarden
+  namespace: apps
   labels:
     app: vaultwarden
 spec:
@@ -17,7 +18,7 @@ spec:
         app: vaultwarden
     spec:
       nodeSelector:
-        kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
+        kubernetes.io/hostname: arm10
       containers:
         - name: vaultwarden
           image: {{ .Values.vaultwarden.image }}
@@ -25,24 +26,24 @@ spec:
           ports:
             - containerPort: 80
               name: http
+            - containerPort: 3012
+              name: websocket
           env:
-            - name: DOMAIN
-              value: "https://vault.{{ .Values.global.domain }}"
-            - name: SIGNUPS_ALLOWED
-              value: "{{ .Values.vaultwarden.signupsAllowed }}"
-            - name: INVITATIONS_ALLOWED
-              value: "{{ .Values.vaultwarden.invitationsAllowed }}"
             - name: WEBSOCKET_ENABLED
-              value: "{{ .Values.vaultwarden.websocketEnabled }}"
-            - name: ENABLE_DB_WAL
               value: "true"
-            - name: SHOW_PASSWORD_HINT
-              value: "false"
+            - name: SIGNUPS_ALLOWED
+              value: "true"
+            - name: INVITATIONS_ALLOWED
+              value: "true"
+            - name: DOMAIN
+              value: "https://vault.vinhthang.dev"
+            - name: ROCKET_PORT
+              value: "80"
           livenessProbe:
             httpGet:
               path: /alive
               port: http
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
@@ -57,27 +58,29 @@ spec:
             - name: vaultwarden-data
               mountPath: /data
           resources:
-            requests:
-              cpu: {{ .Values.vaultwarden.resources.requests.cpu }}
-              memory: {{ .Values.vaultwarden.resources.requests.memory }}
-            limits:
-              memory: {{ .Values.vaultwarden.resources.limits.memory }}
+            {{- toYaml .Values.vaultwarden.resources | nindent 12 }}
       volumes:
         - name: vaultwarden-data
           hostPath:
-            path: /opt/vaultwarden/data
-            type: DirectoryOrCreate
+            path: /opt/vaultwarden
+            type: Directory
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: vaultwarden
+  namespace: apps
 spec:
   type: NodePort
   selector:
     app: vaultwarden
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
       nodePort: {{ .Values.vaultwarden.nodePort }}
+    - name: websocket
+      protocol: TCP
+      port: 3012
+      targetPort: 3012

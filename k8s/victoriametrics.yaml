@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: victoriametrics-scrape
+  namespace: observability
   labels:
     app: victoriametrics
 data:
@@ -11,12 +12,13 @@ data:
     scrape_configs:
       - job_name: 'otel-collector'
         static_configs:
-          - targets: ['otel-collector:8888', 'otel-collector:8889']
+          - targets: ['otel-collector.observability:8888', 'otel-collector.observability:8889']
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: victoriametrics
+  namespace: observability
   labels:
     app: victoriametrics
 spec:
@@ -35,11 +37,11 @@ spec:
         kubernetes.io/hostname: arm10
       containers:
         - name: victoriametrics
-          image: docker.io/victoriametrics/victoria-metrics:v1.109.1
+          image: {{ .Values.victoriaMetrics.image }}
           imagePullPolicy: IfNotPresent
           args:
             - "-storageDataPath=/victoria-metrics-data"
-            - "-retentionPeriod=30d"
+            - "-retentionPeriod={{ .Values.victoriaMetrics.retentionPeriod }}"
             - "-promscrape.config=/etc/victoriametrics/scrape.yaml"
             - "-httpListenAddr=:8428"
           ports:
@@ -58,23 +60,19 @@ spec:
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 2
+            timeoutSeconds: 3
           volumeMounts:
             - name: data
               mountPath: /victoria-metrics-data
             - name: scrape-config
               mountPath: /etc/victoriametrics
           resources:
-            requests:
-              cpu: 20m
-              memory: 32Mi
-            limits:
-              memory: 128Mi
+            {{- toYaml .Values.victoriaMetrics.resources | nindent 12 }}
       volumes:
         - name: data
           hostPath:
             path: /opt/victoriametrics
-            type: DirectoryOrCreate
+            type: Directory
         - name: scrape-config
           configMap:
             name: victoriametrics-scrape
@@ -83,6 +81,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: victoriametrics
+  namespace: observability
+  labels:
+    app: victoriametrics
 spec:
   type: ClusterIP
   selector:

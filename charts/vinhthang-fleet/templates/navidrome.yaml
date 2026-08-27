@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: navidrome
+  namespace: apps
   labels:
     app: navidrome
 spec:
@@ -17,10 +18,10 @@ spec:
         app: navidrome
     spec:
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: amd11
       containers:
         - name: navidrome
-          image: docker.io/deluan/navidrome:0.63.2
+          image: {{ .Values.navidrome.image }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4533
@@ -30,13 +31,17 @@ spec:
               value: "/music"
             - name: ND_DATAFOLDER
               value: "/data"
-            - name: ND_PROMETHEUS_METRICSPATH
-              value: "/metrics"
+            - name: ND_SCANINTERVAL
+              value: "1m"
+            - name: ND_LOGLEVEL
+              value: "info"
+            - name: ND_ENABLESHARING
+              value: "true"
           livenessProbe:
             httpGet:
               path: /ping
               port: http
-            initialDelaySeconds: 15
+            initialDelaySeconds: 20
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
@@ -48,30 +53,27 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 3
           volumeMounts:
-            - name: music-data
-              mountPath: /music
-            - name: navidrome-db
+            - name: navidrome-data
               mountPath: /data
+            - name: music-storage
+              mountPath: /music
           resources:
-            requests:
-              cpu: 20m
-              memory: 64Mi
-            limits:
-              memory: 384Mi
+            {{- toYaml .Values.navidrome.resources | nindent 12 }}
       volumes:
-        - name: music-data
-          hostPath:
-            path: /opt/navidrome/music
-            type: Directory
-        - name: navidrome-db
+        - name: navidrome-data
           hostPath:
             path: /opt/navidrome/data
+            type: Directory
+        - name: music-storage
+          hostPath:
+            path: /opt/navidrome/music
             type: Directory
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: navidrome
+  namespace: apps
 spec:
   type: NodePort
   selector:
@@ -80,4 +82,4 @@ spec:
     - protocol: TCP
       port: 4533
       targetPort: 4533
-      nodePort: 30007
+      nodePort: {{ .Values.navidrome.nodePort }}

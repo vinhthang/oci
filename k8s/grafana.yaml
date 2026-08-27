@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-datasources
+  namespace: observability
   labels:
     app: grafana
 data:
@@ -39,6 +40,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-dashboards-provider
+  namespace: observability
   labels:
     app: grafana
 data:
@@ -58,6 +60,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-fleet-status
+  namespace: observability
   labels:
     app: grafana
 data:
@@ -362,7 +365,7 @@ data:
                 "uid": "VictoriaMetrics"
               },
               "expr": "max by (http_url) ((httpcheck_status{http_status_class=\"2xx\"} == 1) or (httpcheck_status{http_status_class=\"3xx\"} == 1))",
-              "legendFormat": "{{http_url}}",
+              "legendFormat": "{{ `{{http_url}}` }}",
               "refId": "A"
             }
           ],
@@ -426,7 +429,7 @@ data:
                 "uid": "VictoriaMetrics"
               },
               "expr": "httpcheck_duration_milliseconds",
-              "legendFormat": "{{http_url}}",
+              "legendFormat": "{{ `{{http_url}}` }}",
               "refId": "A"
             }
           ],
@@ -463,6 +466,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: grafana
+  namespace: observability
   labels:
     app: grafana
 spec:
@@ -478,7 +482,7 @@ spec:
         app: grafana
     spec:
       nodeSelector:
-        kubernetes.io/hostname: arm10
+        kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
       containers:
         - name: grafana
           image: docker.io/grafana/grafana:11.5.0
@@ -514,7 +518,7 @@ spec:
             - name: GF_USERS_AUTO_ASSIGN_ORG_ROLE
               value: "Admin"
             - name: GF_SERVER_ROOT_URL
-              value: "https://grafana.vinhthang.dev"
+              value: "https://grafana.{{ .Values.global.domain }}"
             - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
               value: "/var/lib/grafana-dashboards/fleet-status.json"
           livenessProbe:
@@ -566,6 +570,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana
+  namespace: observability
 spec:
   type: NodePort
   selector:

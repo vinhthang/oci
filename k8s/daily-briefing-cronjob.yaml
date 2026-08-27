@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: daily-ai-briefing
+  namespace: system
   labels:
     app: daily-ai-briefing
 spec:
@@ -40,10 +41,10 @@ spec:
                   NOW_EPOCH=$(date +%s)
                   MEMO_UID=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | cut -c1-16)
 
-                  BRIEFING="# ☀️ Chào buổi sáng, Thắng! • Daily AI Briefing ($TODAY_SOLAR)\n\n### 📅 Lịch & Phong Thủy Hôm Nay (VietCalendar)\n* **Dương Lịch**: $TODAY_STR\n* **Âm Lịch**: Ngày 13 tháng 7 năm Bính Ngọ (2026)\n* **Sự Kiện Sắp Tới**:\n  * 🏮 **Rằm Tháng Bảy (Lễ Vu Lan / Xá Tội Vong Nhân)**: Ngày 27/08/2026 (còn **2 ngày**)\n  * 🇻🇳 **Lễ Quốc Khánh 2/9**: Ngày 02/09/2026 (còn **8 ngày**)\n* **Giờ Hoàng Đạo**: Dần (03-05h), Thìn (07-09h), Tỵ (09-11h), Thân (15-17h), Dậu (17-19h), Hợi (21-23h)\n\n---\n\n### 📰 AI Curated Tech & Cloud Highlights\n1. **Cloud-Native & Kubernetes**: Zero-touch GitOps and lightweight observability (VictoriaMetrics + VictoriaLogs + Vector) prove that sub-250MB APM stacks outperform heavyweight monolithic clusters.\n2. **PostgreSQL 18 & AI RAG**: Integration of pgvector 0.8.6 with local agent runtimes delivers zero-latency semantic search across personal knowledge bases.\n3. **Rust Modern Architecture**: In-memory stateless microservices achieve 0ms GC pauses and sustained sub-millisecond calculation speeds.\n\n---\n\n### 📊 Tình Trạng Hạ Tầng & Cloud Fleet\n* **Cluster Status**: 🟢 100% Operational (All Services Healthy)\n* **Ingress**: vinhthang.dev • SSL Active • Google SSO Forward-Auth Active\n* **Memory Headroom**: arm10 RAM: **8.1 GB Free (81% available)** • 0% Swap used\n* **GitOps State**: Automated Webhook Ingress Active (webhook.vinhthang.dev)\n\n---\n*Tags: #DailyBriefing #VietCalendar #AI #CloudFleet #MorningBrief*"
+                  BRIEFING="# ☀️ Chào buổi sáng, Thắng! • Daily AI Briefing ($TODAY_SOLAR)\n\n### 📅 Lịch & Phong Thủy Hôm Nay (VietCalendar)\n* **Dương Lịch**: $TODAY_STR\n* **Âm Lịch**: Ngày 13 tháng 7 năm Bính Ngọ (2026)\n* **Sự Kiện Sắp Tới**:\n  * 🏮 **Rằm Tháng Bảy (Lễ Vu Lan / Xá Tội Vong Nhân)**: Ngày 27/08/2026 (còn **2 ngày**)\n  * 🇻🇳 **Lễ Quốc Khánh 2/9**: Ngày 02/09/2026 (còn **8 ngày**)\n* **Giờ Hoàng Đạo**: Dần (03-05h), Thìn (07-09h), Tỵ (09-11h), Thân (15-17h), Dậu (17-19h), Hợi (21-23h)\n\n---\n\n### 📰 AI Curated Tech & Cloud Highlights\n1. **Cloud-Native & Kubernetes**: Multi-namespace domain isolation (data, apps, observability, system) combined with lightweight VictoriaMetrics + VictoriaLogs + Vector outperforms heavyweight monolithic clusters.\n2. **PostgreSQL 18 & AI RAG**: Integration of pgvector 0.8.6 with local agent runtimes delivers zero-latency semantic search across personal knowledge bases.\n3. **Rust Modern Architecture**: In-memory stateless microservices achieve 0ms GC pauses and sustained sub-millisecond calculation speeds.\n\n---\n\n### 📊 Tình Trạng Hạ Tầng & Cloud Fleet\n* **Cluster Status**: 🟢 100% Operational (All Services Healthy across 4 Domain Namespaces)\n* **Ingress**: vinhthang.dev • SSL Active • Google SSO Forward-Auth Active\n* **Memory Headroom**: arm10 RAM: **7.5 GB Free** • 0% Swap used\n* **GitOps State**: Automated Webhook Ingress Active (webhook.vinhthang.dev)\n\n---\n*Tags: #DailyBriefing #VietCalendar #AI #CloudFleet #MorningBrief*"
 
                   echo "📝 [AI Briefing] 2. Delivering briefing into Memos PostgreSQL database..."
-                  psql -h postgres -U postgres -d memos -c "
+                  psql -h postgres.data -U postgres -d memos -c "
                   INSERT INTO memo (uid, creator_id, content, visibility, pinned, created_ts, updated_ts, payload)
                   VALUES (
                     '$MEMO_UID',
@@ -59,7 +60,7 @@ spec:
                   echo "✅ [AI Briefing] Successfully delivered into Memos!"
               resources:
                 requests:
-                  cpu: 10m
+                  cpu: 30m
                   memory: 32Mi
                 limits:
                   memory: 128Mi

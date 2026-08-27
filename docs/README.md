@@ -25,6 +25,7 @@
 | [**ADR-0014**](adr/0014-cross-cloud-gcp-always-free-oracle-linux-10-node.md) | **Cross-Cloud Topology & GCP Always Free Oracle Linux 10 Node (`gce10`)** | 🟢 Accepted | Multi-Cloud / Infrastructure | Expand fleet to GCP Always Free ($0/mo) with Oracle Linux 10 UEK, RAM hardening, and 140MB/s storage. |
 | [**ADR-0015**](adr/0015-postgresql-ha-cluster-pgpool-read-write-splitting.md) | **PostgreSQL 18 HA Cluster & Pgpool-II Read/Write Splitting** | 🟢 Accepted | Databases / High Availability | 2-Node streaming replication + transparent read/write query splitting via Pgpool. |
 | [**ADR-0016**](adr/0016-active-active-geo-distributed-dual-edge-blog.md) | **Active-Active Geo-Distributed Dual-Edge Ingress for Hugo Blog** | 🟢 Accepted | Multi-Cloud / Ingress | Dual-continent edge (Tokyo `amd10` + Iowa `gce10`) with <15ms global latency and zero-downtime failover. |
+| [**ADR-0018**](adr/0018-cluster-wide-namespace-domain-partitioning.md) | **Cluster-Wide Namespace Domain Partitioning (`data`, `apps`, `observability`, `system`)** | 🟢 Accepted | Architecture / Kubernetes | Partition 22+ microservices into 4 isolated domains with scoped RBAC, PVC binding, and zero downtime. |
 
 ---
 

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: filebrowser
+  namespace: apps
   labels:
     app: filebrowser
 spec:
@@ -20,44 +21,57 @@ spec:
         kubernetes.io/hostname: amd11
       containers:
         - name: filebrowser
-          image: docker.io/filebrowser/filebrowser:v2.63.23
+          image: {{ .Values.filebrowser.image }}
           imagePullPolicy: IfNotPresent
-          args:
-            - "--config"
-            - "/config/.filebrowser.json"
           ports:
-            - containerPort: 8082
-              hostPort: 8082
+            - containerPort: 80
               name: http
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
           volumeMounts:
-            - name: filebrowser-config
-              mountPath: /config
-            - name: music-storage
-              mountPath: /srv/Music
+            - name: srv
+              mountPath: /srv
+            - name: config
+              mountPath: /etc/config
+            - name: database
+              mountPath: /etc/database
           resources:
-            requests:
-              cpu: 20m
-              memory: 40Mi
-            limits:
-              memory: 150Mi
+            {{- toYaml .Values.filebrowser.resources | nindent 12 }}
       volumes:
-        - name: filebrowser-config
+        - name: srv
+          hostPath:
+            path: /opt/filebrowser/srv
+            type: DirectoryOrCreate
+        - name: config
           hostPath:
             path: /opt/filebrowser/config
-            type: Directory
-        - name: music-storage
+            type: DirectoryOrCreate
+        - name: database
           hostPath:
-            path: /opt/navidrome/music
-            type: Directory
+            path: /opt/filebrowser/database
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: filebrowser
+  namespace: apps
 spec:
+  type: ClusterIP
   selector:
     app: filebrowser
   ports:
     - protocol: TCP
       port: 8082
-      targetPort: 8082
+      targetPort: 80

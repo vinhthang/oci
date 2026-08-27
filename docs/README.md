@@ -22,6 +22,8 @@
 | [**ADR-0011**](adr/0011-deploy-vaultwarden-password-manager.md) | **Deployment of Vaultwarden Self-Hosted Password Manager** | 🟢 Accepted | Security / Passwords | Rust Bitwarden (<30MB RAM) on `amd11` with zero-knowledge encryption & client sync. |
 | [**ADR-0012**](adr/0012-gitops-automated-edge-caddyfile-sync.md) | **GitOps Automated Edge Caddyfile Synchronization** | 🟢 Accepted | GitOps / Ingress | Declarative `caddy/Caddyfile` in Git with automated edge sync & hot-reload. |
 | [**ADR-0013**](adr/0013-private-subnet-isolation-and-nat-gateway.md) | **Private Subnet Isolation & NAT Gateway Architecture** | 🟢 Accepted | Networking / Security | Isolate `arm10`/`amd11` in private subnet with no public IPs; NAT Gateway egress + ProxyJump. |
+| [**ADR-0014**](adr/0014-cross-cloud-gcp-always-free-oracle-linux-10-node.md) | **Cross-Cloud Topology & GCP Always Free Oracle Linux 10 Node (`gce10`)** | 🟢 Accepted | Multi-Cloud / Infrastructure | Expand fleet to GCP Always Free ($0/mo) with Oracle Linux 10 UEK, RAM hardening, and 140MB/s storage. |
+| [**ADR-0015**](adr/0015-postgresql-ha-cluster-pgpool-read-write-splitting.md) | **PostgreSQL 18 HA Cluster & Pgpool-II Read/Write Splitting** | 🟢 Accepted | Databases / High Availability | 2-Node streaming replication + transparent read/write query splitting via Pgpool. |
 
 ---
 

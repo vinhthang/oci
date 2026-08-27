@@ -85,12 +85,33 @@ grafana:
 postgres:
   enabled: true
   image: docker.io/pgvector/pgvector:pg18
+  primaryNodeHostname: arm10
+  replicaNodeHostname: amd11
+  primaryStoragePath: /opt/postgres
+  replicaStoragePath: /opt/postgres-replica
   resources:
     requests:
       cpu: 50m
       memory: 128Mi
     limits:
       memory: 512Mi
+  replicaResources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
+
+pgpool:
+  enabled: true
+  image: docker.io/pgpool/pgpool:latest
+  nodeHostname: amd11
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
 
 victoriaMetrics:
   enabled: true
@@ -157,4 +178,3 @@ vaultwarden:
       memory: 20Mi
     limits:
       memory: 128Mi
-

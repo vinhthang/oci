@@ -104,7 +104,7 @@ ExecStart=/usr/bin/podman run --name navidrome \
   -v /opt/navidrome/music:/music:ro,Z \
   -e ND_SCANSCHEDULE=1h \
   -e ND_LOGLEVEL=info \
-  -e ND_BASEURL=https://music.${duckdns_domain} \
+  -e ND_BASEURL=https://music.${domain_name} \
   -p 127.0.0.1:4533:4533/tcp \
   docker.io/deluan/navidrome:0.63.2
 ExecStop=/usr/bin/podman stop -t 10 navidrome
@@ -156,7 +156,7 @@ if [ ! -d /opt/hugo-blog/themes/PaperMod ]; then
 fi
 
 tee /opt/hugo-blog/hugo.toml <<'HUGO_EOF'
-baseURL = 'https://blog.${duckdns_domain}/'
+baseURL = 'https://blog.${domain_name}/'
 languageCode = 'en-us'
 title = "Thang's Tech Notes"
 theme = 'PaperMod'
@@ -224,27 +224,27 @@ SERVICE_EOF
 echo "=== 11. Deploying Caddy Web Server Configuration ==="
 mkdir -p /etc/caddy
 tee /etc/caddy/Caddyfile <<CADDY_EOF
-${duckdns_domain} {
+${domain_name} {
     reverse_proxy 127.0.0.1:8080
 }
 
-adguard.${duckdns_domain} {
+adguard.${domain_name} {
     reverse_proxy 127.0.0.1:3000
 }
 
-music.${duckdns_domain} {
+music.${domain_name} {
     reverse_proxy 127.0.0.1:4533
 }
 
-files.${duckdns_domain} {
+files.${domain_name} {
     reverse_proxy 127.0.0.1:4180
 }
 
-vault.${duckdns_domain} {
+vault.${domain_name} {
     reverse_proxy 127.0.0.1:30010
 }
 
-blog.${duckdns_domain} {
+blog.${domain_name} {
     root * /opt/hugo-blog/public
     file_server
     encode gzip zstd

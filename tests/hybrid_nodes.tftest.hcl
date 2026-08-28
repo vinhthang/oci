@@ -52,7 +52,6 @@ variables {
   tenancy_ocid   = "ocid1.tenancy.oc1..mock"
   ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMockKey"
   domain_name    = "vinhthang.dev"
-  duckdns_domain = "vinhthang.duckdns.org"
 }
 
 run "verify_hybrid_node_outputs" {

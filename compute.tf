@@ -32,7 +32,7 @@ resource "oci_core_public_ip" "reserved_ip" {
 # 4. Render Cloud-Init user_data script using native templatefile function
 locals {
   user_data = templatefile("${path.module}/cloud-init.sh.tpl", {
-    duckdns_domain = var.duckdns_domain
+    domain_name = var.domain_name
   })
 }
 

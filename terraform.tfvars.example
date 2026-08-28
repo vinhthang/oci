@@ -11,5 +11,5 @@ instance_shape = "VM.Standard.E2.1.Micro"
 # SSH Public Key (Paste the contents of ~/.ssh/id_ed25519.pub)
 ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... user@host"
 
-# DuckDNS Domain
-duckdns_domain = "your-domain.duckdns.org"
+# Custom Domain
+domain_name = "vinhthang.dev"

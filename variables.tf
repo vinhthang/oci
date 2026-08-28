@@ -31,9 +31,3 @@ variable "domain_name" {
   type        = string
   default     = "vinhthang.dev"
 }
-
-variable "duckdns_domain" {
-  description = "Legacy DuckDNS domain name fallback"
-  type        = string
-  default     = "vinhthang.dev"
-}

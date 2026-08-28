@@ -52,7 +52,7 @@ By disabling `crashkernel=no` in GRUB:
 We provisioned a dual-stack network with reserved static addresses:
 * **Public IPv4**: `152.70.xxx.xxx` *(Always Free Reserved Static IP)*
 * **Public IPv6**: `2603:c021:8022:100::xxxx` *(Always Free /56 Prefix)*
-* **Android / iOS Private DNS (DoT)**: `<your-domain>.duckdns.org` on Port 853 with automatic Let's Encrypt TLS.
+* **Android / iOS Private DNS (DoT)**: `adguard.vinhthang.dev` on Port 853 with automatic Let's Encrypt TLS.
 * **Router DNS**: Configured on our home fiber router, blocking ads and tracking telemetry across Smart TVs, iPhones, laptops, and IoT devices.
 
 ---

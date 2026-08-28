@@ -145,7 +145,7 @@ echo "=== 10. Deploying Hugo Blog with PaperMod Theme ==="
 dnf install -y git
 HUGO_VER=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | grep 'tag_name' | cut -d '"' -f 4 | tr -d 'v')
 [ -z "$HUGO_VER" ] && HUGO_VER="0.144.2"
-curl -sL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VER}/hugo_extended_${HUGO_VER}_linux-amd64.tar.gz" -o /tmp/hugo.tar.gz
+curl -sL "https://github.com/gohugoio/hugo/releases/download/v$${HUGO_VER}/hugo_extended_$${HUGO_VER}_linux-amd64.tar.gz" -o /tmp/hugo.tar.gz
 tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo
 chmod +x /usr/local/bin/hugo
 rm -f /tmp/hugo.tar.gz

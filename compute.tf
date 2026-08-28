@@ -29,12 +29,11 @@ resource "oci_core_public_ip" "reserved_ip" {
   display_name   = "static-ip-oracle-linux-10"
 }
 
-# 4. Render Cloud-Init user_data script
-data "template_file" "user_data" {
-  template = file("${path.module}/cloud-init.sh.tpl")
-  vars = {
+# 4. Render Cloud-Init user_data script using native templatefile function
+locals {
+  user_data = templatefile("${path.module}/cloud-init.sh.tpl", {
     duckdns_domain = var.duckdns_domain
-  }
+  })
 }
 
 # ==============================================================================
@@ -60,7 +59,7 @@ resource "oci_core_instance" "amd10" {
 
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
-    user_data           = base64encode(data.template_file.user_data.rendered)
+    user_data           = base64encode(local.user_data)
   }
 
   preserve_boot_volume = false

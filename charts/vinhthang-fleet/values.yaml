@@ -89,6 +89,8 @@ postgres:
   replicaNodeHostname: amd11
   primaryStoragePath: /opt/postgres
   replicaStoragePath: /opt/postgres-replica
+  replica:
+    enabled: true
   persistence:
     enabled: true
     storageClass: "local-storage"

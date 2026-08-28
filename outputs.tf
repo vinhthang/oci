@@ -79,3 +79,16 @@ output "adguard_https_url" {
   description = "AdGuard Home Web Dashboard URL"
   value       = "https://adguard.${var.domain_name}"
 }
+
+# ==============================================================================
+# Node 4: oracle10 (Physical Powerhouse - 32 GB RAM / 20+ Java Microservices)
+# ==============================================================================
+output "oracle10_node_name" {
+  description = "Kubernetes Node Name for physical power worker"
+  value       = "oracle10"
+}
+
+output "oracle10_role" {
+  description = "Assigned cluster role for oracle10"
+  value       = "worker-java-services"
+}

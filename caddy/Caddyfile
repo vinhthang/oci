@@ -84,10 +84,12 @@ analytics.vinhthang.dev, analytic.vinhthang.dev {
     }
 }
 
-# 7. VietCalendar High-Performance Stateless REST API
-api.vinhthang.dev, thang-gcloud.duckdns.org {
+# 7. VietCalendar High-Performance Stateless REST API & Remote MCP SSE Server
+vietcalendar.vinhthang.dev, api.vinhthang.dev, thang-gcloud.duckdns.org {
     import security_headers
-    reverse_proxy 10.0.0.216:30006
+    reverse_proxy 10.0.0.216:30006 {
+        flush_interval -1
+    }
 }
 
 # 8. AdGuard Home Web Dashboard & DoT Ingress

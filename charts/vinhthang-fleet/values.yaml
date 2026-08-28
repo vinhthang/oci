@@ -210,3 +210,20 @@ vaultwarden:
       memory: 20Mi
     limits:
       memory: 128Mi
+
+weaviate:
+  enabled: true
+  image: cr.weaviate.io/semitechnologies/weaviate:1.39.0
+  nodeHostname: arm10
+  nodePort: 30011
+  googleApiKey: "AIzaSyCMUHFMRjfsmbZZ-Vdr8w8BrB_du1hDTvk"
+  mcpServerEnabled: true
+  persistence:
+    size: 10Gi
+    hostPath: /opt/weaviate/data
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 768Mi

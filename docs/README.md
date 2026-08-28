@@ -28,6 +28,7 @@
 | [**ADR-0018**](adr/0018-cluster-wide-namespace-domain-partitioning.md) | **Cluster-Wide Namespace Domain Partitioning (`data`, `apps`, `observability`, `system`)** | 🟢 Accepted | Architecture / Kubernetes | Partition 22+ microservices into 4 isolated domains with scoped RBAC, PVC binding, and zero downtime. |
 | [**ADR-0019**](adr/0019-compact-apache-pulsar-and-in-memory-redis-data-infrastructure.md) | **Compact Apache Pulsar & In-Memory Redis Data Infrastructure** | 🟢 Accepted | Data & Messaging | Deploy compact Pulsar (<400M RAM on `arm10`) and pure in-memory Redis (384M on `amd11`) in `data` namespace. |
 | [**ADR-0020**](adr/0020-hybrid-cloud-tailscale-node-expansion.md) | **Hybrid-Cloud External Node Integration for 20+ Java Microservices via Tailscale** | 🟢 Accepted | Architecture / Networking | Expand cluster capacity with 32GB physical host (`oracle10`) over encrypted Tailscale WireGuard mesh. |
+| [**ADR-0021**](adr/0021-weaviate-vector-database-kubernetes-migration.md) | **Migration of Weaviate Vector Database & Native MCP Engine to Kubernetes (`ai` Namespace on `arm10`)** | 🟢 Accepted | AI / Database | Migrate standalone Weaviate vector engine from Docker to 24/7 cloud node `arm10` under dedicated `ai` namespace with Secret hygiene. |
 
 ---
 

@@ -165,3 +165,19 @@ vault.vinhthang.dev, vault.thang-gcloud.duckdns.org {
         flush_interval -1
     }
 }
+
+# 14. Weaviate AI Vector Engine & Native MCP Server (ai namespace on arm10)
+weaviate.vinhthang.dev {
+    import security_headers
+    @no_auth not header Cookie *_oauth2_proxy*
+    redir @no_auth https://auth.vinhthang.dev/oauth2/start?rd=https://{host}{uri}
+
+    forward_auth 10.0.0.216:30004 {
+        uri /oauth2/auth
+        copy_headers X-Auth-Request-User X-Auth-Request-Email
+    }
+
+    reverse_proxy 10.0.0.216:30011 {
+        flush_interval -1
+    }
+}

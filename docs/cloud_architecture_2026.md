@@ -47,12 +47,12 @@ This comprehensive architecture document details the complete 3-Node Always Free
 ## 🤖 4. Self-Hosted AI Ecosystem
 
 ### 📝 Memos (Personal Digital Notebook & MCP Memory)
-* **Domain**: `https://memos.thang-gcloud.duckdns.org`
+* **Domain**: `https://memos.vinhthang.dev`
 * **Port**: `5230`
 * **Role**: Captures quick daily thoughts, code snippets, tags, and mobile voice memos. Serves as permanent working memory for Antigravity via Model Context Protocol (MCP).
 
 ### 📚 AnythingLLM (Document RAG & Autonomous AI Agents)
-* **Domain**: `https://ai.thang-gcloud.duckdns.org`
+* **Domain**: `https://ai.vinhthang.dev`
 * **Port**: `3001`
 * **LLM Engine**: Powered by Google Gemini (`gemini-3.7-flash`, `gemini-3.1-pro-preview`) with Gemini Embeddings (`text-embedding-004`).
 * **AI Agent Mode (`@agent`)**: Equipped with live web browsing (DuckDuckGo), SQL database connectors (PostgreSQL 18), and multi-document synthesis.
@@ -63,13 +63,13 @@ This comprehensive architecture document details the complete 3-Node Always Free
 
 | Subdomain | Proxy Destination | Ingress Features |
 | :--- | :--- | :--- |
-| `https://thang-gcloud.duckdns.org` | `10.0.0.10:8080` (VietCalendar) | Fast Axum Rust API |
-| `https://adguard.thang-gcloud.duckdns.org` | `127.0.0.1:3000` (AdGuard) | Private DNS-over-TLS (Port 853) |
-| `https://music.thang-gcloud.duckdns.org` | `10.0.0.10:4533` (Navidrome) | Lossless FLAC streaming (Symfonium/Subsonic) |
-| `https://files.thang-gcloud.duckdns.org` | `10.0.0.10:4180` (FileBrowser) | Google OAuth2 SSO Proxy (20GB uploads) |
-| `https://memos.thang-gcloud.duckdns.org` | `10.0.0.216:5230` (Memos) | Real-time websocket & Postgres backend |
-| `https://ai.thang-gcloud.duckdns.org` | `10.0.0.216:3001` (AnythingLLM) | 500MB PDF uploads & streaming AI tokens |
-| `https://blog.thang-gcloud.duckdns.org` | Local `/opt/hugo-blog/public` | High-speed static web engine |
+| `https://vietcalendar.vinhthang.dev` | `10.0.0.216:30006` (VietCalendar) | Fast Rust Axum API & Remote MCP SSE |
+| `https://adguard.vinhthang.dev` | `127.0.0.1:3000` (AdGuard) | Private DNS-over-TLS (Port 853) |
+| `https://music.vinhthang.dev` | `10.0.0.216:30007` (Navidrome) | Lossless FLAC streaming (Symfonium/Subsonic) |
+| `https://files.vinhthang.dev` | `10.0.0.10:8082` (FileBrowser) | Google OAuth2 SSO Proxy (20GB uploads) |
+| `https://memos.vinhthang.dev` | `10.0.0.216:30005` (Memos) | Real-time websocket & Postgres backend |
+| `https://ai.vinhthang.dev` | `10.0.0.216:30001` (AnythingLLM) | 500MB PDF uploads & streaming AI tokens |
+| `https://vinhthang.dev` | Local `/opt/hugo-blog/public` | High-speed static web engine |
 
 ---
 

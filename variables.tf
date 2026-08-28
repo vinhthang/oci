@@ -35,5 +35,5 @@ variable "domain_name" {
 variable "duckdns_domain" {
   description = "Legacy DuckDNS domain name fallback"
   type        = string
-  default     = "thang-gcloud.duckdns.org"
+  default     = "vinhthang.dev"
 }

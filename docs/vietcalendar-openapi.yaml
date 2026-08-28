@@ -9,10 +9,12 @@ info:
   version: 1.0.0
   contact:
     name: Thang Hoang
-    url: https://blog.thang-gcloud.duckdns.org
+    url: https://vinhthang.dev
 servers:
-  - url: https://thang-gcloud.duckdns.org
-    description: Production API Server
+  - url: https://vietcalendar.vinhthang.dev
+    description: Production API Server (VietCalendar)
+  - url: https://api.vinhthang.dev
+    description: High-Performance Global Edge API
 paths:
   /:
     get:

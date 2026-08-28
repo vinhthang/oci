@@ -28,7 +28,7 @@ auth.vinhthang.dev {
 }
 
 # 3. Primary Tech Blog (Hugo PaperMod Static Site)
-vinhthang.dev, blog.vinhthang.dev, blog.thang-gcloud.duckdns.org {
+vinhthang.dev, blog.vinhthang.dev {
     import security_headers
     root * /opt/hugo-blog/public
     file_server
@@ -85,7 +85,7 @@ analytics.vinhthang.dev, analytic.vinhthang.dev {
 }
 
 # 7. VietCalendar High-Performance Stateless REST API & Remote MCP SSE Server
-vietcalendar.vinhthang.dev, api.vinhthang.dev, thang-gcloud.duckdns.org {
+vietcalendar.vinhthang.dev, api.vinhthang.dev {
     import security_headers
     reverse_proxy 10.0.0.216:30006 {
         flush_interval -1
@@ -93,13 +93,13 @@ vietcalendar.vinhthang.dev, api.vinhthang.dev, thang-gcloud.duckdns.org {
 }
 
 # 8. AdGuard Home Web Dashboard & DoT Ingress
-adguard.vinhthang.dev, adguard.thang-gcloud.duckdns.org {
+adguard.vinhthang.dev {
     import security_headers
     reverse_proxy 127.0.0.1:3000
 }
 
 # 9. Navidrome Lossless FLAC Music Streaming Server
-music.vinhthang.dev, music.thang-gcloud.duckdns.org {
+music.vinhthang.dev {
     import security_headers
     reverse_proxy 10.0.0.216:30007 {
         flush_interval -1
@@ -107,7 +107,7 @@ music.vinhthang.dev, music.thang-gcloud.duckdns.org {
 }
 
 # 10. Memos AI Digital Notebook (Central Google OAuth2 SSO Protected)
-memos.vinhthang.dev, memos.thang-gcloud.duckdns.org {
+memos.vinhthang.dev {
     import security_headers
     @no_auth not header Cookie *_oauth2_proxy*
     redir @no_auth https://auth.vinhthang.dev/oauth2/start?rd=https://{host}{uri}
@@ -161,7 +161,7 @@ ai.vinhthang.dev {
 }
 
 # 13. Vaultwarden Self-Hosted Password & Passkey Manager (Zero-Knowledge Native Auth + WebSockets)
-vault.vinhthang.dev, vault.thang-gcloud.duckdns.org {
+vault.vinhthang.dev {
     import security_headers
     reverse_proxy 10.0.0.216:30010 {
         flush_interval -1

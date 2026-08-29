@@ -155,6 +155,15 @@ pulsar:
     zookeeper: true
   enabled: true
   initialize: true
+  proxy:
+    podMonitor:
+      enabled: false
+  pulsar_metadata:
+    podMonitor:
+      enabled: false
+  toolset:
+    podMonitor:
+      enabled: false
   victoria-metrics-k8s-stack:
     enabled: false
   zookeeper:

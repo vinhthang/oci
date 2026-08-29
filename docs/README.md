@@ -33,8 +33,7 @@
 | [**ADR-0023**](adr/0023-optional-postgresql-read-replica-with-primary-fallback.md) | **Optional PostgreSQL Read Replica with Primary Fallback** | 🟢 Accepted | Database | Demote read replica to optional, failing back to primary if unhealthy. |
 | [**ADR-0024**](adr/0024-deploy-apache-pulsar-helm-chart-on-oracle10-node.md) | **Deploy Apache Pulsar Helm Chart on oracle10 Node** | 🟢 Accepted | Infrastructure | Use external node oracle10 for Apache Pulsar due to memory constraints. |
 | [**ADR-0025**](adr/0025-switch-k3s-flannel-backend-to-wireguard-native.md) | **Switch K3s Flannel Backend to Wireguard-Native** | 🟢 Accepted | Network | Change K3s Flannel to wireguard-native to fix cross-node Tailscale/VCN overlay routing. |
-| [**ADR-0022**](adr/0022-private-tailscale-only-perimeter-for-weaviate.md) | **Private Tailscale-Only Perimeter for Weaviate Vector Database & MCP Endpoint** | 🟢 Accepted | Security / AI | Eliminate public internet ingress and OAuth overhead; restrict Weaviate & MCP access strictly to private Tailscale mesh (`100.110.28.71:30011`). |
-| [**ADR-0023**](adr/0023-optional-postgresql-read-replica-with-primary-fallback.md) | **Optional PostgreSQL Read-Replica with Resilient Primary Fallback** | 🟢 Accepted | Database / Resilience | Treat PostgreSQL Read-Replica on `amd11` as optional nice-to-have; guarantee seamless automatic fallback to Primary on `arm10` if replica fails. |
+| [**ADR-0026**](adr/0026-relocate-postgresql-replica-redis-memory-optimization.md) | **Relocate PostgreSQL Replica, Pgpool, and Redis** | 🟢 Accepted | Architecture / Infrastructure | Move heavy workloads off 1GB amd11 to arm10 and oracle10 to prevent kernel OOM crashes. |
 
 ---
 

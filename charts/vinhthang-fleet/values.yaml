@@ -73,7 +73,7 @@ otelCollector:
 pgpool:
   enabled: true
   image: docker.io/pgpool/pgpool:latest
-  nodeHostname: amd11
+  nodeHostname: oracle10
   resources:
     limits:
       memory: 256Mi
@@ -92,7 +92,7 @@ postgres:
   primaryStoragePath: /opt/postgres
   replica:
     enabled: true
-  replicaNodeHostname: amd11
+  replicaNodeHostname: oracle10
   replicaResources:
     limits:
       memory: 384Mi
@@ -194,7 +194,7 @@ redis:
   image: docker.io/redis:7.4.2-alpine
   maxmemory: 384mb
   maxmemoryPolicy: allkeys-lru
-  nodeHostname: amd11
+  nodeHostname: arm10
   resources:
     limits: null
     requests:

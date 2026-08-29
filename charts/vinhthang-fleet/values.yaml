@@ -227,6 +227,9 @@ pulsar:
     toolset: false
     pulsar_manager: false
 
+  victoria-metrics-k8s-stack:
+    enabled: false
+
   zookeeper:
     replicaCount: 1
     nodeSelector:

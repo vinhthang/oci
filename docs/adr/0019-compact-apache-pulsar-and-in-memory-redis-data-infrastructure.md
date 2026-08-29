@@ -1,12 +1,12 @@
-# ADR-0019: Compact Apache Pulsar & In-Memory Redis Data Infrastructure
+# ADR-0019: In-Memory Redis Data Infrastructure (Pulsar Decommissioned)
 
 ## Status
-🟢 **Accepted & Implemented**
+🟢 **Accepted & Implemented** (Pulsar standalone decommissioned; In-Memory Redis active)
 
 ## Context
-Following the cluster-wide domain namespace partitioning into `data`, `apps`, `observability`, and `system` (ADR-0018), the fleet required a unified **high-speed in-memory caching layer** and an **event-driven streaming backbone**:
+Following the cluster-wide domain namespace partitioning into `data`, `apps`, `observability`, and `system` (ADR-0018), the fleet required a unified **high-speed in-memory caching layer**:
 1. **In-Memory Caching (Redis)**: Required for session caching, rate-limiting, and AI vector lookups without disk latency or persistent volume overhead.
-2. **Event Streaming Backbone (Apache Pulsar)**: Required for asynchronous microservice event routing, DLQ exception management, and publish/subscribe workloads.
+2. **Event Streaming Backbone (Pulsar - Decommissioned)**: The legacy Pulsar standalone broker has been decommissioned to streamline data infrastructure and reclaim memory on `arm10`.
 3. **Hardware Boundaries**:
    * `arm10` (Master Node): 10 GB RAM, suitable for stateful and JVM engines.
    * `amd11` (Worker Node): 1 GB RAM, dedicated to featherweight C/Rust runtimes.

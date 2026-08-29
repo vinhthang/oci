@@ -213,3 +213,65 @@ weaviate:
       memory: 256Mi
     limits:
       memory: 768Mi
+
+pulsar:
+  enabled: true
+  initialize: true
+  components:
+    zookeeper: true
+    bookkeeper: true
+    autorecovery: true
+    broker: true
+    proxy: false
+    functions: false
+    toolset: false
+    pulsar_manager: false
+
+  zookeeper:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/hostname: oracle10
+    volumes:
+      data:
+        size: 5Gi
+        storageClassName: local-storage
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 100m
+      limits:
+        memory: 1024Mi
+
+  bookkeeper:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/hostname: oracle10
+    volumes:
+      journal:
+        size: 5Gi
+        storageClassName: local-storage
+      ledgers:
+        size: 5Gi
+        storageClassName: local-storage
+    resources:
+      requests:
+        memory: 1024Mi
+        cpu: 200m
+      limits:
+        memory: 2048Mi
+
+  broker:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/hostname: oracle10
+    resources:
+      requests:
+        memory: 1024Mi
+        cpu: 200m
+      limits:
+        memory: 2048Mi
+
+  autorecovery:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/hostname: oracle10

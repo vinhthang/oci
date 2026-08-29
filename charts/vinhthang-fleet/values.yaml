@@ -1,254 +1,130 @@
-# Default values for vinhthang-fleet master Helm chart.
-
-global:
-  domain: vinhthang.dev
-  armNodeHostname: arm10
-  amdArchitecture: amd64
-
 anythingllm:
   enabled: true
   image: docker.io/mintplexlabs/anythingllm:1.16.0
   nodePort: 30001
   resources:
+    limits:
+      memory: 1024Mi
     requests:
       cpu: 50m
       memory: 256Mi
-    limits:
-      memory: 1024Mi
-
-umami:
+filebrowser:
   enabled: true
-  image: ghcr.io/umami-software/umami:postgresql-v2.13.0
-  nodePort: 30003
+  image: docker.io/filebrowser/filebrowser:v2.63.23
   resources:
-    requests:
-      cpu: 30m
-      memory: 128Mi
-    limits:
-      memory: 384Mi
-
-oauth2Proxy:
-  enabled: true
-  image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
-  nodePort: 30004
-  resources:
-    requests:
-      cpu: 10m
-      memory: 20Mi
-    limits:
-      memory: 64Mi
-
-memos:
-  enabled: true
-  image: docker.io/neosmemo/memos:0.30.0
-  nodePort: 30005
-  resources:
-    requests:
-      cpu: 20m
-      memory: 32Mi
-    limits:
-      memory: 128Mi
-
-vietcalendar:
-  enabled: true
-  image: ghcr.io/vinhthang/vietcalendar:latest
-  nodePort: 30006
-  resources:
-    requests:
-      cpu: 10m
-      memory: 20Mi
     limits:
       memory: 80Mi
-
-navidrome:
-  enabled: true
-  image: docker.io/deluan/navidrome:0.63.2
-  nodePort: 30007
-  resources:
     requests:
-      cpu: 20m
-      memory: 64Mi
-    limits:
-      memory: 384Mi
-
+      cpu: 10m
+      memory: 20Mi
+global:
+  amdArchitecture: amd64
+  armNodeHostname: arm10
+  domain: vinhthang.dev
 grafana:
   enabled: true
   image: docker.io/grafana/grafana:11.5.0
   nodePort: 30008
   resources:
+    limits:
+      memory: 256Mi
     requests:
       cpu: 30m
       memory: 64Mi
-    limits:
-      memory: 256Mi
-
-postgres:
+memos:
   enabled: true
-  image: docker.io/pgvector/pgvector:pg18
-  primaryNodeHostname: arm10
-  replicaNodeHostname: amd11
-  primaryStoragePath: /opt/postgres
-  replicaStoragePath: /opt/postgres-replica
-  replica:
-    enabled: true
-  persistence:
-    enabled: true
-    storageClass: "local-storage"
-    primarySize: 10Gi
-    replicaSize: 5Gi
+  image: docker.io/neosmemo/memos:0.30.0
+  nodePort: 30005
   resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
     limits:
-      memory: 512Mi
-  replicaResources:
-    requests:
-      cpu: 50m
       memory: 128Mi
+    requests:
+      cpu: 20m
+      memory: 32Mi
+navidrome:
+  enabled: true
+  image: docker.io/deluan/navidrome:0.63.2
+  nodePort: 30007
+  resources:
     limits:
       memory: 384Mi
-
+    requests:
+      cpu: 20m
+      memory: 64Mi
+oauth2Proxy:
+  enabled: true
+  image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+  nodePort: 30004
+  resources:
+    limits:
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+otelCollector:
+  enabled: true
+  image: docker.io/otel/opentelemetry-collector-contrib:0.119.0
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 20m
+      memory: 64Mi
 pgpool:
   enabled: true
   image: docker.io/pgpool/pgpool:latest
   nodeHostname: amd11
   resources:
+    limits:
+      memory: 256Mi
     requests:
       cpu: 25m
       memory: 64Mi
-    limits:
-      memory: 256Mi
-
-redis:
+postgres:
   enabled: true
-  image: docker.io/redis:7.4.2-alpine
-  nodeHostname: amd11
-  maxmemory: "384mb"
-  maxmemoryPolicy: "allkeys-lru"
-  resources:
-    requests:
-      cpu: 25m
-      memory: 64Mi
-    limits:
-victoriaMetrics:
-  enabled: true
-  image: docker.io/victoriametrics/victoria-metrics:v1.109.1
-  retentionPeriod: 30d
-  resources:
-    requests:
-      cpu: 20m
-      memory: 32Mi
-    limits:
-      memory: 128Mi
-
-victoriaLogs:
-  enabled: true
-  image: docker.io/victoriametrics/victoria-logs:v1.51.1
-  retentionPeriod: 30d
-  resources:
-    requests:
-      cpu: 20m
-      memory: 32Mi
-    limits:
-      memory: 128Mi
-
-vector:
-  enabled: true
-  image: docker.io/timberio/vector:0.45.0-alpine
-  resources:
-    requests:
-      cpu: 10m
-      memory: 20Mi
-    limits:
-      memory: 128Mi
-
-otelCollector:
-  enabled: true
-  image: docker.io/otel/opentelemetry-collector-contrib:0.119.0
-  resources:
-    requests:
-      cpu: 20m
-      memory: 64Mi
-    limits:
-      memory: 256Mi
-
-filebrowser:
-  enabled: true
-  image: docker.io/filebrowser/filebrowser:v2.63.23
-  resources:
-    requests:
-      cpu: 10m
-      memory: 20Mi
-    limits:
-      memory: 80Mi
-
-vaultwarden:
-  enabled: true
-  image: docker.io/vaultwarden/server:1.37.2-alpine
-  nodePort: 30010
-  signupsAllowed: true
-  invitationsAllowed: true
-  websocketEnabled: true
-  resources:
-    requests:
-      cpu: 10m
-      memory: 20Mi
-    limits:
-      memory: 128Mi
-
-weaviate:
-  enabled: true
-  image: cr.weaviate.io/semitechnologies/weaviate:1.39.0
-  nodeHostname: arm10
-  nodePort: 30011
-  googleApiKey: "AIzaSyCMUHFMRjfsmbZZ-Vdr8w8BrB_du1hDTvk"
-  mcpServerEnabled: true
+  image: docker.io/pgvector/pgvector:pg18
   persistence:
-    size: 10Gi
-    hostPath: /opt/weaviate/data
-  resources:
+    enabled: true
+    primarySize: 10Gi
+    replicaSize: 5Gi
+    storageClass: local-storage
+  primaryNodeHostname: arm10
+  primaryStoragePath: /opt/postgres
+  replica:
+    enabled: true
+  replicaNodeHostname: amd11
+  replicaResources:
+    limits:
+      memory: 384Mi
     requests:
       cpu: 50m
-      memory: 256Mi
+      memory: 128Mi
+  replicaStoragePath: /opt/postgres-replica
+  resources:
     limits:
-      memory: 768Mi
-
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
 pulsar:
-  enabled: true
-  initialize: true
-  components:
-    zookeeper: true
-    bookkeeper: true
-    autorecovery: true
-    broker: true
-    proxy: false
-    functions: false
-    toolset: false
-    pulsar_manager: false
-
-  victoria-metrics-k8s-stack:
-    enabled: false
-
-  zookeeper:
-    replicaCount: 1
+  autorecovery:
     nodeSelector:
       kubernetes.io/hostname: oracle10
-    volumes:
-      data:
-        size: 5Gi
-        storageClassName: local-storage
-    resources:
-      requests:
-        memory: 512Mi
-        cpu: 100m
-      limits:
-        memory: 1024Mi
-
+    podMonitor:
+      enabled: false
+    replicaCount: 1
   bookkeeper:
-    replicaCount: 1
     nodeSelector:
       kubernetes.io/hostname: oracle10
+    podMonitor:
+      enabled: false
+    replicaCount: 1
+    resources:
+      limits:
+        memory: 2048Mi
+      requests:
+        cpu: 200m
+        memory: 1024Mi
     volumes:
       journal:
         size: 5Gi
@@ -256,25 +132,133 @@ pulsar:
       ledgers:
         size: 5Gi
         storageClassName: local-storage
-    resources:
-      requests:
-        memory: 1024Mi
-        cpu: 200m
-      limits:
-        memory: 2048Mi
-
   broker:
-    replicaCount: 1
     nodeSelector:
       kubernetes.io/hostname: oracle10
+    podMonitor:
+      enabled: false
+    replicaCount: 1
     resources:
-      requests:
-        memory: 1024Mi
-        cpu: 200m
       limits:
         memory: 2048Mi
-
-  autorecovery:
-    replicaCount: 1
+      requests:
+        cpu: 200m
+        memory: 1024Mi
+  components:
+    autorecovery: true
+    bookkeeper: true
+    broker: true
+    functions: false
+    proxy: false
+    pulsar_manager: false
+    toolset: false
+    zookeeper: true
+  enabled: true
+  initialize: true
+  victoria-metrics-k8s-stack:
+    enabled: false
+  zookeeper:
     nodeSelector:
       kubernetes.io/hostname: oracle10
+    podMonitor:
+      enabled: false
+    replicaCount: 1
+    resources:
+      limits:
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    volumes:
+      data:
+        size: 5Gi
+        storageClassName: local-storage
+redis:
+  enabled: true
+  image: docker.io/redis:7.4.2-alpine
+  maxmemory: 384mb
+  maxmemoryPolicy: allkeys-lru
+  nodeHostname: amd11
+  resources:
+    limits: null
+    requests:
+      cpu: 25m
+      memory: 64Mi
+umami:
+  enabled: true
+  image: ghcr.io/umami-software/umami:postgresql-v2.13.0
+  nodePort: 30003
+  resources:
+    limits:
+      memory: 384Mi
+    requests:
+      cpu: 30m
+      memory: 128Mi
+vaultwarden:
+  enabled: true
+  image: docker.io/vaultwarden/server:1.37.2-alpine
+  invitationsAllowed: true
+  nodePort: 30010
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+  signupsAllowed: true
+  websocketEnabled: true
+vector:
+  enabled: true
+  image: docker.io/timberio/vector:0.45.0-alpine
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+victoriaLogs:
+  enabled: true
+  image: docker.io/victoriametrics/victoria-logs:v1.51.1
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 20m
+      memory: 32Mi
+  retentionPeriod: 30d
+victoriaMetrics:
+  enabled: true
+  image: docker.io/victoriametrics/victoria-metrics:v1.109.1
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 20m
+      memory: 32Mi
+  retentionPeriod: 30d
+vietcalendar:
+  enabled: true
+  image: ghcr.io/vinhthang/vietcalendar:latest
+  nodePort: 30006
+  resources:
+    limits:
+      memory: 80Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+weaviate:
+  enabled: true
+  googleApiKey: AIzaSyCMUHFMRjfsmbZZ-Vdr8w8BrB_du1hDTvk
+  image: cr.weaviate.io/semitechnologies/weaviate:1.39.0
+  mcpServerEnabled: true
+  nodeHostname: arm10
+  nodePort: 30011
+  persistence:
+    hostPath: /opt/weaviate/data
+    size: 10Gi
+  resources:
+    limits:
+      memory: 768Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi

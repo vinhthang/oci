@@ -137,6 +137,9 @@ pulsar:
       managedLedgerDefaultEnsembleSize: "1"
       managedLedgerDefaultWriteQuorum: "1"
       managedLedgerDefaultAckQuorum: "1"
+      bookkeeperClientRackawarePolicyEnabled: "false"
+      bookkeeperClientMinNumRacksPerWriteQuorum: "1"
+      bookkeeperClientEnforceMinNumRacksPerWriteQuorum: "false"
     nodeSelector:
       kubernetes.io/hostname: oracle10
     podMonitor:

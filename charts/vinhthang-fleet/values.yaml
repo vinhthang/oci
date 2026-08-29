@@ -131,22 +131,6 @@ redis:
       cpu: 25m
       memory: 64Mi
     limits:
-      memory: 256Mi
-
-pulsar:
-  enabled: true
-  image: docker.io/apachepulsar/pulsar:3.3.2
-  nodeHostname: arm10
-  persistence:
-    size: 10Gi
-    hostPath: /opt/pulsar-data
-  resources:
-    requests:
-      cpu: 50m
-      memory: 256Mi
-    limits:
-      memory: 1024Mi
-
 victoriaMetrics:
   enabled: true
   image: docker.io/victoriametrics/victoria-metrics:v1.109.1

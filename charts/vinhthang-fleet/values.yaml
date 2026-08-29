@@ -133,6 +133,10 @@ pulsar:
         size: 5Gi
         storageClassName: local-storage
   broker:
+    configData:
+      managedLedgerDefaultEnsembleSize: "1"
+      managedLedgerDefaultWriteQuorum: "1"
+      managedLedgerDefaultAckQuorum: "1"
     nodeSelector:
       kubernetes.io/hostname: oracle10
     podMonitor:

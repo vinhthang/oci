@@ -22,7 +22,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - arm10
+                - oracle10
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -47,7 +47,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - arm10
+                - oracle10
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -72,5 +72,5 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - arm10
+                - oracle10
 {{- end }}

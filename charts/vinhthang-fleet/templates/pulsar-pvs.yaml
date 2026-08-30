@@ -14,7 +14,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /opt/pulsar/zookeeper/data
+    path: /home/thang/pulsar/zookeeper/data
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -39,7 +39,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /opt/pulsar/bookkeeper/journal
+    path: /home/thang/pulsar/bookkeeper/journal
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -64,7 +64,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /opt/pulsar/bookkeeper/ledgers
+    path: /home/thang/pulsar/bookkeeper/ledgers
   nodeAffinity:
     required:
       nodeSelectorTerms:

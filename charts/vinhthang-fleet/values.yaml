@@ -1,3 +1,10 @@
+aiIncidentCommander:
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    repository: docker.io/vinhthang/ai-incident-commander
+    tag: latest
+  nodeSelector: arm10
 anythingllm:
   enabled: true
   image: docker.io/mintplexlabs/anythingllm:1.16.0
@@ -31,6 +38,19 @@ grafana:
     requests:
       cpu: 30m
       memory: 64Mi
+kube-state-metrics:
+  customAnnotations:
+    prometheus.io/port: '8080'
+    prometheus.io/scrape: 'true'
+  namespaceOverride: observability
+  nodeSelector:
+    kubernetes.io/hostname: arm10
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
 memos:
   enabled: true
   image: docker.io/neosmemo/memos:0.30.0
@@ -134,12 +154,12 @@ pulsar:
         storageClassName: local-storage
   broker:
     configData:
-      managedLedgerDefaultEnsembleSize: "1"
-      managedLedgerDefaultWriteQuorum: "1"
-      managedLedgerDefaultAckQuorum: "1"
-      bookkeeperClientRackawarePolicyEnabled: "false"
-      bookkeeperClientMinNumRacksPerWriteQuorum: "1"
-      bookkeeperClientEnforceMinNumRacksPerWriteQuorum: "false"
+      bookkeeperClientEnforceMinNumRacksPerWriteQuorum: 'false'
+      bookkeeperClientMinNumRacksPerWriteQuorum: '1'
+      bookkeeperClientRackawarePolicyEnabled: 'false'
+      managedLedgerDefaultAckQuorum: '1'
+      managedLedgerDefaultEnsembleSize: '1'
+      managedLedgerDefaultWriteQuorum: '1'
     nodeSelector:
       kubernetes.io/hostname: oracle10
     podMonitor:
@@ -232,6 +252,22 @@ vector:
     requests:
       cpu: 10m
       memory: 20Mi
+victoria-metrics-agent:
+  namespaceOverride: observability
+  nodeSelector:
+    kubernetes.io/hostname: arm10
+  rbac:
+    create: true
+  remoteWrite:
+  - url: http://victoriametrics.observability.svc.cluster.local:8428/api/v1/write
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  serviceAccount:
+    create: true
 victoriaLogs:
   enabled: true
   image: docker.io/victoriametrics/victoria-logs:v1.51.1
@@ -278,42 +314,3 @@ weaviate:
     requests:
       cpu: 50m
       memory: 256Mi
-
-# ------------------------------------------------------------------------------
-# AI Incident Commander
-# ------------------------------------------------------------------------------
-aiIncidentCommander:
-  enabled: true
-  nodeSelector: "arm10" # Must be deployed where agy hostPath exists
-  image:
-    repository: "docker.io/vinhthang/ai-incident-commander"
-    tag: "latest"
-    pullPolicy: IfNotPresent
-
-kube-state-metrics:
-  nodeSelector:
-    kubernetes.io/hostname: arm10
-  namespaceOverride: observability
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      memory: 128Mi
-
-victoria-metrics-agent:
-  nodeSelector:
-    kubernetes.io/hostname: arm10
-  namespaceOverride: observability
-  remoteWrite:
-    - url: http://victoriametrics.observability.svc.cluster.local:8428/api/v1/write
-  resources:
-    requests:
-      cpu: 10m
-      memory: 64Mi
-    limits:
-      memory: 128Mi
-  rbac:
-    create: true
-  serviceAccount:
-    create: true

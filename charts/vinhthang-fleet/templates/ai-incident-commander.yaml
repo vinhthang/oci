@@ -36,7 +36,7 @@ spec:
             - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
+                  name: gemini-ai-secret
                   key: GEMINI_EMBEDDING_API_KEY # Reusing existing key or we can create GEMINI_API_KEY
           volumeMounts:
             - name: rtk-binary

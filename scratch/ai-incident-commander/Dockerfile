@@ -5,7 +5,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY main.go ./
 # Compile static binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o incident-commander .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o incident-commander .
 
 # Run stage
 FROM alpine:3.19

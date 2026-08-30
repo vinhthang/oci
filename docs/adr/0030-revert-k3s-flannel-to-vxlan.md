@@ -9,9 +9,8 @@ With the removal of `oracle10` (ADR-0029), our cluster architecture is now stric
 
 ## Decision
 1. **Revert Flannel Backend**: Revert K3s Flannel backend from `wireguard-native` back to the default `vxlan`. 
-2. **Remove Network Rules**: Remove the ingress security rule for UDP port 51820 (WireGuard Mesh VPN) from the OCI Terraform `network.tf` file to close the unused port.
 
 ## Consequences
 - **Positive**: Reduces CPU overhead on K3s nodes caused by in-cluster native WireGuard encryption.
-- **Positive**: Simplifies the network security surface by removing the exposed UDP 51820 port.
+
 - **Negative**: Traffic between K3s pods within the cluster will use unencrypted VXLAN, which is acceptable since our internal nodes (`arm10`, `amd11`) reside in a Private Subnet (ADR-0013). (Cross-cloud Tailscale traffic remains encrypted by Tailscale itself).

@@ -197,24 +197,33 @@ func runTriageMinion(alertName string, labels, annotations map[string]string) st
 
 func runFixerMinion(issueNumber int, alertName string, attempt int) {
 	prompt := fmt.Sprintf("You are the Fixer Minion. GitHub Issue #%d reports an alert '%s'. This is attempt %d. Clone the vinhthang/oci repository, edit the Helm chart values.yaml to fix the issue, commit, and push. Do not ask for confirmation.", issueNumber, alertName, attempt)
-	cmd := exec.Command("/home/opc/.local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
+	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Fixer Minion failed to run: %v", err)
+	}
 }
 
 func runRollbackMinion(issueNumber int) {
 	prompt := fmt.Sprintf("You are the Fixer Minion. Issue #%d failed after 3 attempts. Clone vinhthang/oci, run git revert HEAD, commit, and push to rollback the bad fixes. Do not ask for confirmation.", issueNumber)
-	cmd := exec.Command("/home/opc/.local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
+	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Fixer Minion failed to run: %v", err)
+	}
 }
 
 func runVerifierMinion(issueNumber int) {
 	prompt := fmt.Sprintf("You are the Verifier Minion. The alert for Issue #%d is resolved. Briefly summarize the system health.", issueNumber)
-	cmd := exec.Command("/home/opc/.local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
+	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Fixer Minion failed to run: %v", err)
+	}
 }

@@ -278,3 +278,14 @@ weaviate:
     requests:
       cpu: 50m
       memory: 256Mi
+
+# ------------------------------------------------------------------------------
+# AI Incident Commander
+# ------------------------------------------------------------------------------
+aiIncidentCommander:
+  enabled: true
+  nodeSelector: "arm10" # Must be deployed where agy hostPath exists
+  image:
+    repository: "docker.io/vinhthang/ai-incident-commander"
+    tag: "latest"
+    pullPolicy: IfNotPresent

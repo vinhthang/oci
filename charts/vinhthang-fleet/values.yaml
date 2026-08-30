@@ -291,6 +291,7 @@ aiIncidentCommander:
     pullPolicy: IfNotPresent
 
 kube-state-metrics:
+  nodeSelector:n    kubernetes.io/hostname: arm10
   namespaceOverride: observability
   resources:
     requests:
@@ -300,6 +301,7 @@ kube-state-metrics:
       memory: 128Mi
 
 victoria-metrics-agent:
+  nodeSelector:n    kubernetes.io/hostname: arm10
   namespaceOverride: observability
   remoteWrite:
     - url: http://victoriametrics.observability.svc.cluster.local:8428/api/v1/write
@@ -313,11 +315,3 @@ victoria-metrics-agent:
     create: true
   serviceAccount:
     create: true
-
-kube-state-metrics:
-  nodeSelector:
-    kubernetes.io/hostname: arm10
-
-victoria-metrics-agent:
-  nodeSelector:
-    kubernetes.io/hostname: arm10

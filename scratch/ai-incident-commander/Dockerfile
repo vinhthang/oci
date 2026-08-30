@@ -8,7 +8,7 @@ COPY main.go ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -installsuffix cgo -o incident-commander .
 
 # Run stage
-FROM alpine:3.19
+FROM debian:bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates git openssh-client && rm -rf /var/lib/apt/lists/*
 # Copy binary from builder

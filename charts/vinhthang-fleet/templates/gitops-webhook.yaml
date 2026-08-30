@@ -9,7 +9,7 @@ kind: ClusterRole
 metadata:
   name: gitops-deployer
 rules:
-  - apiGroups: ["", "apps", "batch", "extensions", "networking.k8s.io", "rbac.authorization.k8s.io", "storage.k8s.io", "helm.cattle.io"]
+  - apiGroups: ["", "apps", "batch", "extensions", "networking.k8s.io", "rbac.authorization.k8s.io", "storage.k8s.io", "helm.cattle.io", "policy", "monitoring.coreos.com"]
     resources: ["*"]
     verbs: ["*"]
 ---

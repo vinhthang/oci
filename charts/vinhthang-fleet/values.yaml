@@ -183,11 +183,13 @@ pulsar:
     toolset: false
     zookeeper: true
   enabled: true
-  initialize: true
+  initialize: false
   proxy:
     podMonitor:
       enabled: false
   pulsar_metadata:
+    nodeSelector:
+      kubernetes.io/hostname: arm10
     podMonitor:
       enabled: false
   toolset:
@@ -218,7 +220,8 @@ redis:
   maxmemoryPolicy: allkeys-lru
   nodeHostname: arm10
   resources:
-    limits: null
+    limits:
+      memory: 512Mi
     requests:
       cpu: 25m
       memory: 64Mi

@@ -3,8 +3,6 @@ anythingllm:
   image: docker.io/mintplexlabs/anythingllm:1.16.0
   nodePort: 30001
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 1024Mi
     requests:
@@ -14,8 +12,6 @@ filebrowser:
   enabled: true
   image: docker.io/filebrowser/filebrowser:v2.63.23
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 80Mi
     requests:
@@ -30,8 +26,6 @@ grafana:
   image: docker.io/grafana/grafana:11.5.0
   nodePort: 30008
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 256Mi
     requests:
@@ -42,8 +36,6 @@ memos:
   image: docker.io/neosmemo/memos:0.30.0
   nodePort: 30005
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 128Mi
     requests:
@@ -54,8 +46,6 @@ navidrome:
   image: docker.io/deluan/navidrome:0.63.2
   nodePort: 30007
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 384Mi
     requests:
@@ -66,8 +56,6 @@ oauth2Proxy:
   image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
   nodePort: 30004
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 64Mi
     requests:
@@ -77,8 +65,6 @@ otelCollector:
   enabled: true
   image: docker.io/otel/opentelemetry-collector-contrib:0.119.0
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 256Mi
     requests:
@@ -89,8 +75,6 @@ pgpool:
   image: docker.io/pgpool/pgpool:latest
   nodeHostname: oracle10
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 256Mi
     requests:
@@ -110,8 +94,6 @@ postgres:
     enabled: true
   replicaNodeHostname: oracle10
   replicaResources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 384Mi
     requests:
@@ -119,8 +101,6 @@ postgres:
       memory: 128Mi
   replicaStoragePath: /opt/postgres-replica
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 512Mi
     requests:
@@ -140,9 +120,7 @@ pulsar:
       enabled: false
     replicaCount: 1
     resources:
-      nodeSelector:
-      kubernetes.io/hostname: arm10
-    limits:
+      limits:
         memory: 2048Mi
       requests:
         cpu: 200m
@@ -168,9 +146,7 @@ pulsar:
       enabled: false
     replicaCount: 1
     resources:
-      nodeSelector:
-      kubernetes.io/hostname: arm10
-    limits:
+      limits:
         memory: 2048Mi
       requests:
         cpu: 200m
@@ -204,9 +180,7 @@ pulsar:
       enabled: false
     replicaCount: 1
     resources:
-      nodeSelector:
-      kubernetes.io/hostname: arm10
-    limits:
+      limits:
         memory: 1024Mi
       requests:
         cpu: 100m
@@ -222,8 +196,6 @@ redis:
   maxmemoryPolicy: allkeys-lru
   nodeHostname: arm10
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits: null
     requests:
       cpu: 25m
@@ -233,8 +205,6 @@ umami:
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0
   nodePort: 30003
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 384Mi
     requests:
@@ -246,8 +216,6 @@ vaultwarden:
   invitationsAllowed: true
   nodePort: 30010
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 128Mi
     requests:
@@ -259,8 +227,6 @@ vector:
   enabled: true
   image: docker.io/timberio/vector:0.45.0-alpine
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 128Mi
     requests:
@@ -270,8 +236,6 @@ victoriaLogs:
   enabled: true
   image: docker.io/victoriametrics/victoria-logs:v1.51.1
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 512Mi
     requests:
@@ -282,8 +246,6 @@ victoriaMetrics:
   enabled: true
   image: docker.io/victoriametrics/victoria-metrics:v1.109.1
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 512Mi
     requests:
@@ -295,8 +257,6 @@ vietcalendar:
   image: ghcr.io/vinhthang/vietcalendar:latest
   nodePort: 30006
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 80Mi
     requests:
@@ -313,8 +273,6 @@ weaviate:
     hostPath: /opt/weaviate/data
     size: 10Gi
   resources:
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 768Mi
     requests:
@@ -338,8 +296,6 @@ kube-state-metrics:
     requests:
       cpu: 10m
       memory: 32Mi
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 128Mi
 
@@ -351,13 +307,17 @@ victoria-metrics-agent:
     requests:
       cpu: 10m
       memory: 64Mi
-    nodeSelector:
-      kubernetes.io/hostname: arm10
     limits:
       memory: 128Mi
   rbac:
     create: true
   serviceAccount:
     create: true
+
+kube-state-metrics:
+  nodeSelector:
+    kubernetes.io/hostname: arm10
+
+victoria-metrics-agent:
   nodeSelector:
     kubernetes.io/hostname: arm10

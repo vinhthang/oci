@@ -7,6 +7,7 @@ aiIncidentCommander:
     repository: ghcr.io/vinhthang/ai-incident-commander
     tag: latest
   nodeSelector: arm10
+  prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
 anythingllm:
   enabled: true
   image: docker.io/mintplexlabs/anythingllm:1.16.0

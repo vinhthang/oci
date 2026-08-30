@@ -20,7 +20,7 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.aiIncidentCommander.nodeSelector }}
-      serviceAccountName: gitops-webhook # Reusing the gitops-deployer cluster role
+      serviceAccountName: gitops-webhook
       containers:
         - name: commander
           image: "{{ .Values.aiIncidentCommander.image.repository }}:{{ .Values.aiIncidentCommander.image.tag }}"
@@ -36,13 +36,13 @@ spec:
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret # Alternatively, github-secret
+                  name: postgres-secret
                   key: GITHUB_TOKEN
             - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: gemini-ai-secret
-                  key: GEMINI_EMBEDDING_API_KEY # Reusing existing key or we can create GEMINI_API_KEY
+                  key: GEMINI_EMBEDDING_API_KEY
           volumeMounts:
             - name: rtk-binary
               mountPath: /usr/local/bin/rtk
@@ -50,6 +50,10 @@ spec:
               mountPath: /usr/local/bin/agy
             - name: agy-config
               mountPath: /root/.gemini
+            {{- if .Values.aiIncidentCommander.prompts }}
+            - name: templates
+              mountPath: /etc/commander/templates
+            {{- end }}
       volumes:
         - name: rtk-binary
           hostPath:
@@ -63,6 +67,11 @@ spec:
           hostPath:
             path: /home/opc/.gemini
             type: DirectoryOrCreate
+        {{- if .Values.aiIncidentCommander.prompts }}
+        - name: templates
+          configMap:
+            name: ai-incident-commander-templates
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -77,4 +86,18 @@ spec:
     - protocol: TCP
       port: {{ .Values.aiIncidentCommander.port | default 8085 }}
       targetPort: {{ .Values.aiIncidentCommander.port | default 8085 }}
+
+{{- if .Values.aiIncidentCommander.prompts }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-incident-commander-templates
+  namespace: system
+data:
+  {{- range $key, $val := .Values.aiIncidentCommander.prompts }}
+  {{ $key }}: |-
+{{ $val | indent 4 }}
+  {{- end }}
+{{- end }}
 {{- end }}

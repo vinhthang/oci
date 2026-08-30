@@ -86,7 +86,7 @@ data:
             execErrState: Error
             for: 1m
             annotations:
-              description: "Pod {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }} is restarting repeatedly."
+              description: "Pod {{ "{{" }} or $labels.exported_namespace $labels.namespace {{ "}}" }}/{{ "{{" }} or $labels.exported_pod $labels.pod {{ "}}" }} is restarting repeatedly."
               summary: "Pod CrashLoopBackOff"
             labels:
               severity: critical

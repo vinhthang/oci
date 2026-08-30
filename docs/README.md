@@ -34,6 +34,8 @@
 | [**ADR-0024**](adr/0024-deploy-apache-pulsar-helm-chart-on-oracle10-node.md) | **Deploy Apache Pulsar Helm Chart on oracle10 Node** | 🟢 Accepted | Infrastructure | Use external node oracle10 for Apache Pulsar due to memory constraints. |
 | [**ADR-0025**](adr/0025-switch-k3s-flannel-backend-to-wireguard-native.md) | **Switch K3s Flannel Backend to Wireguard-Native** | 🟢 Accepted | Network | Change K3s Flannel to wireguard-native to fix cross-node Tailscale/VCN overlay routing. |
 | [**ADR-0026**](adr/0026-relocate-postgresql-replica-redis-memory-optimization.md) | **Relocate PostgreSQL Replica, Pgpool, and Redis** | 🟢 Accepted | Architecture / Infrastructure | Move heavy workloads off 1GB amd11 to arm10 and oracle10 to prevent kernel OOM crashes. |
+| [**ADR-0027**](adr/0027-deploy-kubestatemetrics-vmagent.md) | **Deploy Kube-State-Metrics & vmagent** | 🟢 Accepted | Observability | Deployed vmagent and KSM for native K8s metric collection. |
+| [**ADR-0028**](adr/0028-taint-and-isolate-external-node-oracle10.md) | **Taint & Isolate External Node `oracle10`** | 🟢 Accepted | Architecture / Stability | Isolate 32GB external node behind `NoSchedule` taint to prevent overlay failure cascades. |
 
 ---
 

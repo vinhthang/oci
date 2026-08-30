@@ -60,9 +60,7 @@ data:
         type: loki
         inputs:
           - format_logs
-        endpoint: "http://victorialogs.observability.svc.cluster.local:9428/insert/loki/api/v1/push"
-        encoding:
-          codec: text
+        endpoint: "http://victorialogs.observability.svc.cluster.local:9428/insert"
         labels:
           app: '{{ `{{ container }}` }}'
           pod: '{{ `{{ pod }}` }}'

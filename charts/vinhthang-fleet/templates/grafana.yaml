@@ -581,20 +581,23 @@ spec:
               memory: 256Mi
       volumes:
         - name: grafana-alerting
-              mountPath: /etc/grafana/provisioning/alerting/alerting.yaml
-              subPath: alerting.yaml
-            - name: grafana-alert-rules
-              mountPath: /etc/grafana/provisioning/alerting/rules.yaml
-              subPath: rules.yaml
+          configMap:
+            name: grafana-alerting
+        - name: grafana-alert-rules
+          configMap:
+            name: grafana-alert-rules
         - name: grafana-data
           hostPath:
             path: /opt/grafana
             type: Directory
         - name: grafana-datasources
+          configMap:
             name: grafana-datasources
         - name: grafana-dashboards-provider
+          configMap:
             name: grafana-dashboards-provider
         - name: grafana-dashboard-fleet-status
+          configMap:
             name: grafana-dashboard-fleet-status
 ---
 apiVersion: v1

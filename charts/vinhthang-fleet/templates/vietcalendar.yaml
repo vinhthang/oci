@@ -23,7 +23,6 @@ spec:
         - name: vietcalendar
           image: {{ .Values.vietcalendar.image }}
           imagePullPolicy: IfNotPresent
-          command: ["/bin/sh", "-c", "echo 'FATAL: Simulated misconfiguration error' && exit 1"]
           ports:
             - containerPort: 8080
               name: http

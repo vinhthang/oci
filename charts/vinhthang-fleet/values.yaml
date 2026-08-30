@@ -1,5 +1,7 @@
 aiIncidentCommander:
   enabled: true
+  port: 8085
+  model: gemini-3.5-flash
   image:
     pullPolicy: IfNotPresent
     repository: docker.io/vinhthang/ai-incident-commander

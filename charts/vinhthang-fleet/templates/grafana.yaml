@@ -479,7 +479,7 @@ data:
           - uid: ai-commander-webhook
             type: webhook
             settings:
-              url: http://ai-incident-commander.system.svc.cluster.local:8080/webhook
+              url: http://ai-incident-commander.system.svc.cluster.local:{{ .Values.aiIncidentCommander.port | default 8085 }}/webhook
     policies:
       - orgId: 1
         receiver: ai-incident-commander

@@ -60,4 +60,8 @@
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.
 8. **Network Perimeter Isolation**:
    * `amd10` and `gce10` are the **public edge gateways** (`152.70.101.162` and `34.61.16.208`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.
-| [**ADR-0027**](adr/0027-deploy-kubestatemetrics-vmagent.md) | **Deploy Kube-State-Metrics & vmagent** | 🟢 Accepted | Observability | Deployed vmagent and KSM for native K8s metric collection. |
+9. **Port Allocation Governance (Avoid Port 8080)**:
+   * **NEVER USE GENERIC PORT `8080`**: Port `8080` is strictly forbidden for any new custom microservice, daemon, webhook listener, or container. `8080` is a notorious collision magnet across Kubernetes, Caddy, Traefik, Pulsar Admin, and Java runtimes.
+   * **Explicit Dedicated Port Allocation**: Always assign explicit dedicated ports (e.g. `8085` for AI Commander, `8088`, or specific NodePort ranges `30001–30015`).
+   * **Configurable Ports & AI Models**: Never hardcode listening ports, webhook targets, or AI model strings (`GEMINI_MODEL`, `PORT`). Always make them configurable via Helm `values.yaml` and environment variables with verified defaults.
+

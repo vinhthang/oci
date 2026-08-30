@@ -21,15 +21,18 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.aiIncidentCommander.nodeSelector }}
       serviceAccountName: gitops-webhook # Reusing the gitops-deployer cluster role
-      hostNetwork: true
       containers:
         - name: commander
           image: "{{ .Values.aiIncidentCommander.image.repository }}:{{ .Values.aiIncidentCommander.image.tag }}"
           imagePullPolicy: {{ .Values.aiIncidentCommander.image.pullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.aiIncidentCommander.port | default 8085 }}
               name: http
           env:
+            - name: PORT
+              value: "{{ .Values.aiIncidentCommander.port | default 8085 }}"
+            - name: GEMINI_MODEL
+              value: "{{ .Values.aiIncidentCommander.model | default "gemini-3.5-flash" }}"
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -78,6 +81,6 @@ spec:
     app: ai-incident-commander
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: {{ .Values.aiIncidentCommander.port | default 8085 }}
+      targetPort: {{ .Values.aiIncidentCommander.port | default 8085 }}
 {{- end }}

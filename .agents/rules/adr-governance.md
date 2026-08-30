@@ -71,3 +71,11 @@ You **MUST PROACTIVELY**:
 4. **Pin Exact Release Versions**: Always search and pin exact semantic version tags for container images (e.g. `1.37.2-alpine`) — never use floating tags like `latest`.
 5. **Update Declarative `caddy/Caddyfile`**: Add or update the subdomain routing block in `caddy/Caddyfile` for any new service.
 6. Commit and push the changes so the in-cluster GitOps webhook can deploy both the Kubernetes workloads and edge Caddyfile automatically.
+
+---
+
+## 6. 🚫 Mandatory Port Allocation & Configuration Governance (Avoid Port 8080)
+* **NEVER USE GENERIC PORT `8080`**: Port `8080` is strictly forbidden for any new custom microservice, daemon, webhook listener, or container. `8080` is a notorious collision magnet across Kubernetes, Caddy, Traefik, Pulsar Admin, and Java runtimes.
+* **Explicit Dedicated Port Allocation**: Always assign explicit dedicated ports (e.g. `8085` for AI Commander, `8088`, or specific NodePort ranges `30001–30015`).
+* **Configurable Ports & AI Models**: Never hardcode listening ports, webhook targets, or AI model strings (`GEMINI_MODEL`, `PORT`). Always make them configurable via Helm `values.yaml` and environment variables with verified defaults.
+

@@ -21,9 +21,18 @@ import (
 var (
 	githubToken  = os.Getenv("GITHUB_TOKEN")
 	geminiAPIKey = os.Getenv("GEMINI_API_KEY")
-	githubOwner  = "vinhthang"
-	githubRepo   = "oci"
+	geminiModel  = getEnv("GEMINI_MODEL", "gemini-3.5-flash")
+	listenPort   = getEnv("PORT", "8085")
+	githubOwner  = getEnv("GITHUB_OWNER", "vinhthang")
+	githubRepo   = getEnv("GITHUB_REPO", "oci")
 )
+
+func getEnv(key, defaultVal string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultVal
+}
 
 type GrafanaAlertPayload struct {
 	Status string `json:"status"`
@@ -42,8 +51,8 @@ func main() {
 	}
 
 	http.HandleFunc("/webhook", handleWebhook)
-	log.Println("🚀 AI Incident Commander starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Printf("🚀 AI Incident Commander starting on :%s (model: %s)", listenPort, geminiModel)
+	log.Fatal(http.ListenAndServe(":"+listenPort, nil))
 }
 
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +174,7 @@ func processAlert(status, alertName string, labels, annotations map[string]strin
 }
 
 func runTriageMinion(alertName string, labels, annotations map[string]string) string {
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=%s", geminiAPIKey)
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", geminiModel, geminiAPIKey)
 	prompt := fmt.Sprintf("You are the Triage Minion for a Kubernetes GitOps cluster. Analyze this Grafana Alert and provide a brief root cause hypothesis and suggested action.\nAlert: %s\nLabels: %v\nAnnotations: %v", alertName, labels, annotations)
 
 	reqBody, _ := json.Marshal(map[string]interface{}{

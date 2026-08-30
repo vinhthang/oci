@@ -201,7 +201,7 @@ func runFixerMinion(issueNumber int, alertName string, attempt int) {
 	exec.Command("git", "config", "--global", "user.name", "AI Incident Commander").Run()
 	exec.Command("sh", "-c", fmt.Sprintf("git config --global url.\"https://oauth2:%s@github.com/\".insteadOf \"https://github.com/\"", githubToken)).Run()
 
-	prompt := fmt.Sprintf("You are the Fixer Minion. GitHub Issue #%d reports an alert '%s'. This is attempt %d. Clone the vinhthang/oci repository, edit the Helm chart values.yaml to fix the issue, commit, and push. Do not ask for confirmation.", issueNumber, alertName, attempt)
+	prompt := fmt.Sprintf("You are the Fixer Minion. GitHub Issue #%d reports an alert '%s'. This is attempt %d. Clone the vinhthang/oci repository, edit the Helm chart values.yaml to fix the issue, commit, and push. You MUST post a summary of your actions and any push errors as a comment on Issue #%d.", issueNumber, alertName, attempt, issueNumber)
 	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -212,7 +212,11 @@ func runFixerMinion(issueNumber int, alertName string, attempt int) {
 }
 
 func runRollbackMinion(issueNumber int) {
-	prompt := fmt.Sprintf("You are the Fixer Minion. Issue #%d failed after 3 attempts. Clone vinhthang/oci, run git revert HEAD, commit, and push to rollback the bad fixes. Do not ask for confirmation.", issueNumber)
+	exec.Command("git", "config", "--global", "user.email", "ai-incident-commander@vinhthang.dev").Run()
+	exec.Command("git", "config", "--global", "user.name", "AI Incident Commander").Run()
+	exec.Command("sh", "-c", fmt.Sprintf("git config --global url.\"https://oauth2:%s@github.com/\".insteadOf \"https://github.com/\"", githubToken)).Run()
+
+	prompt := fmt.Sprintf("You are the Rollback Minion. Issue #%d failed after 3 attempts. Clone vinhthang/oci, run git revert HEAD, commit, and push to rollback the bad fixes. You MUST post a summary of your actions and any push errors as a comment on Issue #%d.", issueNumber, issueNumber)
 	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

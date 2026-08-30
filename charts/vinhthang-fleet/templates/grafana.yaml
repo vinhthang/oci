@@ -462,8 +462,6 @@ data:
       "version": 10
     }
 ---
-apiVersion: apps/v1
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -485,6 +483,8 @@ data:
     policies:
       - orgId: 1
         receiver: ai-incident-commander
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: grafana

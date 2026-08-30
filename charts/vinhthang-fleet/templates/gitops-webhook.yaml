@@ -73,10 +73,15 @@ spec:
                     rm -rf /tmp/vinhthang-fleet
                     if git clone --depth 1 https://github.com/vinhthang/oci.git /tmp/vinhthang-fleet; then
                       echo "📥 Repository pulled successfully. Upgrading Helm Fleet..."
-                      helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default --no-hooks || echo "⚠️ Helm upgrade returned warning."
-                      echo "✅ [$(date)] GitOps reconcile finished successfully!"
+                      if helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default --no-hooks; then
+                        echo "✅ [$(date)] GitOps reconcile finished successfully!"
+                      else
+                        echo "❌ Helm upgrade failed! Crashing pod to trigger Grafana alert..."
+                        kill 1
+                      fi
                     else
-                      echo "❌ Failed to clone repository."
+                      echo "❌ Failed to clone repository. Crashing pod to trigger Grafana alert..."
+                      kill 1
                     fi
                   fi
                   sleep 2

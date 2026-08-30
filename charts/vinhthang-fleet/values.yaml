@@ -91,7 +91,7 @@ otelCollector:
       cpu: 20m
       memory: 64Mi
 pgpool:
-  enabled: true
+  enabled: false
   image: docker.io/pgpool/pgpool:latest
   nodeHostname: oracle10
   resources:
@@ -111,7 +111,7 @@ postgres:
   primaryNodeHostname: arm10
   primaryStoragePath: /opt/postgres
   replica:
-    enabled: true
+    enabled: false
   replicaNodeHostname: oracle10
   replicaResources:
     limits:

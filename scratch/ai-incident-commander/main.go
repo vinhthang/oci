@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -164,7 +165,7 @@ func processAlert(status, alertName string, labels, annotations map[string]strin
 }
 
 func runTriageMinion(alertName string, labels, annotations map[string]string) string {
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=%s", geminiAPIKey)
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=%s", geminiAPIKey)
 	prompt := fmt.Sprintf("You are the Triage Minion for a Kubernetes GitOps cluster. Analyze this Grafana Alert and provide a brief root cause hypothesis and suggested action.\nAlert: %s\nLabels: %v\nAnnotations: %v", alertName, labels, annotations)
 
 	reqBody, _ := json.Marshal(map[string]interface{}{
@@ -175,10 +176,17 @@ func runTriageMinion(alertName string, labels, annotations map[string]string) st
 
 	geminiLimiter.Wait(context.Background())
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
-	if err != nil || resp.StatusCode != 200 {
+	if err != nil {
+		log.Printf("Gemini triage request error: %v", err)
 		return "⚠️ Failed to contact Gemini API for triage. Attempting blind fix."
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		log.Printf("Gemini triage API returned HTTP %d: %s", resp.StatusCode, string(bodyBytes))
+		return "⚠️ Failed to contact Gemini API for triage. Attempting blind fix."
+	}
 
 	var res map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&res)

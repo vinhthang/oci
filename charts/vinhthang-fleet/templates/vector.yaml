@@ -61,6 +61,8 @@ data:
         inputs:
           - format_logs
         endpoint: "http://victorialogs.observability.svc.cluster.local:9428/insert"
+        encoding:
+          codec: json
         labels:
           app: '{{ `{{ container }}` }}'
           pod: '{{ `{{ pod }}` }}'

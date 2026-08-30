@@ -237,20 +237,20 @@ victoriaLogs:
   image: docker.io/victoriametrics/victoria-logs:v1.51.1
   resources:
     limits:
-      memory: 128Mi
+      memory: 512Mi
     requests:
-      cpu: 20m
-      memory: 32Mi
+      cpu: 50m
+      memory: 128Mi
   retentionPeriod: 30d
 victoriaMetrics:
   enabled: true
   image: docker.io/victoriametrics/victoria-metrics:v1.109.1
   resources:
     limits:
-      memory: 128Mi
+      memory: 512Mi
     requests:
-      cpu: 20m
-      memory: 32Mi
+      cpu: 50m
+      memory: 128Mi
   retentionPeriod: 30d
 vietcalendar:
   enabled: true

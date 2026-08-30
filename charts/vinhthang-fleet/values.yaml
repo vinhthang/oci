@@ -95,7 +95,7 @@ otelCollector:
 pgpool:
   enabled: false
   image: docker.io/pgpool/pgpool:latest
-  nodeHostname: oracle10
+  nodeHostname: arm10
   resources:
     limits:
       memory: 256Mi
@@ -114,7 +114,7 @@ postgres:
   primaryStoragePath: /opt/postgres
   replica:
     enabled: false
-  replicaNodeHostname: oracle10
+  replicaNodeHostname: arm10
   replicaResources:
     limits:
       memory: 384Mi
@@ -131,13 +131,13 @@ postgres:
 pulsar:
   autorecovery:
     nodeSelector:
-      kubernetes.io/hostname: oracle10
+      kubernetes.io/hostname: arm10
     podMonitor:
       enabled: false
     replicaCount: 1
   bookkeeper:
     nodeSelector:
-      kubernetes.io/hostname: oracle10
+      kubernetes.io/hostname: arm10
     podMonitor:
       enabled: false
     replicaCount: 1
@@ -163,7 +163,7 @@ pulsar:
       managedLedgerDefaultEnsembleSize: '1'
       managedLedgerDefaultWriteQuorum: '1'
     nodeSelector:
-      kubernetes.io/hostname: oracle10
+      kubernetes.io/hostname: arm10
     podMonitor:
       enabled: false
     replicaCount: 1
@@ -197,7 +197,7 @@ pulsar:
     enabled: false
   zookeeper:
     nodeSelector:
-      kubernetes.io/hostname: oracle10
+      kubernetes.io/hostname: arm10
     podMonitor:
       enabled: false
     replicaCount: 1

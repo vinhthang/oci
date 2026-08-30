@@ -1,7 +1,7 @@
 # ADR 0026: Relocate PostgreSQL Replica, Pgpool, and Redis for Memory Optimization
 
 **Date**: 2026-08-30
-**Status**: 🟢 Accepted
+**Status**: 🔴 Deprecated (Superseded by ADR-0029)
 
 ## Context
 The `amd11` Always Free node (`VM.Standard.E2.1.Micro`) is strictly constrained to 1GB of total RAM. Over time, the node became over-provisioned, hosting the PostgreSQL Replica (384Mi limit), Pgpool connection pooler (256Mi limit), and Redis in-memory cache (384MB limit). Combined, these limits totaled 1024MB, leaving exactly zero memory buffer for the Oracle Linux 10 host OS, the K3s Kubelet, and the Flannel CNI overlay. 

@@ -1,7 +1,7 @@
 # ADR-0028: Taint and Isolate External Node `oracle10` to Prevent Cluster Entropy
 
 ## Status
-🟢 Accepted
+🔴 Deprecated (Superseded by ADR-0029)
 
 ## Context
 `oracle10` is an external host with 32 GB RAM joined to the cluster via an encrypted Tailscale WireGuard mesh (ADR-0020). While it provides significant memory capacity, operating an external node over a public WAN overlay introduces several failure modes:

@@ -1,7 +1,7 @@
 # ADR-0020: Hybrid-Cloud External Node Integration for 20+ Java Microservices via Tailscale
 
 ## Status
-🟢 **Accepted & Implemented**
+🔴 **Deprecated (Superseded by ADR-0029)**
 
 ## Context
 Following the cluster-wide domain namespace partitioning (ADR-0018) and high-speed data backbone setup (ADR-0019), the fleet required a massive compute expansion to host **20+ Java/Spring Boot microservices**.

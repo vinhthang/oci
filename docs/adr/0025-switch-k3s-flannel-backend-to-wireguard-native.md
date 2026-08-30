@@ -3,7 +3,7 @@
 Date: 2026-08-29
 
 ## Status
-Accepted
+Deprecated (Superseded by ADR-0030)
 
 ## Context
 In ADR-0020, we optimized the local network throughput between `arm10` and `amd11` by removing Tailscale as the primary K3s network interface. This forced K3s to use the high-speed Oracle VCN (`eth0` / `enp0s6`) as the internal node IP.

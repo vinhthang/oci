@@ -4,7 +4,7 @@ Date: 2026-08-29
 
 ## Status
 
-Accepted
+Deprecated (Superseded by ADR-0029)
 
 ## Context
 

@@ -58,3 +58,4 @@
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.
 8. **Network Perimeter Isolation**:
    * `amd10` and `gce10` are the **public edge gateways** (`152.70.101.162` and `34.61.16.208`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.
+| [**ADR-0027**](adr/0027-deploy-kubestatemetrics-vmagent.md) | **Deploy Kube-State-Metrics & vmagent** | 🟢 Accepted | Observability | Deployed vmagent and KSM for native K8s metric collection. |

@@ -289,3 +289,27 @@ aiIncidentCommander:
     repository: "docker.io/vinhthang/ai-incident-commander"
     tag: "latest"
     pullPolicy: IfNotPresent
+
+kube-state-metrics:
+  namespaceOverride: observability
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+victoria-metrics-agent:
+  namespaceOverride: observability
+  remoteWriteUrls:
+    - http://victoriametrics.observability.svc.cluster.local:8428/api/v1/write
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+  rbac:
+    create: true
+  serviceAccount:
+    create: true

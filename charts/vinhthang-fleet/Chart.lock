@@ -1,0 +1,12 @@
+dependencies:
+- name: pulsar
+  repository: https://pulsar.apache.org/charts
+  version: 4.7.0
+- name: kube-state-metrics
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 8.4.1
+- name: victoria-metrics-agent
+  repository: https://victoriametrics.github.io/helm-charts
+  version: 0.46.0
+digest: sha256:244ac472365749efb118d3cc216d5873fbb7a156f3c0b180d0619b9d43f1e7ed
+generated: "2026-08-30T12:59:45.028198+07:00"

@@ -196,6 +196,11 @@ func runTriageMinion(alertName string, labels, annotations map[string]string) st
 }
 
 func runFixerMinion(issueNumber int, alertName string, attempt int) {
+	// Configure git to use the GitHub token for HTTPS authentication
+	exec.Command("git", "config", "--global", "user.email", "ai-incident-commander@vinhthang.dev").Run()
+	exec.Command("git", "config", "--global", "user.name", "AI Incident Commander").Run()
+	exec.Command("sh", "-c", fmt.Sprintf("git config --global url.\"https://oauth2:%s@github.com/\".insteadOf \"https://github.com/\"", githubToken)).Run()
+
 	prompt := fmt.Sprintf("You are the Fixer Minion. GitHub Issue #%d reports an alert '%s'. This is attempt %d. Clone the vinhthang/oci repository, edit the Helm chart values.yaml to fix the issue, commit, and push. Do not ask for confirmation.", issueNumber, alertName, attempt)
 	cmd := exec.Command("/usr/local/bin/agy", "-p", prompt, "--dangerously-skip-permissions")
 	cmd.Stdout = os.Stdout

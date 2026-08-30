@@ -3,7 +3,7 @@ aiIncidentCommander:
   port: 8085
   model: gemini-3.7-flash # Upgraded to Gemini 3.7 Flash; TestFakeAlertIgnored synthetic alert validated
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     repository: ghcr.io/vinhthang/ai-incident-commander
     tag: latest
   nodeSelector: arm10

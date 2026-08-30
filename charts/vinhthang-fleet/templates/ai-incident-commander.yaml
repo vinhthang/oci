@@ -44,8 +44,6 @@ spec:
                   name: gemini-ai-secret
                   key: GEMINI_EMBEDDING_API_KEY # Reusing existing key or we can create GEMINI_API_KEY
           volumeMounts:
-            - name: commander-binary
-              mountPath: /app/incident-commander
             - name: rtk-binary
               mountPath: /usr/local/bin/rtk
             - name: agy-binary
@@ -53,10 +51,6 @@ spec:
             - name: agy-config
               mountPath: /root/.gemini
       volumes:
-        - name: commander-binary
-          hostPath:
-            path: /opt/ai-incident-commander/incident-commander
-            type: FileOrCreate
         - name: rtk-binary
           hostPath:
             path: /home/opc/.cargo/bin/rtk

@@ -560,7 +560,11 @@ spec:
             timeoutSeconds: 3
           volumeMounts:
             - name: grafana-alerting
-              mountPath: /etc/grafana/provisioning/alerting
+              mountPath: /etc/grafana/provisioning/alerting/alerting.yaml
+              subPath: alerting.yaml
+            - name: grafana-alert-rules
+              mountPath: /etc/grafana/provisioning/alerting/rules.yaml
+              subPath: rules.yaml
             - name: grafana-data
               mountPath: /var/lib/grafana
             - name: grafana-datasources
@@ -577,20 +581,20 @@ spec:
               memory: 256Mi
       volumes:
         - name: grafana-alerting
-          configMap:
-            name: grafana-alerting
+              mountPath: /etc/grafana/provisioning/alerting/alerting.yaml
+              subPath: alerting.yaml
+            - name: grafana-alert-rules
+              mountPath: /etc/grafana/provisioning/alerting/rules.yaml
+              subPath: rules.yaml
         - name: grafana-data
           hostPath:
             path: /opt/grafana
             type: Directory
         - name: grafana-datasources
-          configMap:
             name: grafana-datasources
         - name: grafana-dashboards-provider
-          configMap:
             name: grafana-dashboards-provider
         - name: grafana-dashboard-fleet-status
-          configMap:
             name: grafana-dashboard-fleet-status
 ---
 apiVersion: v1

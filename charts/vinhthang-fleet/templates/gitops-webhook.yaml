@@ -73,7 +73,7 @@ spec:
                     rm -rf /tmp/vinhthang-fleet
                     if git clone --depth 1 https://github.com/vinhthang/oci.git /tmp/vinhthang-fleet; then
                       echo "📥 Repository pulled successfully. Upgrading Helm Fleet..."
-                      helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default || echo "⚠️ Helm upgrade returned warning."
+                      helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default --no-hooks || echo "⚠️ Helm upgrade returned warning."
                       echo "✅ [$(date)] GitOps reconcile finished successfully!"
                     else
                       echo "❌ Failed to clone repository."

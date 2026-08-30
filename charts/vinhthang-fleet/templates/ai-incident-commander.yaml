@@ -39,11 +39,17 @@ spec:
                   name: postgres-secret
                   key: GEMINI_EMBEDDING_API_KEY # Reusing existing key or we can create GEMINI_API_KEY
           volumeMounts:
+            - name: rtk-binary
+              mountPath: /usr/local/bin/rtk
             - name: agy-binary
               mountPath: /home/opc/.local/bin/agy
             - name: agy-config
               mountPath: /root/.gemini
       volumes:
+        - name: rtk-binary
+          hostPath:
+            path: /home/opc/.cargo/bin/rtk
+            type: FileOrCreate
         - name: agy-binary
           hostPath:
             path: /home/opc/.local/bin/agy

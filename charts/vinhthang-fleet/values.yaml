@@ -4,7 +4,7 @@ aiIncidentCommander:
   model: gemini-3.5-flash
   image:
     pullPolicy: IfNotPresent
-    repository: docker.io/vinhthang/ai-incident-commander
+    repository: ghcr.io/vinhthang/ai-incident-commander
     tag: latest
   nodeSelector: arm10
 anythingllm:

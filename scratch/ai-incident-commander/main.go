@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"golang.org/x/time/rate"
 
 	"github.com/google/go-github/v59/github"
 	"golang.org/x/oauth2"
@@ -30,6 +31,8 @@ type GrafanaAlertPayload struct {
 		Annotations map[string]string `json:"annotations"`
 	} `json:"alerts"`
 }
+
+var geminiLimiter = rate.NewLimiter(rate.Every(21*time.Second), 1)
 
 func main() {
 	if githubToken == "" || geminiAPIKey == "" {
@@ -169,6 +172,7 @@ func runTriageMinion(alertName string, labels, annotations map[string]string) st
 		},
 	})
 
+	geminiLimiter.Wait(context.Background())
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil || resp.StatusCode != 200 {
 		return "⚠️ Failed to contact Gemini API for triage. Attempting blind fix."

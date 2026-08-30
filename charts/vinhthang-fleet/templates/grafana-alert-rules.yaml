@@ -81,7 +81,7 @@ data:
                   datasource:
                     type: __expr__
                     uid: __expr__
-                  expression: B
+                  expression: $B > 0
                   intervalMs: 1000
                   maxDataPoints: 43200
                   type: math

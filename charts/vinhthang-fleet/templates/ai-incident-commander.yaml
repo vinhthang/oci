@@ -42,7 +42,7 @@ spec:
             - name: rtk-binary
               mountPath: /usr/local/bin/rtk
             - name: agy-binary
-              mountPath: /home/opc/.local/bin/agy
+              mountPath: /usr/local/bin/agy
             - name: agy-config
               mountPath: /root/.gemini
       volumes:

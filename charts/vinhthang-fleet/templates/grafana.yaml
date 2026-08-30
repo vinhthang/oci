@@ -458,7 +458,7 @@ data:
       },
       "timezone": "Asia/Ho_Chi_Minh",
       "title": "Vinh Thang Fleet • Real-Time Status & Observability",
-      "uid": "fleet-command-center",
+      "uid": "fleet-status",
       "version": 10
     }
 ---

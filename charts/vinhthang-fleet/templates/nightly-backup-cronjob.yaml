@@ -45,12 +45,12 @@ spec:
                   echo "📦 [Backup] 2. Archiving database dumps and Vaultwarden data..."
                   tar -czf "$BACKUP_DIR/fleet-backup-$DATE.tar.gz" \
                     -C /tmp "pg_dump_$DATE.sql" \
-                    -C /opt/vaultwarden data 2>/dev/null || true
+                    -C /opt/vaultwarden data
 
                   rm -f "/tmp/pg_dump_$DATE.sql"
 
                   echo "🧹 [Backup] 3. Pruning backups older than 7 days..."
-                  find "$BACKUP_DIR" -name "fleet-backup-*.tar.gz" -mtime +7 -delete || true
+                  find "$BACKUP_DIR" -name "fleet-backup-*.tar.gz" -mtime +7 -delete
 
                   echo "✅ [Backup] Backup created successfully: $BACKUP_DIR/fleet-backup-$DATE.tar.gz"
                   ls -lh "$BACKUP_DIR"

@@ -27,7 +27,7 @@ ssh amd10 "
   sudo /usr/local/bin/caddy reload --config /etc/caddy/Caddyfile
 "
 ssh gce10 "
-  sudo /usr/bin/caddy reload --config /etc/caddy/Caddyfile || true
+  sudo /usr/bin/caddy reload --config /etc/caddy/Caddyfile
 "
 
 echo "=================================================="

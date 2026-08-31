@@ -40,6 +40,7 @@
 | [**ADR-0029**](adr/0029-remove-oracle10-from-k3s-cluster.md) | **Remove External Node `oracle10` from K3s Cluster** | 🟢 Accepted | Architecture / Infrastructure | Decommission the 32GB external node to simplify network topology and migrate workloads to internal nodes. |
 | [**ADR-0030**](adr/0030-revert-k3s-flannel-to-vxlan.md) | **Revert K3s Flannel Backend to VXLAN** | 🟢 Accepted | Network | Revert K3s Flannel backend from wireguard-native back to vxlan since oracle10 is removed. |
 | [**ADR-0031**](adr/0031-expand-grafana-unified-alerting-suite.md) | **Expansion of Grafana 11 Unified Alerting Suite for Autonomous AI Incident Response** | 🟢 Accepted | Observability / Alerting | Declare comprehensive 7-rule alerting suite for workload health, node pressure, and endpoint SLAs. |
+| [**ADR-0032**](adr/0032-expand-grafana-alert-rules-jobs-statefulsets-storage-nodes.md) | **Expansion of Grafana Alert Rules for Batch Jobs, StatefulSets, Storage Binding, and Node Liveness** | 🟢 Accepted | Observability / Alerting | Eliminate observability blind spots with automated alerts for failed CronJobs, degraded StatefulSets, unbound PVCs, and NotReady nodes. |
 
 ---
 

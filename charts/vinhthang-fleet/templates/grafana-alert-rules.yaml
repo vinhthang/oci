@@ -326,11 +326,323 @@ data:
               severity: warning
               category: workload
 
+          - uid: statefulset_unavailable
+            title: StatefulSetReplicasUnavailable
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: (kube_statefulset_status_replicas - kube_statefulset_status_replicas_ready) > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 3m
+            annotations:
+              description: "StatefulSet {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.statefulset {{ "}}" }} has unavailable or unready replicas."
+              summary: "StatefulSet Replicas Unavailable"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: job_failed
+            title: JobFailed
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_job_status_failed > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              description: "Batch Job or CronJob {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.job_name {{ "}}" }} failed execution."
+              summary: "Batch Job Execution Failed"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: pvc_unbound
+            title: PersistentVolumeClaimUnbound
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_persistentvolumeclaim_status_phase{phase!="Bound"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 3m
+            annotations:
+              description: "PersistentVolumeClaim {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.persistentvolumeclaim {{ "}}" }} is in phase {{ "{{" }} $labels.phase {{ "}}" }} and not bound to storage."
+              summary: "PersistentVolumeClaim Not Bound"
+            labels:
+              severity: critical
+              category: storage
+
       - orgId: 1
         name: Kubernetes Node Health
         folder: Kubernetes Alerts
         interval: 1m
         rules:
+          - uid: node_not_ready
+            title: NodeNotReady
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 2m
+            annotations:
+              description: "Kubernetes Node {{ "{{" }} $labels.node {{ "}}" }} is in NotReady condition."
+              summary: "Kubernetes Node Not Ready"
+            labels:
+              severity: critical
+              category: node
+
           - uid: node_memory_pressure
             title: NodeMemoryPressure
             condition: C
@@ -503,7 +815,7 @@ data:
                 datasourceUid: VictoriaMetrics
                 model:
                   editorMode: code
-                  expr: httpcheck_status{http_status_class="2xx"} == 0
+                  expr: (httpcheck_status{http_status_class="2xx"} == 0) and (httpcheck_status{http_status_class="3xx"} == 0)
                   intervalMs: 1000
                   maxDataPoints: 43200
                   refId: A
@@ -564,7 +876,7 @@ data:
             execErrState: Error
             for: 1m
             annotations:
-              description: "Endpoint {{ "{{" }} $labels.http_url {{ "}}" }} is failing synthetic HTTP health checks (non-2xx response)."
+              description: "Endpoint {{ "{{" }} $labels.http_url {{ "}}" }} is failing synthetic HTTP health checks (non-2xx and non-3xx response)."
               summary: "Endpoint Down"
             labels:
               severity: critical

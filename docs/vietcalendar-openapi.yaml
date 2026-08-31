@@ -1,0 +1,131 @@
+openapi: 3.0.3
+info:
+  title: Vietnam Lunar Calendar & Holiday API
+  description: |
+    High-performance, ultra-fast API for Vietnam Lunar Calendar (Âm Lịch) calculations, 
+    Solar-to-Lunar date conversions, and Vietnam National Holiday verification.
+    
+    Built in Rust on high-speed infrastructure.
+  version: 1.0.0
+  contact:
+    name: Thang Hoang
+    url: https://vinhthang.dev
+servers:
+  - url: https://vietcalendar.vinhthang.dev
+    description: Production API Server (VietCalendar)
+  - url: https://api.vinhthang.dev
+    description: High-Performance Global Edge API
+paths:
+  /:
+    get:
+      summary: Get Today's Lunar Date
+      description: Returns the current date converted to Vietnam Lunar Calendar (Âm Lịch).
+      operationId: getTodayLunar
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LunarDate'
+              example:
+                dd: 10
+                mm: 7
+                yyyy: 2026
+
+  /lunar:
+    get:
+      summary: Convert Solar Date to Lunar Date
+      description: Converts a Gregorian (Dương Lịch) date into Vietnam Lunar Calendar (Âm Lịch).
+      operationId: convertSolarToLunar
+      parameters:
+        - name: dd
+          in: query
+          required: true
+          description: Solar Day (1-31)
+          schema:
+            type: integer
+            example: 22
+        - name: mm
+          in: query
+          required: true
+          description: Solar Month (1-12)
+          schema:
+            type: integer
+            example: 8
+        - name: yyyy
+          in: query
+          required: true
+          description: Solar Year
+          schema:
+            type: integer
+            example: 2026
+      responses:
+        '200':
+          description: Successful conversion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LunarDate'
+              example:
+                dd: 10
+                mm: 7
+                yyyy: 2026
+
+  /vietnam-holiday:
+    get:
+      summary: Check Vietnam National Public Holiday
+      description: Checks if a given date is an official Vietnam Public Holiday (Tết, National Day, Reunification Day, etc.).
+      operationId: checkVietnamHoliday
+      parameters:
+        - name: dd
+          in: query
+          required: true
+          description: Day (1-31)
+          schema:
+            type: integer
+            example: 2
+        - name: mm
+          in: query
+          required: true
+          description: Month (1-12)
+          schema:
+            type: integer
+            example: 9
+        - name: yyyy
+          in: query
+          required: true
+          description: Year
+          schema:
+            type: integer
+            example: 2026
+      responses:
+        '200':
+          description: True if holiday, False otherwise
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+
+components:
+  schemas:
+    LunarDate:
+      type: object
+      required:
+        - dd
+        - mm
+        - yyyy
+      properties:
+        dd:
+          type: integer
+          description: Lunar Day (Ngày Âm)
+          example: 10
+        mm:
+          type: integer
+          description: Lunar Month (Tháng Âm)
+          example: 7
+        yyyy:
+          type: integer
+          description: Lunar Year (Năm Âm)
+          example: 2026

@@ -1,0 +1,18 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PodCrashLoopBackOff",
+        "namespace": "apps",
+        "pod": "navidrome-6b9487cf84-abcd",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "Pod is crash looping",
+        "description": "Pod apps/navidrome-6b9487cf84-abcd is stuck in CrashLoopBackOff for 5 minutes."
+      }
+    }
+  ]
+}

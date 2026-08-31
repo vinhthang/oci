@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memos
+  namespace: apps
+  labels:
+    app: memos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memos
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: memos
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      containers:
+        - name: memos
+          image: {{ .Values.memos.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5230
+              name: http
+          env:
+            - name: MEMOS_MODE
+              value: "prod"
+            - name: MEMOS_PORT
+              value: "5230"
+            - name: MEMOS_DRIVER
+              value: "postgres"
+            - name: MEMOS_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: MEMOS_DSN
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: memos-data
+              mountPath: /var/opt/memos
+          resources:
+            {{- toYaml .Values.memos.resources | nindent 12 }}
+      volumes:
+        - name: memos-data
+          hostPath:
+            path: /opt/memos
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memos
+  namespace: apps
+spec:
+  type: NodePort
+  selector:
+    app: memos
+  ports:
+    - protocol: TCP
+      port: 5230
+      targetPort: 5230
+      nodePort: {{ .Values.memos.nodePort }}

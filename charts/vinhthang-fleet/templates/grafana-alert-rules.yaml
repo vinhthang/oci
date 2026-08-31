@@ -1,0 +1,962 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alert-rules
+  namespace: observability
+  labels:
+    app: grafana
+data:
+  rules.yaml: |
+    apiVersion: 1
+    groups:
+      - orgId: 1
+        name: Kubernetes Workloads
+        folder: Kubernetes Alerts
+        interval: 1m
+        rules:
+          - uid: pod_crashloop
+            title: PodCrashLoopBackOff
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: rate(kube_pod_container_status_restarts_total[5m]) > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 1m
+            annotations:
+              description: "Pod {{ "{{" }} or $labels.exported_namespace $labels.namespace {{ "}}" }}/{{ "{{" }} or $labels.exported_pod $labels.pod {{ "}}" }} is restarting repeatedly."
+              summary: "Pod CrashLoopBackOff"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: pod_oomkilled
+            title: PodOOMKilled
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              description: "Pod {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }} container was terminated due to OOM (Out Of Memory)."
+              summary: "Pod OOMKilled"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: deployment_unavailable
+            title: DeploymentReplicasUnavailable
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_deployment_status_replicas_unavailable > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 5m
+            annotations:
+              description: "Deployment {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.deployment {{ "}}" }} has unavailable replicas."
+              summary: "Deployment Replicas Unavailable"
+            labels:
+              severity: warning
+              category: workload
+
+          - uid: pod_pending_too_long
+            title: PodPendingTooLong
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_pod_status_phase{phase="Pending"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 5m
+            annotations:
+              description: "Pod {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }} has been in Pending phase for over 5 minutes."
+              summary: "Pod Pending Too Long"
+            labels:
+              severity: warning
+              category: workload
+
+          - uid: statefulset_unavailable
+            title: StatefulSetReplicasUnavailable
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: (kube_statefulset_status_replicas - kube_statefulset_status_replicas_ready) > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 3m
+            annotations:
+              description: "StatefulSet {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.statefulset {{ "}}" }} has unavailable or unready replicas."
+              summary: "StatefulSet Replicas Unavailable"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: job_failed
+            title: JobFailed
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_job_status_failed > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              description: "Batch Job or CronJob {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.job_name {{ "}}" }} failed execution."
+              summary: "Batch Job Execution Failed"
+            labels:
+              severity: critical
+              category: workload
+
+          - uid: pvc_unbound
+            title: PersistentVolumeClaimUnbound
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_persistentvolumeclaim_status_phase{phase!="Bound"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 3m
+            annotations:
+              description: "PersistentVolumeClaim {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.persistentvolumeclaim {{ "}}" }} is in phase {{ "{{" }} $labels.phase {{ "}}" }} and not bound to storage."
+              summary: "PersistentVolumeClaim Not Bound"
+            labels:
+              severity: critical
+              category: storage
+
+      - orgId: 1
+        name: Kubernetes Node Health
+        folder: Kubernetes Alerts
+        interval: 1m
+        rules:
+          - uid: node_not_ready
+            title: NodeNotReady
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 2m
+            annotations:
+              description: "Kubernetes Node {{ "{{" }} $labels.node {{ "}}" }} is in NotReady condition."
+              summary: "Kubernetes Node Not Ready"
+            labels:
+              severity: critical
+              category: node
+
+          - uid: node_memory_pressure
+            title: NodeMemoryPressure
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 2m
+            annotations:
+              description: "Node {{ "{{" }} $labels.node {{ "}}" }} is experiencing Memory Pressure."
+              summary: "Node Memory Pressure"
+            labels:
+              severity: critical
+              category: node
+
+          - uid: node_disk_pressure
+            title: NodeDiskPressure
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 2m
+            annotations:
+              description: "Node {{ "{{" }} $labels.node {{ "}}" }} is experiencing Disk Pressure."
+              summary: "Node Disk Pressure"
+            labels:
+              severity: critical
+              category: node
+
+      - orgId: 1
+        name: Synthetic Ingress SLA
+        folder: Synthetic Alerts
+        interval: 1m
+        rules:
+          - uid: endpoint_down
+            title: EndpointDown
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: (httpcheck_status{http_status_class="2xx"} == 0) and (httpcheck_status{http_status_class="3xx"} == 0)
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B == 1
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 1m
+            annotations:
+              description: "Endpoint {{ "{{" }} $labels.http_url {{ "}}" }} is failing synthetic HTTP health checks (non-2xx and non-3xx response)."
+              summary: "Endpoint Down"
+            labels:
+              severity: critical
+              category: endpoint
+
+          - uid: ingress_5xx_error
+            title: Ingress5xxError
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: sum(increase(caddy_http_response_status_count_total{status=~"5.."}[1m])) > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              description: "Caddy Edge Ingress detected {{ "{{" }} $values.B.Value {{ "}}" }} HTTP 5xx Server Errors in the last minute."
+              summary: "Ingress 5xx Server Error"
+            labels:
+              severity: critical
+              category: endpoint
+

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victorialogs
+  namespace: observability
+  labels:
+    app: victorialogs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: victorialogs
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: victorialogs
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      containers:
+        - name: victorialogs
+          image: {{ .Values.victoriaLogs.image }}
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-storageDataPath=/victoria-logs-data"
+            - "-retentionPeriod={{ .Values.victoriaLogs.retentionPeriod }}"
+            - "-httpListenAddr=:9428"
+          ports:
+            - containerPort: 9428
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: data
+              mountPath: /victoria-logs-data
+          resources:
+            {{- toYaml .Values.victoriaLogs.resources | nindent 12 }}
+      volumes:
+        - name: data
+          hostPath:
+            path: /opt/victorialogs
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victorialogs
+  namespace: observability
+  labels:
+    app: victorialogs
+spec:
+  type: ClusterIP
+  selector:
+    app: victorialogs
+  ports:
+    - protocol: TCP
+      port: 9428
+      targetPort: 9428

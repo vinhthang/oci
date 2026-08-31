@@ -1,0 +1,165 @@
+{{- if .Values.weaviate.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai
+  labels:
+    app.kubernetes.io/managed-by: Helm
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: weaviate-data-pv
+  labels:
+    type: local
+    app: weaviate
+spec:
+  capacity:
+    storage: {{ .Values.weaviate.persistence.size | default "10Gi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: {{ .Values.weaviate.persistence.hostPath | default "/opt/weaviate/data" }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - {{ .Values.weaviate.nodeHostname | default "arm10" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: weaviate-data-pvc
+  namespace: ai
+  labels:
+    app: weaviate
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: {{ .Values.weaviate.persistence.size | default "10Gi" }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: weaviate-secret
+  namespace: ai
+  labels:
+    app: weaviate
+type: Opaque
+stringData:
+  google-api-key: {{ .Values.weaviate.googleApiKey | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weaviate
+  namespace: ai
+  labels:
+    app: weaviate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weaviate
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: weaviate
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.weaviate.nodeHostname | default "arm10" }}
+      containers:
+        - name: weaviate
+          image: {{ .Values.weaviate.image | default "cr.weaviate.io/semitechnologies/weaviate:1.39.0" }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ENABLE_MODULES
+              value: "text2vec-google, generative-google, backup-filesystem"
+            - name: DEFAULT_VECTORIZER_MODULE
+              value: "text2vec-google"
+            - name: GOOGLE_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: weaviate-secret
+                  key: google-api-key
+            - name: MCP_SERVER_ENABLED
+              value: {{ .Values.weaviate.mcpServerEnabled | default true | quote }}
+            - name: MCP_SERVER_WRITE_ACCESS_ENABLED
+              value: "true"
+            - name: PERSISTENCE_DATA_PATH
+              value: "/var/lib/weaviate"
+            - name: BACKUP_FILESYSTEM_PATH
+              value: "/var/lib/weaviate/backups"
+            - name: QUERY_DEFAULTS_LIMIT
+              value: "25"
+            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+              value: "true"
+            - name: CLUSTER_HOSTNAME
+              value: "node1"
+            - name: DISABLE_TELEMETRY
+              value: "true"
+          ports:
+            - containerPort: 8080
+              name: http-mcp
+            - containerPort: 50051
+              name: grpc
+          livenessProbe:
+            httpGet:
+              path: /v1/.well-known/live
+              port: http-mcp
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /v1/.well-known/ready
+              port: http-mcp
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: weaviate-data
+              mountPath: /var/lib/weaviate
+          resources:
+            {{- toYaml .Values.weaviate.resources | nindent 12 }}
+      volumes:
+        - name: weaviate-data
+          persistentVolumeClaim:
+            claimName: weaviate-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate
+  namespace: ai
+  labels:
+    app: weaviate
+spec:
+  type: {{ .Values.weaviate.serviceType | default "NodePort" }}
+  selector:
+    app: weaviate
+  ports:
+    - name: http-mcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      {{- if .Values.weaviate.nodePort }}
+      nodePort: {{ .Values.weaviate.nodePort }}
+      {{- end }}
+    - name: grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+{{- end }}

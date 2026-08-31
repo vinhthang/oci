@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: observability
+  labels:
+    app: otel-collector
+data:
+  config.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      httpcheck:
+        collection_interval: 15s
+        targets:
+          - endpoint: "https://vinhthang.dev"
+            method: GET
+          - endpoint: "https://api.vinhthang.dev/"
+            method: GET
+          - endpoint: "https://music.vinhthang.dev"
+            method: GET
+          - endpoint: "https://files.vinhthang.dev"
+            method: GET
+          - endpoint: "https://analytics.vinhthang.dev"
+            method: GET
+          - endpoint: "https://grafana.vinhthang.dev"
+            method: GET
+          - endpoint: "https://ai.vinhthang.dev"
+            method: GET
+          - endpoint: "https://memos.vinhthang.dev"
+            method: GET
+          - endpoint: "https://webhook.vinhthang.dev"
+            method: GET
+          - endpoint: "https://auth.vinhthang.dev/ping"
+            method: GET
+          - endpoint: "https://vault.vinhthang.dev/alive"
+            method: GET
+
+    processors:
+      batch:
+        timeout: 5s
+        send_batch_size: 256
+
+    exporters:
+      prometheus:
+        endpoint: 0.0.0.0:8889
+      debug:
+        verbosity: basic
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp, httpcheck]
+          processors: [batch]
+          exporters: [prometheus]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: observability
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      containers:
+        - name: otel-collector
+          image: {{ .Values.otelCollector.image }}
+          imagePullPolicy: IfNotPresent
+          args: ["--config=/etc/otelcol-contrib/config.yaml"]
+          ports:
+            - containerPort: 4317
+              name: otlp-grpc
+            - containerPort: 4318
+              name: otlp-http
+            - containerPort: 8888
+              name: metrics
+            - containerPort: 8889
+              name: prom-exporter
+            - containerPort: 13133
+              name: health
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol-contrib
+          resources:
+            {{- toYaml .Values.otelCollector.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: observability
+  labels:
+    app: otel-collector
+spec:
+  type: ClusterIP
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+    - name: metrics
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - name: prom-exporter
+      protocol: TCP
+      port: 8889
+      targetPort: 8889

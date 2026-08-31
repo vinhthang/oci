@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  namespace: apps
+  labels:
+    app: navidrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: navidrome
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: amd11
+      containers:
+        - name: navidrome
+          image: {{ .Values.navidrome.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4533
+              name: http
+          env:
+            - name: ND_MUSICFOLDER
+              value: "/music"
+            - name: ND_DATAFOLDER
+              value: "/data"
+            - name: ND_SCANINTERVAL
+              value: "1m"
+            - name: ND_LOGLEVEL
+              value: "info"
+            - name: ND_ENABLESHARING
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: navidrome-data
+              mountPath: /data
+            - name: music-storage
+              mountPath: /music
+          resources:
+            {{- toYaml .Values.navidrome.resources | nindent 12 }}
+      volumes:
+        - name: navidrome-data
+          hostPath:
+            path: /opt/navidrome/data
+            type: Directory
+        - name: music-storage
+          hostPath:
+            path: /opt/navidrome/music
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: navidrome
+  namespace: apps
+spec:
+  type: NodePort
+  selector:
+    app: navidrome
+  ports:
+    - protocol: TCP
+      port: 4533
+      targetPort: 4533
+      nodePort: {{ .Values.navidrome.nodePort }}

@@ -1,0 +1,21 @@
+apiVersion: v2
+name: vinhthang-fleet
+description: Production Helm Chart for the complete vinhthang.dev Cloud & AI Fleet
+type: application
+version: 1.0.1
+appVersion: "2026.08.25"
+maintainers:
+  - name: Thang Hoang & Antigravity
+    url: https://vinhthang.dev
+dependencies:
+  - name: pulsar
+    version: 4.7.0
+    repository: https://pulsar.apache.org/charts
+    condition: pulsar.enabled
+
+  - name: kube-state-metrics
+    version: 8.4.1
+    repository: https://prometheus-community.github.io/helm-charts
+  - name: victoria-metrics-agent
+    version: 0.46.0
+    repository: https://victoriametrics.github.io/helm-charts

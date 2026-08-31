@@ -1,0 +1,110 @@
+{{- if .Values.aiIncidentCommander.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-incident-commander
+  namespace: system
+  labels:
+    app: ai-incident-commander
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ai-incident-commander
+  template:
+    metadata:
+      labels:
+        app: ai-incident-commander
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.aiIncidentCommander.nodeSelector }}
+      serviceAccountName: gitops-webhook
+      containers:
+        - name: commander
+          image: "{{ .Values.aiIncidentCommander.image.repository }}:{{ .Values.aiIncidentCommander.image.tag }}"
+          imagePullPolicy: {{ .Values.aiIncidentCommander.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.aiIncidentCommander.port | default 8085 }}
+              name: http
+          env:
+            - name: PORT
+              value: "{{ .Values.aiIncidentCommander.port | default 8085 }}"
+            - name: GEMINI_MODEL
+              value: "{{ .Values.aiIncidentCommander.model | default "gemini-3.5-flash" }}"
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: GITHUB_TOKEN
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-ai-secret
+                  key: GEMINI_EMBEDDING_API_KEY
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DB_DSN
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/incident_data?sslmode=disable"
+          volumeMounts:
+            - name: rtk-binary
+              mountPath: /usr/local/bin/rtk
+            - name: agy-binary
+              mountPath: /usr/local/bin/agy
+            - name: agy-config
+              mountPath: /root/.gemini
+            {{- if .Values.aiIncidentCommander.prompts }}
+            - name: templates
+              mountPath: /etc/commander/templates
+            {{- end }}
+      volumes:
+        - name: rtk-binary
+          hostPath:
+            path: /home/opc/.cargo/bin/rtk
+            type: FileOrCreate
+        - name: agy-binary
+          hostPath:
+            path: /home/opc/.local/bin/agy
+            type: FileOrCreate
+        - name: agy-config
+          hostPath:
+            path: /home/opc/.gemini
+            type: DirectoryOrCreate
+        {{- if .Values.aiIncidentCommander.prompts }}
+        - name: templates
+          configMap:
+            name: ai-incident-commander-templates
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-incident-commander
+  namespace: system
+spec:
+  type: ClusterIP
+  selector:
+    app: ai-incident-commander
+  ports:
+    - protocol: TCP
+      port: {{ .Values.aiIncidentCommander.port | default 8085 }}
+      targetPort: {{ .Values.aiIncidentCommander.port | default 8085 }}
+
+{{- if .Values.aiIncidentCommander.prompts }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-incident-commander-templates
+  namespace: system
+data:
+  {{- range $key, $val := .Values.aiIncidentCommander.prompts }}
+  {{ $key }}: |-
+{{ $val | indent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

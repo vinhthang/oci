@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: anythingllm-secret
+  namespace: system
+  labels:
+    app: anythingllm-indexer
+type: Opaque
+stringData:
+  API_KEY: {{ .Values.anythingllm.apiKey | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: anythingllm-indexer-cron
+  namespace: system
+  labels:
+    app: anythingllm-indexer
+spec:
+  schedule: "5 0 * * *" # Daily at 00:05 UTC (07:05 AM ICT) right after Google AI Studio quota reset
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: anythingllm-indexer
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: indexer-trigger
+              image: curlimages/curl:8.10.1
+              env:
+                - name: ANYTHINGLLM_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: anythingllm-secret
+                      key: API_KEY
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "🚀 [$(date)] Starting Daily Gemini Sequential Batch Embedding Job..."
+                  
+                  echo "📚 [1/5] Indexing Distributed Systems 4 into my-workspace..."
+                  curl -s -X POST http://anythingllm.apps:3001/api/v1/workspace/my-workspace/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${ANYTHINGLLM_API_KEY}" \
+                    -d '{"adds":["custom-documents/Distributed_Systems_4.pdf-b4b15a80-f479-4175-a5ef-8ade40566381.json"],"deletes":[]}'
+                  sleep 90
+                  
+                  echo "📚 [2/5] Indexing DDIA 2nd Edition into my-workspace..."
+                  curl -s -X POST http://anythingllm.apps:3001/api/v1/workspace/my-workspace/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${ANYTHINGLLM_API_KEY}" \
+                    -d '{"adds":["custom-documents/Designing-Data-Intensive-Applications-2nd-Edition-(Martin-Kleppmann-Chris-Riccomini)-(z-library.sk-1lib.sk-z-lib.sk).pdf-fc5d71c6-f9cc-4ff0-813b-c29860379b48.json"],"deletes":[]}'
+                  sleep 90
+
+                  echo "📚 [3/5] Indexing How Countries Go Broke into life-and-work..."
+                  curl -s -X POST http://anythingllm.apps:3001/api/v1/workspace/life-and-work/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${ANYTHINGLLM_API_KEY}" \
+                    -d '{"adds":["custom-documents/How-Countries-Go-Broke-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-c8014e95-b4cc-4f81-a310-619f167ca99b.json"],"deletes":[]}'
+                  sleep 45
+
+                  echo "📚 [4/5] Indexing Principles Life and Work into life-and-work..."
+                  curl -s -X POST http://anythingllm.apps:3001/api/v1/workspace/life-and-work/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${ANYTHINGLLM_API_KEY}" \
+                    -d '{"adds":["custom-documents/Principles-Life-and-Work-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-f5b7b2db-c5fa-4a35-a843-d7449eecf12f.json"],"deletes":[]}'
+                  sleep 60
+
+                  echo "📚 [5/5] Indexing The Changing World Order into life-and-work..."
+                  curl -s -X POST http://anythingllm.apps:3001/api/v1/workspace/life-and-work/update-embeddings \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${ANYTHINGLLM_API_KEY}" \
+                    -d '{"adds":["custom-documents/The-Changing-World-Order-(Ray-Dalio)-(z-library.sk-1lib.sk-z-lib.sk).pdf-a6f95c65-381c-43f1-a16f-7023c72bdf27.json"],"deletes":[]}'
+
+                  echo "🎉 [$(date)] Daily Gemini Sequential Batch Embedding Complete!"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 10Mi
+                limits:
+                  memory: 64Mi

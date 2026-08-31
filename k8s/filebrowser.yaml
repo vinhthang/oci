@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  namespace: apps
+  labels:
+    app: filebrowser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: amd11
+      containers:
+        - name: filebrowser
+          image: {{ .Values.filebrowser.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: srv
+              mountPath: /srv
+            - name: config
+              mountPath: /etc/config
+            - name: database
+              mountPath: /etc/database
+          resources:
+            {{- toYaml .Values.filebrowser.resources | nindent 12 }}
+      volumes:
+        - name: srv
+          hostPath:
+            path: /opt/filebrowser/srv
+            type: DirectoryOrCreate
+        - name: config
+          hostPath:
+            path: /opt/filebrowser/config
+            type: DirectoryOrCreate
+        - name: database
+          hostPath:
+            path: /opt/filebrowser/database
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filebrowser
+  namespace: apps
+spec:
+  type: ClusterIP
+  selector:
+    app: filebrowser
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 80

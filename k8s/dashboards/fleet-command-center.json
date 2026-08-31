@@ -1,0 +1,147 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "🌐 1. Live Production Service Health & Uptime (VictoriaMetrics)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PD35D09FB29BA062D" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "OFFLINE 🔴" }, "1": { "color": "green", "text": "ONLINE 🟢" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "editorMode": "code", "expr": "max by (monitor_name) (monitor_status)", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
+      "title": "🟢 Service Health Status Matrix (Real-Time)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PD35D09FB29BA062D" },
+      "fieldConfig": {
+        "defaults": {
+          "max": 90,
+          "min": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 15 }, { "color": "green", "value": 30 }] },
+          "unit": "d"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 12, "x": 0, "y": 7 },
+      "id": 3,
+      "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "editorMode": "code", "expr": "min(monitor_cert_days_remaining)", "legendFormat": "Days Left", "range": true, "refId": "A" }],
+      "title": "🔒 Cloudflare SSL Certificate Validity",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PD35D09FB29BA062D" },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 99 }] },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 7 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "editorMode": "code", "expr": "avg(monitor_uptime_ratio{window=\"30d\"}) * 100", "legendFormat": "Fleet Average", "range": true, "refId": "A" }],
+      "title": "⏱️ Fleet 30-Day Uptime Reliability",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "PD35D09FB29BA062D" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "smooth", "pointSize": 5, "showPoints": "auto" },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 12 },
+      "id": 5,
+      "options": { "legend": { "calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "editorMode": "code", "expr": "max by (monitor_name) (monitor_response_time)", "legendFormat": "{{monitor_name}}", "range": true, "refId": "A" }],
+      "title": "⚡ Live Microservice Response Times (Milliseconds)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 6,
+      "title": "🐘 2. PostgreSQL 18 Databases & Storage Health (SQL)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "P41FAF20C988566B4" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 22 },
+      "id": 7,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "format": "table", "rawSql": "SELECT count(*) as total_memos FROM memo;", "refId": "A" }],
+      "title": "📝 Total Memos & Knowledge Notes",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "P4CD6AA6E0D515D6C" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 22 },
+      "id": 8,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "format": "table", "rawSql": "SELECT count(*) as total_events FROM website_event;", "refId": "A" }],
+      "title": "📊 Umami Tracked Analytics Events",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "P41FAF20C988566B4" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 20 }] } }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 22 },
+      "id": 9,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "pluginVersion": "11.5.0",
+      "targets": [{ "format": "table", "rawSql": "SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = 'active';", "refId": "A" }],
+      "title": "🐘 Active PostgreSQL 18 Connections",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["production", "vinhthang.dev", "victoriametrics", "postgres"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "🌟 Vinh Thang Cloud Fleet - Command Center",
+  "uid": "fleet-command-center",
+  "version": 2
+}

@@ -1,0 +1,260 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anythingllm
+  namespace: apps
+  labels:
+    app: anythingllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anythingllm
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: anythingllm
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: arm10
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: anythingllm
+          image: docker.io/mintplexlabs/anythingllm:1.16.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+              name: http
+          env:
+            - name: STORAGE_DIR
+              value: "/app/server/storage"
+            - name: SERVER_PORT
+              value: "3001"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: ANYTHINGLLM_JWT_SECRET
+                  optional: true
+            - name: VECTOR_DB
+              value: "pgvector"
+            - name: PGVECTOR_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: PGVECTOR_CONNECTION_STRING
+            - name: PGVECTOR_TABLE_NAME
+              value: "anythingllm_vectors"
+            - name: EMBEDDING_ENGINE
+              value: "gemini"
+            - name: GEMINI_EMBEDDING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: GEMINI_EMBEDDING_API_KEY
+            - name: EMBEDDING_MODEL_PREF
+              value: "gemini-embedding-001"
+            - name: LLM_PROVIDER
+              value: "generic-openai"
+            - name: GENERIC_OPEN_AI_BASE_PATH
+              value: "http://10.0.0.216:8000/v1"
+            - name: GENERIC_OPEN_AI_MODEL_PREF
+              value: "antigravity-agent"
+            - name: GENERIC_OPEN_AI_API_KEY
+              value: "agy-local-key"
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 5
+          volumeMounts:
+            - name: anythingllm-storage
+              mountPath: /app/server/storage
+            - name: gemini-embedder-patch
+              mountPath: /app/server/utils/EmbeddingEngines/gemini/index.js
+              subPath: index.js
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 3072Mi
+      volumes:
+        - name: anythingllm-storage
+          hostPath:
+            path: /opt/anythingllm
+            type: Directory
+        - name: gemini-embedder-patch
+          configMap:
+            name: anythingllm-gemini-embedder
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anythingllm-gemini-embedder
+  namespace: apps
+  labels:
+    app: anythingllm
+data:
+  index.js: |
+    const fs = require("fs");
+    const path = require("path");
+    const { toChunks, reportEmbeddingProgress } = require("../../helpers");
+
+    const MODEL_MAP = {
+      "gemini-embedding-001": 2048,
+    };
+
+    const DAILY_MAX_REQUESTS = 1000;
+    const BUDGET_FILE = path.resolve(__dirname, "../../../storage/gemini_quota_budget.json");
+
+    function getDailyBudget() {
+      try {
+        if (fs.existsSync(BUDGET_FILE)) {
+          const data = JSON.parse(fs.readFileSync(BUDGET_FILE, "utf8"));
+          const today = new Date().toISOString().split("T")[0];
+          if (data.date === today) return data;
+        }
+      } catch (e) {}
+      return { date: new Date().toISOString().split("T")[0], count: 0 };
+    }
+
+    function incrementDailyBudget(increment = 1) {
+      try {
+        const budget = getDailyBudget();
+        budget.count += increment;
+        fs.writeFileSync(BUDGET_FILE, JSON.stringify(budget, null, 2), "utf8");
+        return budget.count;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    class GeminiEmbedder {
+      constructor() {
+        if (!process.env.GEMINI_EMBEDDING_API_KEY)
+          throw new Error("No Gemini API key was set.");
+
+        this.className = "GeminiEmbedder";
+        const { OpenAI: OpenAIApi } = require("openai");
+        this.model = process.env.EMBEDDING_MODEL_PREF || "gemini-embedding-001";
+        this.openai = new OpenAIApi({
+          apiKey: process.env.GEMINI_EMBEDDING_API_KEY,
+          baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+        });
+
+        this.maxConcurrentChunks = 16;
+        this.embeddingMaxChunkLength = MODEL_MAP[this.model] || 2_048;
+        this.log(
+          `Initialized with ${this.model} - Max Size: ${this.embeddingMaxChunkLength}` +
+            (this.outputDimensions
+              ? ` - Output Dimensions: ${this.outputDimensions}`
+              : " Assuming default output dimensions")
+        );
+      }
+
+      log(text, ...args) {
+        console.log(`\x1b[36m[${this.className}]\x1b[0m ${text}`, ...args);
+      }
+
+      get outputDimensions() {
+        if (
+          process.env.EMBEDDING_OUTPUT_DIMENSIONS &&
+          !isNaN(process.env.EMBEDDING_OUTPUT_DIMENSIONS) &&
+          process.env.EMBEDDING_OUTPUT_DIMENSIONS > 0
+        )
+          return parseInt(process.env.EMBEDDING_OUTPUT_DIMENSIONS);
+        return null;
+      }
+
+      async embedTextInput(textInput) {
+        const result = await this.embedChunks(
+          Array.isArray(textInput) ? textInput : [textInput]
+        );
+        return result?.[0] || [];
+      }
+
+      async embedChunks(textChunks = []) {
+        this.log(`Embedding ${textChunks.length} chunks with Gemini in ${this.maxConcurrentChunks}-chunk batches (Daily Cap: ${DAILY_MAX_REQUESTS} reqs)...`);
+        const allData = [];
+        const batches = toChunks(textChunks, this.maxConcurrentChunks);
+        let chunksProcessed = 0;
+
+        for (const batch of batches) {
+          const currentBudget = getDailyBudget();
+          if (currentBudget.count >= DAILY_MAX_REQUESTS) {
+            console.warn(`[GeminiEmbedder] Daily quota budget reached (${currentBudget.count}/${DAILY_MAX_REQUESTS} reqs). Pausing for daily schedule.`);
+            throw new Error(`Daily Gemini embedding budget reached (${DAILY_MAX_REQUESTS} requests/day). Next scheduled batch runs tomorrow at 00:05 UTC.`);
+          }
+
+          let retries = 5;
+          let success = false;
+          while (!success && retries > 0) {
+            try {
+              const res = await this.openai.embeddings.create({
+                model: this.model,
+                input: batch,
+                dimensions: this.outputDimensions,
+              });
+              if (res?.data) {
+                incrementDailyBudget(1);
+                allData.push(...res.data);
+                chunksProcessed += batch.length;
+                reportEmbeddingProgress(chunksProcessed, textChunks.length);
+                success = true;
+              }
+            } catch (err) {
+              retries--;
+              const jitter = Math.floor(Math.random() * 12000) + 2000;
+              const waitTime = 65000 + jitter;
+              console.warn(`[GeminiEmbedder] Google Free Tier rate-limit hit. Jitter cooldown ${Math.round(waitTime/1000)}s before retry (${retries} retries left)...`);
+              if (retries > 0) {
+                await new Promise((r) => setTimeout(r, waitTime));
+              } else {
+                throw new Error(`Gemini Failed to embed batch: ${err.message}`);
+              }
+            }
+          }
+          await new Promise((r) => setTimeout(r, 2500));
+        }
+
+        return allData.length > 0 && allData.every((embd) => embd.hasOwnProperty("embedding"))
+          ? allData.map((embd) => embd.embedding)
+          : null;
+      }
+    }
+
+    module.exports = {
+      GeminiEmbedder,
+    };
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anythingllm
+  namespace: apps
+spec:
+  type: NodePort
+  selector:
+    app: anythingllm
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+      nodePort: 30001

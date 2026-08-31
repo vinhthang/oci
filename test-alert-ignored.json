@@ -1,0 +1,18 @@
+{
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "TestFakeAlertIgnored",
+        "namespace": "default",
+        "pod": "fake-pod-xyz",
+        "severity": "info"
+      },
+      "annotations": {
+        "summary": "This is a fake test alert.",
+        "description": "Please ignore this alert. It is just for testing the Triage Minion's ability to ignore false positives."
+      }
+    }
+  ]
+}

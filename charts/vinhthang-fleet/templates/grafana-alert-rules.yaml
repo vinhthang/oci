@@ -882,3 +882,81 @@ data:
               severity: critical
               category: endpoint
 
+          - uid: ingress_5xx_error
+            title: Ingress5xxError
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: VictoriaMetrics
+                model:
+                  editorMode: code
+                  expr: sum(increase(caddy_http_response_status_count_total{status=~"5.."}[1m])) > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: A
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [B]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > 0
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  type: math
+                  refId: C
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              description: "Caddy Edge Ingress detected {{ "{{" }} $values.B.Value {{ "}}" }} HTTP 5xx Server Errors in the last minute."
+              summary: "Ingress 5xx Server Error"
+            labels:
+              severity: critical
+              category: endpoint
+

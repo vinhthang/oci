@@ -1,3 +1,8 @@
+{
+    servers {
+        metrics
+    }
+}
 # ==============================================================================
 # 🌐 Master Edge Gateway Caddyfile (Vinh Thang Cloud & AI Fleet - vinhthang.dev)
 # ==============================================================================
@@ -166,4 +171,8 @@ vault.vinhthang.dev {
     reverse_proxy 10.0.0.216:30010 {
         flush_interval -1
     }
+}
+
+:2019 {
+    metrics
 }

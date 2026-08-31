@@ -13,6 +13,9 @@ data:
       - job_name: 'otel-collector'
         static_configs:
           - targets: ['otel-collector.observability:8888', 'otel-collector.observability:8889']
+      - job_name: 'caddy-edge'
+        static_configs:
+          - targets: ['10.0.0.10:2019', '10.0.0.216:2019', 'amd10:2019', 'gce10:2019'] # Best effort targets for edge nodes
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -1,4 +1,6 @@
 {{- if .Values.pulsar.enabled }}
+# Local PersistentVolumes for Apache Pulsar in default namespace (arm10)
+# Note: Claims must reside in default namespace; orphaned PVCs in other namespaces will remain unbound.
 apiVersion: v1
 kind: PersistentVolume
 metadata:

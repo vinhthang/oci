@@ -49,7 +49,7 @@ spec:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
             - name: DB_DSN
-              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/postgres?sslmode=disable"
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/incident_data?sslmode=disable"
           volumeMounts:
             - name: rtk-binary
               mountPath: /usr/local/bin/rtk

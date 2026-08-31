@@ -1,3 +1,4 @@
+{{- if .Values.vietcalendar.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -56,3 +57,5 @@ spec:
       port: 8080
       targetPort: 8080
       nodePort: {{ .Values.vietcalendar.nodePort }}
+{{- end }}
+

@@ -43,6 +43,13 @@ spec:
                 secretKeyRef:
                   name: gemini-ai-secret
                   key: GEMINI_EMBEDDING_API_KEY
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DB_DSN
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/postgres?sslmode=disable"
           volumeMounts:
             - name: rtk-binary
               mountPath: /usr/local/bin/rtk

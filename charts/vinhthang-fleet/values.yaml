@@ -33,6 +33,10 @@ global:
   domain: vinhthang.dev
 grafana:
   enabled: true
+  alerting:
+    groupWait: "30s"
+    groupInterval: "5m"
+    repeatInterval: "4h"
   image: docker.io/grafana/grafana:11.5.0
   nodePort: 30008
   resources:

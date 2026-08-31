@@ -483,6 +483,10 @@ data:
     policies:
       - orgId: 1
         receiver: ai-incident-commander
+        group_by: ['namespace']
+        group_wait: {{ .Values.grafana.alerting.groupWait | default "30s" }}
+        group_interval: {{ .Values.grafana.alerting.groupInterval | default "5m" }}
+        repeat_interval: {{ .Values.grafana.alerting.repeatInterval | default "4h" }}
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -184,7 +184,7 @@ pulsar:
     toolset: false
     zookeeper: true
   enabled: true
-  initialize: false
+  initialize: true
   proxy:
     podMonitor:
       enabled: false

@@ -75,6 +75,7 @@ spec:
                       echo "📥 Repository pulled successfully. Upgrading Helm Fleet..."
                       if helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default --no-hooks; then
                         echo "✅ [$(date)] GitOps reconcile finished successfully!"
+                        curl -s -X POST http://10.0.0.235:8999/ || true
                       else
                         echo "❌ Helm upgrade failed! Crashing pod to trigger Grafana alert..."
                         kill 1

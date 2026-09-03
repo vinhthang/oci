@@ -255,7 +255,7 @@ vaultwarden:
   websocketEnabled: true
 vector:
   enabled: true
-  image: docker.io/timberio/vector:0.45.0-alpine
+  image: ghcr.io/vectordotdev/vector:0.45.0-alpine
   resources:
     limits:
       memory: 128Mi

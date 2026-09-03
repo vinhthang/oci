@@ -1,28 +1,27 @@
 <rule name="agent-delegation">
-  <description>
-    Two-phase agent lifecycle protocol defining primary agent planning and subagent execution/escalation policies.
-  </description>
+<description>
+Enforces the two-phase agent lifecycle, subagent model selection, escalation protocol, and strict JSON handoff communication.
+</description>
 
-  <constraints>
-    - For non-trivial tasks (multi-file changes, migrations, complex debugging, architectural decisions), produce a structured numbered plan before making edits.
-    - Explicitly map blast radius, component dependencies, and exact files to inspect/modify.
-    - Spawn execution subagents with `Model: "flash"` (the platform's latest flash-tier alias) for running all terminal commands (builds, tests, cloud operations), applying file edits, and parsing heavy outputs. Execution MUST leverage the token-optimized RTK proxy (`rtk-enforcer` hook).
-    - Subagents execute the plan steps, validate intermediate checks, and summarize findings.
-    - If a subagent encounters unexpected structural errors twice consecutively, it must halt and escalate back to the primary agent (`gemini-pro`) for re-planning and root-cause analysis.
-  </constraints>
+<constraints>
+- **Phase 1 (Planning / Primary Agent):** High-level reasoning. Analyze risks and define boundaries. **Mandatory Risk Evaluation:** You MUST autonomously evaluate the architectural blast radius. If the task involves core infrastructure, database connections, concurrency, or synchronous platform hooks, you MUST self-activate the `superpowers` skill to perform a deep audit before proceeding. Create `implementation_plan.md` and update `task.md` with a checklist (`- [ ]`). No code changes yet.
+- **Phase 2 (Execution / Subagents):** Low-level deterministic execution. Delegate code edits, terminal commands, and checks to subagents based on the Model Selection Framework. Mark `task.md` done (`- [x]`).
+- If a `flash` subagent encounters an unexpected failure (e.g., broken build, test failure), it MUST NOT attempt to fix it blindly. It must stop and report back immediately.
+- Subagent responses via `send_message` MUST be valid JSON. No conversational fluff.
+</constraints>
 
-  <instructions>
-    # Agent Delegation Protocol
+<instructions>
+### 1. Subagent Model Selection Framework
+- **`pro` (Maximum Reasoning):** Use for tasks requiring high autonomy, significant net-new logic, deep refactoring, or complex tools/infrastructure debugging (e.g., SSH, k3s).
+- **`flash` (Mechanical Execution):** Use for tasks where the "thinking" is already done in the plan. Applying targeted diffs, running standard test suites, or formatting.
+- **`flash_lite` (Read-Only):** Reserve strictly for non-mutating research, simple file reading, or grep searches.
 
-    ## 1. Planning Phase (Pro Tier / Primary Agent)
-    - For non-trivial tasks (multi-file changes, migrations, complex debugging, architectural decisions), produce a structured numbered plan before making edits.
-    - Explicitly map blast radius, component dependencies, and exact files to inspect/modify.
+### 2. Escalation Protocol
+- The Primary Agent will spawn a `pro` subagent to investigate and debug failures reported by `flash` subagents.
 
-    ## 2. Execution Phase (Flash Tier Subagent)
-    - Spawn execution subagents with `Model: "flash"` (the platform's latest flash-tier alias) for running all terminal commands (builds, tests, cloud operations), applying file edits, and parsing heavy outputs. Execution MUST leverage the token-optimized RTK proxy (`rtk-enforcer` hook).
-    - Subagents execute the plan steps, validate intermediate checks, and summarize findings.
-
-    ## 3. Escalation & Fallback
-    - If a subagent encounters unexpected structural errors twice consecutively, it must halt and escalate back to the primary agent (`gemini-pro`) for re-planning and root-cause analysis.
-  </instructions>
+### 3. Subagent Communication
+- Required fields: `{"status": "completed|failed", "summary": "..."}`. Add `files_modified`, `test_results`, or `error` as needed.
+### 4. Subagent Termination Cleanup
+- If the Primary Agent manually kills a child subagent using the `manage_subagents` tool, it MUST explicitly handle the parent subagent that is stuck waiting. The Primary Agent must either kill the parent subagent as well, or use `send_message` to notify the parent of the child's termination so the parent can exit cleanly.
+</instructions>
 </rule>

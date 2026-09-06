@@ -18,9 +18,12 @@ spec:
             app: anythingllm-indexer
         spec:
           restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: arm10
           containers:
             - name: indexer-trigger
               image: curlimages/curl:8.10.1
+              imagePullPolicy: IfNotPresent
               command:
                 - /bin/sh
                 - -c

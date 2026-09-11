@@ -175,6 +175,7 @@ vault.vinhthang.dev {
 
 # 14. Weaviate Vector Database
 weaviate.vinhthang.dev {
+    tls internal
     reverse_proxy 10.0.0.216:30011
 }
 

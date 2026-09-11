@@ -42,6 +42,8 @@
 | [**ADR-0031**](adr/0031-expand-grafana-unified-alerting-suite.md) | **Expansion of Grafana 11 Unified Alerting Suite for Autonomous AI Incident Response** | 🟢 Accepted | Observability / Alerting | Declare comprehensive 7-rule alerting suite for workload health, node pressure, and endpoint SLAs. |
 | [**ADR-0032**](adr/0032-expand-grafana-alert-rules-jobs-statefulsets-storage-nodes.md) | **Expansion of Grafana Alert Rules for Batch Jobs, StatefulSets, Storage Binding, and Node Liveness** | 🟢 Accepted | Observability / Alerting | Eliminate observability blind spots with automated alerts for failed CronJobs, degraded StatefulSets, unbound PVCs, and NotReady nodes. |
 | [**ADR-0033**](adr/0033-single-concurrency-agy-worker-queue.md) | **Single-Concurrency Worker Queue for AI Incident Commander** | 🟢 Accepted | Architecture / AI Integration | Implement a strict Go channel worker queue to serialize `agy` CLI process execution, preventing OOM crashes during alert storms. |
+| [**ADR-0034**](adr/0034-add-on-premise-hyperv-nodes-via-wireguard.md) | **Add On-Premise Hyper-V Nodes via WireGuard** | 🟢 Accepted | Architecture / Infrastructure | Introduce on-premise Hyper-V nodes to K3s cluster via WireGuard mesh connected to OCI edge gateway. |
+| [**ADR-0035**](adr/0035-public-weaviate-api-key-auth.md) | **Public Weaviate via Caddy using Native API Key Auth** | 🟢 Accepted | Security / AI | Transition Weaviate from Tailscale to public ingress protected by Weaviate's native API key authentication. |
 
 ---
 

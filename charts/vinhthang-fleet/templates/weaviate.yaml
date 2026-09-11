@@ -102,12 +102,19 @@ spec:
               value: "/var/lib/weaviate/backups"
             - name: QUERY_DEFAULTS_LIMIT
               value: "25"
-            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
-              value: "true"
             - name: CLUSTER_HOSTNAME
               value: "node1"
             - name: DISABLE_TELEMETRY
               value: "true"
+            {{- if .Values.weaviate.env }}
+            {{- range $key, $value := .Values.weaviate.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- else }}
+            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+              value: "true"
+            {{- end }}
           ports:
             - containerPort: 8080
               name: http-mcp

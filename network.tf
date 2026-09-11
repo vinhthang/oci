@@ -218,6 +218,15 @@ resource "oci_core_security_list" "main_security_list" {
     stateless   = false
     description = "Internal VCN traffic"
   }
+
+  # Ingress: Allow WireGuard VPN traffic
+  ingress_security_rules {
+    protocol    = "all"
+    source      = "10.10.0.0/24"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "Allow all WireGuard VPN traffic"
+  }
 }
 
 # 5. Public Subnet
@@ -299,6 +308,15 @@ resource "oci_core_security_list" "private_security_list" {
     source_type = "CIDR_BLOCK"
     stateless   = false
     description = "Allow all internal VCN traffic (K3s, SSH ProxyJump, Caddy proxy)"
+  }
+
+  # Ingress: Allow WireGuard VPN traffic
+  ingress_security_rules {
+    protocol    = "all"
+    source      = "10.10.0.0/24"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+    description = "Allow all WireGuard VPN traffic"
   }
 }
 

@@ -44,6 +44,7 @@
 | [**ADR-0033**](adr/0033-single-concurrency-agy-worker-queue.md) | **Single-Concurrency Worker Queue for AI Incident Commander** | 🟢 Accepted | Architecture / AI Integration | Implement a strict Go channel worker queue to serialize `agy` CLI process execution, preventing OOM crashes during alert storms. |
 | [**ADR-0034**](adr/0034-add-on-premise-hyperv-nodes-via-wireguard.md) | **Add On-Premise Hyper-V Nodes via WireGuard** | 🟢 Accepted | Architecture / Infrastructure | Introduce on-premise Hyper-V nodes to K3s cluster via WireGuard mesh connected to OCI edge gateway. |
 | [**ADR-0035**](adr/0035-public-weaviate-api-key-auth.md) | **Public Weaviate via Caddy using Native API Key Auth** | 🟢 Accepted | Security / AI | Transition Weaviate from Tailscale to public ingress protected by Weaviate's native API key authentication. |
+| [**ADR-0036**](adr/0036-deploy-attention-metrics-server.md) | **Deployment of Attention Metrics Server for Agent Telemetry & Analytics** | 🟢 Accepted | Observability / Ingress | Centralize Antigravity Attention Guard telemetry on `arm10` with dedicated port 8086, NodePort 30012, and Google SSO dashboard. |
 
 ---
 

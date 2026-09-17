@@ -179,6 +179,32 @@ weaviate.vinhthang.dev {
     reverse_proxy 10.0.0.216:30011
 }
 
+# 15. Attention Metrics Server (Public Ingestion Telemetry + Central SSO Dashboard)
+attention-metrics-server.vinhthang.dev, attention.vinhthang.dev {
+    import security_headers
+
+    # Allow public agent telemetry ingestion & synthetic health checks
+    @public_telemetry path /api/metrics /api/health /metrics
+    handle @public_telemetry {
+        reverse_proxy 10.0.0.216:30012
+    }
+
+    # Protect the Private Web Dashboard with Google SSO
+    handle {
+        @no_auth not header Cookie *_oauth2_proxy*
+        redir @no_auth https://auth.vinhthang.dev/oauth2/start?rd=https://{host}{uri}
+
+        forward_auth 10.0.0.216:30004 {
+            uri /oauth2/auth
+            copy_headers X-Auth-Request-User X-Auth-Request-Email
+        }
+
+        reverse_proxy 10.0.0.216:30012 {
+            flush_interval -1
+        }
+    }
+}
+
 :2019 {
     metrics
 }

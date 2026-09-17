@@ -58,6 +58,7 @@ data:
     SELECT 'CREATE DATABASE memos' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'memos')\gexec
     SELECT 'CREATE DATABASE umami' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'umami')\gexec
     SELECT 'CREATE DATABASE vector_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vector_db')\gexec
+    SELECT 'CREATE DATABASE attention_metrics' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'attention_metrics')\gexec
   02-init-replication.sh: |
     #!/bin/sh
     psql -U "$POSTGRES_USER" -c "DO \$do\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'replicator') THEN EXECUTE format('CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD %L', '$POSTGRES_PASSWORD'); END IF; END \$do\$;"

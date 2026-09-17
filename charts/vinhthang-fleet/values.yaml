@@ -19,6 +19,21 @@ anythingllm:
     requests:
       cpu: 50m
       memory: 256Mi
+attentionMetricsServer:
+  enabled: true
+  port: 8086
+  nodePort: 30012
+  image:
+    pullPolicy: IfNotPresent
+    repository: ghcr.io/vinhthang/attention-metrics-server
+    tag: v0.1.0
+  nodeSelector: arm10
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
 filebrowser:
   enabled: true
   image: docker.io/filebrowser/filebrowser:v2.63.23

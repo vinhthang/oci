@@ -43,6 +43,8 @@ data:
             method: GET
           - endpoint: "https://vault.vinhthang.dev/alive"
             method: GET
+          - endpoint: "https://attention-metrics-server.vinhthang.dev/api/health"
+            method: GET
 
     processors:
       batch:

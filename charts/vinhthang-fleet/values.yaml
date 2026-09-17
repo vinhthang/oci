@@ -26,7 +26,7 @@ attentionMetricsServer:
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/attention-metrics-server
-    tag: v0.1.0
+    tag: 0.1.0
   nodeSelector: arm10
   resources:
     limits:

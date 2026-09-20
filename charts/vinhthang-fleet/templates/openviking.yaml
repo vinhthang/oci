@@ -1,0 +1,201 @@
+{{- if .Values.openviking.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openviking
+  labels:
+    app.kubernetes.io/managed-by: Helm
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: openviking-data-pv
+  labels:
+    type: local
+    app: openviking
+spec:
+  capacity:
+    storage: {{ .Values.openviking.persistence.size | default "5Gi" }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: {{ .Values.openviking.persistence.hostPath | default "/opt/openviking/data" }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - {{ .Values.openviking.nodeHostname | default "arm10" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openviking-data-pvc
+  namespace: openviking
+  labels:
+    app: openviking
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: {{ .Values.openviking.persistence.size | default "5Gi" }}
+---
+{{- if .Values.openviking.createSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.openviking.existingSecret | default "openviking-secret" }}
+  namespace: openviking
+  labels:
+    app: openviking
+type: Opaque
+stringData:
+  openviking-api-key: {{ .Values.openviking.apiKey | quote }}
+  gemini-api-key: {{ .Values.openviking.geminiApiKey | quote }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openviking-config
+  namespace: openviking
+  labels:
+    app: openviking
+data:
+  ov.conf: |
+    {
+      "server": {
+        "host": "0.0.0.0",
+        "port": 1933,
+        "root_api_key": "${OPENVIKING_API_KEY}",
+        "auth_mode": "api_key",
+        "cors_origins": ["*"]
+      },
+      "storage": {
+        "workspace": "/app/.openviking/data",
+        "agfs": { "backend": "local" },
+        "vectordb": { "backend": "local" }
+      },
+      "embedding": {
+        "dense": {
+          "provider": "gemini",
+          "api_key": "${GEMINI_API_KEY}",
+          "model": {{ .Values.openviking.embeddingModel | default "gemini-embedding-2" | quote }},
+          "dimension": {{ .Values.openviking.embeddingDimension | default 3072 }}
+        }
+      },
+      "vlm": {
+        "provider": "openai",
+        "api_key": "${GEMINI_API_KEY}",
+        "model": {{ .Values.openviking.vlmModel | default "gemini-2.5-flash" | quote }},
+        "api_base": "https://generativelanguage.googleapis.com/v1beta/openai"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openviking
+  namespace: openviking
+  labels:
+    app: openviking
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openviking
+  template:
+    metadata:
+      labels:
+        app: openviking
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.openviking.nodeHostname | default "arm10" }}
+      containers:
+        - name: openviking
+          image: "{{ .Values.openviking.image.repository }}:{{ .Values.openviking.image.tag }}"
+          imagePullPolicy: {{ .Values.openviking.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: OPENVIKING_CONFIG_FILE
+              value: "/etc/openviking/ov.conf"
+            - name: OPENVIKING_PUBLIC_BASE_URL
+              value: {{ .Values.openviking.publicBaseUrl | default "https://openviking.vinhthang.dev" | quote }}
+            - name: OPENVIKING_SERVER_HOST
+              value: "0.0.0.0"
+            - name: OPENVIKING_SERVER_PORT
+              value: "1933"
+            - name: OPENVIKING_WITH_BOT
+              value: {{ ternary "1" "0" .Values.openviking.withBot | quote }}
+            - name: OPENVIKING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.openviking.existingSecret | default "openviking-secret" }}
+                  key: openviking-api-key
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.openviking.existingSecret | default "openviking-secret" }}
+                  key: gemini-api-key
+          ports:
+            - containerPort: 1933
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: openviking-data
+              mountPath: /app/.openviking
+            - name: openviking-config-vol
+              mountPath: /etc/openviking
+              readOnly: true
+          resources:
+            {{- toYaml .Values.openviking.resources | nindent 12 }}
+      volumes:
+        - name: openviking-data
+          persistentVolumeClaim:
+            claimName: openviking-data-pvc
+        - name: openviking-config-vol
+          configMap:
+            name: openviking-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openviking
+  namespace: openviking
+  labels:
+    app: openviking
+spec:
+  type: {{ .Values.openviking.serviceType | default "NodePort" }}
+  selector:
+    app: openviking
+  ports:
+    - name: http
+      protocol: TCP
+      port: 1933
+      targetPort: 1933
+      {{- if .Values.openviking.nodePort }}
+      nodePort: {{ .Values.openviking.nodePort }}
+      {{- end }}
+{{- end }}

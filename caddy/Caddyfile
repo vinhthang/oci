@@ -207,11 +207,15 @@ attention-metrics-server.vinhthang.dev, attention.vinhthang.dev {
 
 # 16. OpenViking AI Agent Context Database (Native Token Auth + MCP Endpoint)
 openviking.vinhthang.dev {
+    tls internal
     import security_headers
     reverse_proxy 10.0.0.216:30013 {
         flush_interval -1
     }
 }
+
+
+
 
 :2019 {
     metrics

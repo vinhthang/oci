@@ -97,6 +97,14 @@ data:
         "api_base": "https://generativelanguage.googleapis.com/v1beta/openai"
       }
     }
+  sitecustomize.py: |
+    import asyncio
+    from openviking.models.embedder.gemini_embedders import GeminiDenseEmbedder
+
+    async def _safe_embed_async(self, text: str, is_query: bool = False, *, task_type=None, title=None):
+        return await asyncio.to_thread(self.embed, text, is_query, task_type=task_type, title=title)
+
+    GeminiDenseEmbedder.embed_async = _safe_embed_async
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -167,7 +175,12 @@ spec:
             - name: openviking-data
               mountPath: /app/.openviking
             - name: openviking-config-vol
-              mountPath: /etc/openviking
+              mountPath: /etc/openviking/ov.conf
+              subPath: ov.conf
+              readOnly: true
+            - name: openviking-config-vol
+              mountPath: /app/.venv/lib/python3.13/site-packages/sitecustomize.py
+              subPath: sitecustomize.py
               readOnly: true
           resources:
             {{- toYaml .Values.openviking.resources | nindent 12 }}

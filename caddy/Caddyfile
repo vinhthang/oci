@@ -98,7 +98,7 @@ vietcalendar.vinhthang.dev, api.vinhthang.dev {
 }
 
 # 8. AdGuard Home Web Dashboard & DoT Ingress
-adguard.vinhthang.dev {
+adguard.vinhthang.dev, dns.vinhthang.dev {
     import security_headers
     reverse_proxy 127.0.0.1:3000
 }

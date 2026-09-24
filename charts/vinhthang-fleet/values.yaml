@@ -293,7 +293,7 @@ victoriaMetrics:
   image: docker.io/victoriametrics/victoria-metrics:v1.109.1
   resources:
     limits:
-      memory: 512Mi
+      memory: 1024Mi
     requests:
       cpu: 50m
       memory: 128Mi

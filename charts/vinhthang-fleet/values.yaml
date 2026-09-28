@@ -24,9 +24,9 @@ attentionMetricsServer:
   port: 8086
   nodePort: 30012
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     repository: ghcr.io/vinhthang/attention-metrics-server
-    tag: 0.1.0
+    tag: latest
   nodeSelector: arm10
   resources:
     limits:

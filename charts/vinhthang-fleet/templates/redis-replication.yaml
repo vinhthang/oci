@@ -1,0 +1,37 @@
+{{- if .Values.redisReplication.enabled }}
+apiVersion: redis.redis.opstreelabs.in/v1beta2
+kind: RedisReplication
+metadata:
+  name: redis
+  namespace: data
+  labels:
+    app.kubernetes.io/name: redis
+spec:
+  clusterSize: {{ .Values.redisReplication.clusterSize | default 2 }}
+  kubernetesConfig:
+    image: {{ .Values.redisReplication.image | default "quay.io/opstree/redis:v7.4.11" }}
+    imagePullPolicy: IfNotPresent
+    resources:
+      {{- toYaml .Values.redisReplication.resources | nindent 10 }}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - k3s-worker-1
+                  - k3s-worker-2
+                  - k3s-worker-3
+                  - k3s-worker-4
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - redis
+          topologyKey: kubernetes.io/hostname
+{{- end }}

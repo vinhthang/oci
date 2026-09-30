@@ -151,6 +151,8 @@ postgres:
       cpu: 50m
       memory: 128Mi
 pulsar:
+  nodeSelector:
+    kubernetes.io/hostname: arm10
   autorecovery:
     nodeSelector:
       kubernetes.io/hostname: arm10
@@ -186,6 +188,8 @@ pulsar:
       managedLedgerDefaultWriteQuorum: '1'
     nodeSelector:
       kubernetes.io/hostname: arm10
+    statefulsetUpgrade:
+      enabled: false
     podMonitor:
       enabled: false
     replicaCount: 1
@@ -222,6 +226,8 @@ pulsar:
   zookeeper:
     nodeSelector:
       kubernetes.io/hostname: arm10
+    statefulsetUpgrade:
+      enabled: false
     podMonitor:
       enabled: false
     replicaCount: 1
@@ -236,7 +242,7 @@ pulsar:
         size: 5Gi
         storageClassName: local-storage
 redis:
-  enabled: true
+  enabled: false
   image: docker.io/redis:7.4.2-alpine
   maxmemory: 384mb
   maxmemoryPolicy: allkeys-lru
@@ -247,6 +253,31 @@ redis:
     requests:
       cpu: 25m
       memory: 64Mi
+
+redisOperator:
+  enabled: true
+  image: quay.io/opstree/redis-operator:v0.26.0
+  nodeHostname: arm10
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+redisReplication:
+  enabled: true
+  clusterSize: 2
+  image: quay.io/opstree/redis:v7.4.11
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 25m
+      memory: 64Mi
+
 umami:
   enabled: true
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0

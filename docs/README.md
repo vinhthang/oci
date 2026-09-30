@@ -46,6 +46,7 @@
 | [**ADR-0035**](adr/0035-public-weaviate-api-key-auth.md) | **Public Weaviate via Caddy using Native API Key Auth** | 🟢 Accepted | Security / AI | Transition Weaviate from Tailscale to public ingress protected by Weaviate's native API key authentication. |
 | [**ADR-0036**](adr/0036-deploy-attention-metrics-server.md) | **Deployment of Attention Metrics Server for Agent Telemetry & Analytics** | 🟢 Accepted | Observability / Ingress | Centralize Antigravity Attention Guard telemetry on `arm10` with dedicated port 8086, NodePort 30012, and Google SSO dashboard. |
 | [**ADR-0037**](adr/0037-deploy-openviking-context-database.md) | **Deploy OpenViking Context Database to K3s Fleet** | 🟢 Accepted | AI / Context Database | Deploy Volcengine OpenViking on `arm10` with dedicated NodePort 30013, 5Gi PVC, Gemini model provider, and Caddy TLS ingress. |
+| [**ADR-0038**](adr/0038-dedicated-operators-namespace-and-ephemeral-redis-ha-cluster.md) | **Dedicated Operators Namespace & Ephemeral Redis HA Cluster on On-Premise Hyper-V Nodes** | 🟢 Accepted | Architecture / Database | Establish 'operators' namespace on arm10 for Opstree Redis Operator and deploy Master-Replica Sentinel Redis on on-premise Hyper-V workers. |
 
 ---
 

@@ -64,6 +64,21 @@ rules:
     verbs:
       - '*'
   - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - '*'
+  - apiGroups:
+      - cert-manager.io
+      - certmanager.k8s.io
+    resources:
+      - issuers
+      - certificates
+      - certificaterequests
+    verbs:
+      - '*'
+  - apiGroups:
       - coordination.k8s.io
     resources:
       - leases

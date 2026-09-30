@@ -278,6 +278,30 @@ redisReplication:
       cpu: 25m
       memory: 64Mi
 
+mongodbOperator:
+  enabled: true
+  image: percona/percona-server-mongodb-operator:1.23.0
+  nodeHostname: arm10
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+mongodb:
+  enabled: true
+  image: percona/percona-server-mongodb:8.0.26-11
+  clusterSize: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+
 umami:
   enabled: true
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0

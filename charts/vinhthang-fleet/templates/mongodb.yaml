@@ -25,24 +25,25 @@ spec:
       resources:
         {{- toYaml .Values.mongodb.resources | nindent 8 }}
       affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - k3s-worker-1
-                      - k3s-worker-2
-                      - k3s-worker-3
-                      - k3s-worker-4
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app.kubernetes.io/name
-                    operator: In
-                    values:
-                      - mongodb
-              topologyKey: kubernetes.io/hostname
+        advanced:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                        - k3s-worker-1
+                        - k3s-worker-2
+                        - k3s-worker-3
+                        - k3s-worker-4
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - mongodb
+                topologyKey: kubernetes.io/hostname
 {{- end }}

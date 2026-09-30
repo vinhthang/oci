@@ -151,6 +151,7 @@ postgres:
       cpu: 50m
       memory: 128Mi
 pulsar:
+  namespace: data
   nodeSelector:
     kubernetes.io/hostname: arm10
   autorecovery:
@@ -179,6 +180,8 @@ pulsar:
         size: 5Gi
         storageClassName: local-storage
   broker:
+    ports:
+      http: 8088
     configData:
       bookkeeperClientEnforceMinNumRacksPerWriteQuorum: 'false'
       bookkeeperClientMinNumRacksPerWriteQuorum: '1'

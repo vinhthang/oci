@@ -296,7 +296,8 @@ mongodbOperator:
 mongodb:
   enabled: true
   image: percona/percona-server-mongodb:8.0.26-11
-  clusterSize: 3
+  clusterSize: 1
+  nodeHostname: arm10
   resources:
     limits:
       cpu: 500m

@@ -19,7 +19,7 @@ spec:
     apply: disabled
   replsets:
     - name: rs0
-      size: {{ .Values.mongodb.clusterSize | default 3 }}
+      size: {{ .Values.mongodb.clusterSize | default 1 }}
       volumeSpec:
         emptyDir: {}
       resources:
@@ -33,17 +33,16 @@ spec:
                     - key: kubernetes.io/hostname
                       operator: In
                       values:
-                        - k3s-worker-1
-                        - k3s-worker-2
-                        - k3s-worker-3
-                        - k3s-worker-4
+                        - {{ .Values.mongodb.nodeHostname | default .Values.mongodb.nodeSelector | default "arm10" }}
           podAntiAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              - labelSelector:
-                  matchExpressions:
-                    - key: app.kubernetes.io/name
-                      operator: In
-                      values:
-                        - mongodb
-                topologyKey: kubernetes.io/hostname
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/name
+                        operator: In
+                        values:
+                          - mongodb
+                  topologyKey: kubernetes.io/hostname
 {{- end }}

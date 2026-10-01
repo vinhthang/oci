@@ -11,6 +11,8 @@ spec:
   crVersion: 1.23.0
   image: {{ .Values.mongodb.image | default "percona/percona-server-mongodb:8.0.26-11" }}
   imagePullPolicy: IfNotPresent
+  tls:
+    mode: disabled
   unsafeFlags:
     tls: true
   secrets:

@@ -13,6 +13,9 @@ spec:
   imagePullPolicy: IfNotPresent
   unsafeFlags:
     tls: true
+    {{- if lt (int (.Values.mongodb.clusterSize | default 1)) 3 }}
+    replsetSize: true
+    {{- end }}
   secrets:
     users: mongodb-secrets
   upgradeOptions:

@@ -271,7 +271,8 @@ redisOperator:
 
 redisReplication:
   enabled: true
-  clusterSize: 2
+  clusterSize: 1
+  nodeHostname: arm10
   image: quay.io/opstree/redis:v7.4.11
   resources:
     limits:

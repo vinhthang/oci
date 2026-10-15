@@ -49,6 +49,7 @@
 | [**ADR-0038**](adr/0038-dedicated-operators-namespace-and-ephemeral-redis-ha-cluster.md) | **Dedicated Operators Namespace & Ephemeral Redis HA Cluster on On-Premise Hyper-V Nodes** | 🟢 Accepted | Architecture / Database | Establish 'operators' namespace on arm10 for Opstree Redis Operator and deploy Master-Replica Sentinel Redis on on-premise Hyper-V workers. |
 | [**ADR-0039**](adr/0039-percona-mongodb-operator-and-ephemeral-replicaset.md) | **Percona MongoDB Operator & Ephemeral ReplicaSet Fleet on On-Premise Hyper-V Nodes** | 🟢 Accepted | Architecture / Database | Establish Percona MongoDB Operator in 'operators' namespace on arm10 and 3-node ReplicaSet on Hyper-V workers. |
 | [**ADR-0040**](adr/0040-migrate-apache-pulsar-to-data-namespace-and-port-governance.md) | **Migrate Apache Pulsar to Data Namespace & Broker Port 8088 Governance** | 🟢 Accepted | Architecture / Messaging | Relocate Apache Pulsar from default to data namespace and remap broker admin HTTP to port 8088. |
+| [**ADR-0041**](adr/0041-wireguard-us-vpn-server-on-gce10.md) | **In-Kernel WireGuard US VPN Server on GCP Host (`gce10`)** | 🟢 Accepted | Networking / VPN | Deploy native WireGuard server on wg1 (UDP 51820) with NAT masquerading for US IP internet egress. |
 
 ---
 

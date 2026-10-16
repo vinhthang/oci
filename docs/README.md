@@ -50,6 +50,7 @@
 | [**ADR-0039**](adr/0039-percona-mongodb-operator-and-ephemeral-replicaset.md) | **Percona MongoDB Operator & Ephemeral ReplicaSet Fleet on On-Premise Hyper-V Nodes** | 🟢 Accepted | Architecture / Database | Establish Percona MongoDB Operator in 'operators' namespace on arm10 and 3-node ReplicaSet on Hyper-V workers. |
 | [**ADR-0040**](adr/0040-migrate-apache-pulsar-to-data-namespace-and-port-governance.md) | **Migrate Apache Pulsar to Data Namespace & Broker Port 8088 Governance** | 🟢 Accepted | Architecture / Messaging | Relocate Apache Pulsar from default to data namespace and remap broker admin HTTP to port 8088. |
 | [**ADR-0041**](adr/0041-wireguard-us-vpn-server-on-gce10.md) | **In-Kernel WireGuard US VPN Server on GCP Host (`gce10`)** | 🟢 Accepted | Networking / VPN | Deploy native WireGuard server on wg1 (UDP 51820) with NAT masquerading for US IP internet egress. |
+| [**ADR-0042**](adr/0042-remediate-security-exposures-and-harden-gitops-webhook.md) | **Remediate Security Exposures, Rotate WireGuard Keys, and Harden GitOps Webhook** | 🟢 Accepted | Security / Ingress | Rotate leaked WireGuard keys, move Weaviate key to K8s Secret, and add HMAC SHA256 verification to GitOps webhook. |
 
 ---
 

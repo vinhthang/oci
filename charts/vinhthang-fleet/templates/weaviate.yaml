@@ -46,17 +46,20 @@ spec:
     requests:
       storage: {{ .Values.weaviate.persistence.size | default "10Gi" }}
 ---
+{{- if .Values.weaviate.createSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: weaviate-secret
+  name: {{ .Values.weaviate.existingSecret | default "weaviate-secret" }}
   namespace: ai
   labels:
     app: weaviate
 type: Opaque
 stringData:
   google-api-key: {{ .Values.weaviate.googleApiKey | quote }}
+  api-key: {{ .Values.weaviate.apiKey | quote }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -106,14 +109,22 @@ spec:
               value: "node1"
             - name: DISABLE_TELEMETRY
               value: "true"
+            - name: AUTHENTICATION_APIKEY_ENABLED
+              value: "true"
+            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+              value: "false"
+            - name: AUTHENTICATION_APIKEY_USERS
+              value: {{ .Values.weaviate.apiKeyUsers | default "admin" | quote }}
+            - name: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.weaviate.existingSecret | default "weaviate-secret" }}
+                  key: {{ .Values.weaviate.apiKeySecretKey | default "api-key" }}
             {{- if .Values.weaviate.env }}
             {{- range $key, $value := .Values.weaviate.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- else }}
-            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
-              value: "true"
             {{- end }}
           ports:
             - containerPort: 8080

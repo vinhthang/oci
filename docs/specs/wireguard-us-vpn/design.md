@@ -22,7 +22,7 @@ flowchart TD
 
 ---
 
-## 2. Server Configuration (`/etc/wireguard/wg1.conf`)
+## 2. Server Configuration (`/etc/wireguard/wg1.conf`) - `REQ-001`, `REQ-002`, `REQ-003`
 
 ```ini
 [Interface]
@@ -30,7 +30,7 @@ Address = 10.66.0.1/24
 ListenPort = 51820
 PrivateKey = <SERVER_PRIVATE_KEY>
 
-# Firewall & NAT Masquerading Rules
+# Firewall & NAT Masquerading Rules (REQ-003)
 PostUp = iptables -A INPUT -p udp --dport 51820 -j ACCEPT; iptables -A FORWARD -i wg1 -j ACCEPT; iptables -A FORWARD -o wg1 -m state --state RELATED,ESTABLISHED -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -s 10.66.0.0/24 -j MASQUERADE
 PostDown = iptables -D INPUT -p udp --dport 51820 -j ACCEPT; iptables -D FORWARD -i wg1 -j ACCEPT; iptables -D FORWARD -o wg1 -m state --state RELATED,ESTABLISHED -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -s 10.66.0.0/24 -j MASQUERADE
 
@@ -42,7 +42,7 @@ AllowedIPs = 10.66.0.2/32
 
 ---
 
-## 3. Client Configuration (`wg1-client.conf`)
+## 3. Client Configuration (`wg1-client.conf`) - `REQ-005`
 
 ```ini
 [Interface]
@@ -59,7 +59,7 @@ PersistentKeepalive = 25
 
 ---
 
-## 4. Google Cloud Firewall Declaration
+## 4. Google Cloud Firewall Declaration - `REQ-004`
 
 ```bash
 gcloud compute firewall-rules create allow-wireguard-vpn \
@@ -77,7 +77,8 @@ gcloud compute firewall-rules create allow-wireguard-vpn \
 
 ---
 
-## 5. Security Invariants & Isolation
+## 5. Security Invariants, Governance & ADR - `REQ-006`
 1. **Restrictive File Permissions**: `/etc/wireguard/wg1.conf` and all private keys must be owned by `root:root` with permissions `0600`.
 2. **Subnet Isolation**: No routes for `10.42.0.0/16` (Pod CIDR) or `10.0.0.0/16` (OCI VCN) are broadcasted into the client configuration. The client routes full-tunnel `0.0.0.0/0` directly out through `eth0` NAT masquerade to ensure privacy and prevent internal cluster routing loops.
-3. **Multi-Tunnel Coexistence**: Interface `wg0` (Tokyo mesh `10.10.0.4/24`) and `wg1` (US VPN `10.66.0.1/24`) operate completely independently in the Linux kernel on distinct ports.
+3. **Multi-Tunnel Coexistence**: Interface `wg0` (Tokyo mesh `10.10.0.4/24`) and `wg1` (US VPN `10.66.0.1/24`) operate completely independently in the Linux kernel on distinct ports (`REQ-001`).
+4. **Governance**: All decisions codified in ADR-0041 (`REQ-006`).

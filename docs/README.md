@@ -51,6 +51,7 @@
 | [**ADR-0040**](adr/0040-migrate-apache-pulsar-to-data-namespace-and-port-governance.md) | **Migrate Apache Pulsar to Data Namespace & Broker Port 8088 Governance** | 🟢 Accepted | Architecture / Messaging | Relocate Apache Pulsar from default to data namespace and remap broker admin HTTP to port 8088. |
 | [**ADR-0041**](adr/0041-wireguard-us-vpn-server-on-gce10.md) | **In-Kernel WireGuard US VPN Server on GCP Host (`gce10`)** | 🟢 Accepted | Networking / VPN | Deploy native WireGuard server on wg1 (UDP 51820) with NAT masquerading for US IP internet egress. |
 | [**ADR-0042**](adr/0042-remediate-security-exposures-and-harden-gitops-webhook.md) | **Remediate Security Exposures, Rotate WireGuard Keys, and Harden GitOps Webhook** | 🟢 Accepted | Security / Ingress | Rotate leaked WireGuard keys, move Weaviate key to K8s Secret, and add HMAC SHA256 verification to GitOps webhook. |
+| [**ADR-0043**](adr/0043-persistent-stream-json-supervisor-for-agy-proxy.md) | **Persistent Stream-JSON Supervisor Daemon for Antigravity Proxy** | 🟢 Accepted | AI / Host Services | Deploy persistent `agy` worker daemon with stream-json NDJSON, 5x lower latency, token streaming, and automatic recycling. |
 
 ---
 

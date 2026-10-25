@@ -214,6 +214,7 @@ openviking.vinhthang.dev {
     }
 }
 
+# 17. WorkBuddy AI Review Server (Native Bearer Token Auth)
 review.vinhthang.dev {
     tls internal
     import security_headers
@@ -222,8 +223,13 @@ review.vinhthang.dev {
     }
 }
 
-
-
+# 18. Web Reader Bilingual Book & Audio Streaming Platform (Public Access)
+reader.vinhthang.dev {
+    import security_headers
+    reverse_proxy 10.10.0.4:3000 {
+        flush_interval -1
+    }
+}
 
 :2019 {
     metrics

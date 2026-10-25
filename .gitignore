@@ -26,6 +26,7 @@ arm_instance.json
 *public*
 *client-qr*
 wireguard/
+!docs/adr/*.md
 
 # Scratch & ephemeral agent files
 patch-*.py

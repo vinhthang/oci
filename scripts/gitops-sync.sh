@@ -26,7 +26,9 @@ ssh amd10 "
   sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
   sudo /usr/local/bin/caddy reload --config /etc/caddy/Caddyfile
 "
+scp caddy/Caddyfile gce10:/tmp/Caddyfile
 ssh gce10 "
+  sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
   sudo /usr/bin/caddy reload --config /etc/caddy/Caddyfile
 "
 

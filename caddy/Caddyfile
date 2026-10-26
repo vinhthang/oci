@@ -7,7 +7,7 @@
 # 🌐 Master Edge Gateway Caddyfile (Vinh Thang Cloud & AI Fleet - vinhthang.dev)
 # ==============================================================================
 # Managed declaratively in Git via GitOps.
-# Automatically synchronized to amd10 (152.70.101.162) on git push.
+# Synced to amd10 by scripts/gitops-sync.sh (manual step - NOT automatic on git push).
 # ==============================================================================
 
 # Global Security Headers Snippet

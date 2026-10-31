@@ -1,7 +1,7 @@
 # Functional Specification: Vaultwarden HostPath Data Mount & Registration Lockdown Remediation
 
 **Feature ID**: `vaultwarden-data-mount-and-lockdown`  
-**Status**: In-Progress  
+**Status**: Completed  
 **Target Host**: `arm10` (`10.0.0.216`)  
 **Scope**: Helm Chart (`charts/vinhthang-fleet/templates/vaultwarden.yaml`, `values.yaml`) / Kubernetes `apps` Namespace  
 

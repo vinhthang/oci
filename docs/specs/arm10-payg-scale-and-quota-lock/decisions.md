@@ -11,9 +11,9 @@
 Upgrading the OCI tenancy (`thanghv`) to Pay-As-You-Go (`PAYG`) unlocked the full Always Free Ampere A1 monthly pool (`3,000 OCPU-hours` and `18,000 GB-hours`, equal to **4 OCPUs and 24 GB RAM** 24/7 at `$0.00/month`), while simultaneously lifting hard tenancy service limits to `250 OCPUs`, `1,666 GB RAM`, and `61,440 GB` block storage. Meanwhile, `arm10` was constrained at `2 OCPUs / 12 GB RAM` (`83%` RAM utilization across 25+ K3s pods).
 
 ### Decision
-1. Vertically scale `arm10` in-place from `2 OCPUs / 12 GB RAM` to **`4 OCPUs / 24 GB RAM`** (`VM.Standard.A1.Flex`), consuming 100% of the Always Free Ampere A1 allowance on the single K3s control-plane and database node.
-2. Provision a root OCI Compartment Quota policy (`always-free-payg-guardrail`) locking `standard-a1-core-count`, `standard-a1-memory-count`, and `total-storage-gb` (`200 GB`) to the exact Always Free thresholds so OCI mechanically rejects any resource creation or scaling that would incur paid charges.
-3. Codify both the `4 OCPU / 24 GB` shape and `oci_limits_quota.always_free_guardrail` in `compute.tf`.
+1. **Lock Tenancy Quotas First**: Provision a root OCI Compartment Quota policy (`always-free-payg-guardrail`) locking `standard-a1-core-count` (`4`), `standard-a1-memory-count` (`24`), and `total-storage-gb` (`200 GB`) *before* modifying any compute instances, ensuring the tenancy ceiling is enforced at the OCI API admission layer prior to scaling.
+2. **Scale `arm10` Inside the Locked Envelope**: Vertically scale `arm10` in-place from `2 OCPUs / 12 GB RAM` to **`4 OCPUs / 24 GB RAM`** (`VM.Standard.A1.Flex`), consuming 100% of the Always Free Ampere A1 allowance on the single K3s control-plane and database node. If OCI's quota counter excludes the initial 1 OCPU / 6 GB Free Tier baseline (`used = 3` / `18`), tighten the quota statements post-resize so `available = 0`.
+3. **Declarative Terraform State**: Codify both `oci_limits_quota.always_free_guardrail` and the `4 OCPU / 24 GB` shape in `compute.tf`.
 
 ### Trade-offs & Risks
 - **Brief Control-Plane Reboot (~60–90s)**: Updating `shape_config` (`ocpus` and `memory_in_gbs`) on an OCI `VM.Standard.A1.Flex` instance triggers an automated in-place instance reboot. All K3s StatefulSets/Deployments on `arm10` automatically recover via `k3s.service` systemd startup and Kubernetes liveness/readiness probes.

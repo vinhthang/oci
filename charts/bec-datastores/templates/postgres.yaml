@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vedge-api-postgres-init
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: vedge-api-postgres-service
+data:
+  01-init-bec-dbs.sql: |
+    SELECT 'CREATE DATABASE vedge_api_device' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_device')\gexec
+    SELECT 'CREATE DATABASE vedge_api_firmware' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_firmware')\gexec
+    SELECT 'CREATE DATABASE "vedge_api_Telemetry"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_Telemetry')\gexec
+    SELECT 'CREATE DATABASE vedge_api_speedtest' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_speedtest')\gexec
+    SELECT 'CREATE DATABASE vedge_api_migration' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_migration')\gexec
+    SELECT 'CREATE DATABASE vedge_api_topology' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_topology')\gexec
+    SELECT 'CREATE DATABASE vedge_api_scheduler' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_scheduler')\gexec
+    SELECT 'CREATE DATABASE vedge_api_reports' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_reports')\gexec
+    SELECT 'CREATE DATABASE "vedge_api_wifi_Scheduler"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_wifi_Scheduler')\gexec
+    SELECT 'CREATE DATABASE vedge_api_virtual_device' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_virtual_device')\gexec
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vedge-api-postgres-service
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: vedge-api-postgres-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vedge-api-postgres-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: vedge-api-postgres-service
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.postgres.port }}
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.user | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          volumeMounts:
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: vedge-api-postgres-init
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vedge-api-postgres-service
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: vedge-api-postgres-service
+spec:
+  type: ClusterIP
+  selector:
+    app: vedge-api-postgres-service
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.port }}
+      targetPort: {{ .Values.postgres.port }}
+      protocol: TCP

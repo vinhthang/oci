@@ -1,0 +1,67 @@
+becSuffix: "f1"
+arm10Host: "10.0.0.216"
+
+coredns:
+  enabled: true
+
+postgres:
+  image: "docker.io/postgres:16.8-alpine"
+  port: 5432
+  user: "postgres"
+  password: "postgres_master_pass_2026"
+  databases:
+    - "vedge_api_device"
+    - "vedge_api_firmware"
+    - "vedge_api_Telemetry"
+    - "vedge_api_speedtest"
+    - "vedge_api_migration"
+    - "vedge_api_topology"
+    - "vedge_api_scheduler"
+    - "vedge_api_reports"
+    - "vedge_api_wifi_Scheduler"
+    - "vedge_api_virtual_device"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "1"
+      memory: "384Mi"
+
+redis:
+  image: "docker.io/redis:7.4.2-alpine"
+  port: 12000
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "32Mi"
+    limits:
+      cpu: "500m"
+      memory: "128Mi"
+
+mongodb:
+  image: "docker.io/mongo:7.0.16"
+  port: 27017
+  user: "userAdmin"
+  password: "userAdminSecret123"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+
+pulsar:
+  image: "docker.io/apachepulsar/pulsar:3.0.7"
+  internal:
+    enabled: true
+  external:
+    enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"

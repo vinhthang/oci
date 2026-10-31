@@ -54,6 +54,8 @@
 | [**ADR-0043**](adr/0043-persistent-stream-json-supervisor-for-agy-proxy.md) | **Persistent Stream-JSON Supervisor Daemon for Antigravity Proxy** | 🟢 Accepted | AI / Host Services | Deploy persistent `agy` worker daemon with stream-json NDJSON, 5x lower latency, token streaming, and automatic recycling. |
 | [**ADR-0044**](adr/0044-public-caddy-ingress-for-web-reader-standalone-node.md) | **Public Edge Caddy Ingress for Web Reader Standalone Node (`reader.vinhthang.dev`)** | 🟢 Accepted | Security / Ingress | Public Caddy reverse proxy to standalone Next.js node over WireGuard mesh with unbuffered audio streaming. |
 | [**ADR-0045**](adr/0045-expand-arm10-boot-volume-storage.md) | **Online Expansion of `arm10` Boot Volume to 100 GB Within OCI Always Free Tier** | 🟢 Accepted | Infrastructure / Storage | Expand `arm10` boot volume from 47 GB to 100 GB online (`194/200 GB` free quota) and grow XFS root live via `oci-growfs`. |
+| [**ADR-0046**](adr/0046-scale-arm10-4ocpu-24gb-and-lock-payg-quotas.md) | **Scale `arm10` to 4 OCPUs / 24 GB RAM on PAYG and Lock Always-Free Tenancy Quotas** | 🟢 Accepted | Infrastructure / Compute & Billing | Lock root tenancy quotas (`always-free-payg-guardrail`) first and scale `arm10` in-place to 4 OCPUs / 24 GB RAM at `$0.00/mo`. |
+| [**ADR-0047**](adr/0047-pc1-multi-cluster-qa-router-federation-topology.md) | **Dedicated 3-Cluster K3s Topology on `pc-1` with `arm10` External Federation Datastores** | 🟢 Accepted | Architecture / Multi-Cluster & Datastores | Replace legacy `pc-1` worker VMs with 3 independent K3s clusters (`pc1-qa-router`, `pc1-bec1`, `pc1-bec2`) across 5 Hyper-V VMs, using `arm10` as external shared Federation datastores over WireGuard. |
 
 ---
 
@@ -61,7 +63,7 @@
 
 1. **Hardware Memory Boundaries**:
    * `amd10` (Edge Gateway), `amd11` (Worker), and `gce10` (GCP Worker/Edge) are strictly capped at **1 GB RAM**. Never schedule heavy Node.js or Java containers on these nodes.
-   * `arm10` (Control Plane) has **12 GB RAM**. All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
+   * `arm10` (Control Plane) has **4 OCPUs and 24 GB RAM** (`100 GB` Boot Volume, locked to the OCI Always Free PAYG ceiling via `always-free-payg-guardrail`). All relational databases, AI vector runtimes, and observability TSDBs must be pinned to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`).
 2. **Mandatory Helm-Only Kubernetes Policy**:
    * **ALL Kubernetes workload changes, deployments, configs, and updates MUST strictly use the Master Umbrella Helm Chart (`charts/vinhthang-fleet/`) and `values.yaml`**.
    * Never apply ad-hoc raw YAML or run imperative `kubectl create/apply` for workloads. Always run `helm upgrade fleet ./charts/vinhthang-fleet`.

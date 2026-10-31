@@ -444,4 +444,9 @@ gitopsWebhook:
   createSecret: false
   secret: "" # REQUIRED: pass via --set gitopsWebhook.secret=<secret> at deploy time
 
+qaFedDatastores:
+  enabled: true
+  nodeHostname: arm10
+  image: docker.io/alpine/socat:latest
+
 

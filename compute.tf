@@ -112,7 +112,7 @@ resource "oci_core_instance" "amd11" {
 }
 
 # ==============================================================================
-# Node 3: arm10 (K3s Master Powerhouse - 2 OCPUs, 12 GB RAM Ampere A1)
+# Node 3: arm10 (K3s Master Powerhouse - 4 OCPUs, 24 GB RAM Ampere A1)
 # ==============================================================================
 resource "oci_core_instance" "arm10" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
@@ -121,8 +121,8 @@ resource "oci_core_instance" "arm10" {
   shape               = "VM.Standard.A1.Flex"
 
   shape_config {
-    ocpus         = 2
-    memory_in_gbs = 12
+    ocpus         = 4
+    memory_in_gbs = 24
   }
 
   source_details {
@@ -143,4 +143,18 @@ resource "oci_core_instance" "arm10" {
   }
 
   preserve_boot_volume = false
+}
+
+# ==============================================================================
+# Always Free PAYG Compartment Quota Guardrail ($0/month Hard Lock)
+# ==============================================================================
+resource "oci_limits_quota" "always_free_guardrail" {
+  compartment_id = var.tenancy_ocid
+  name           = "always-free-payg-guardrail"
+  description    = "Hard lock on Compute A1 and Block Storage to prevent usage beyond OCI Always Free PAYG tier ($0/mo)"
+  statements = [
+    "set compute-core quota standard-a1-core-count to 4 in tenancy",
+    "set compute-memory quota standard-a1-memory-count to 24 in tenancy",
+    "set block-storage quota total-storage-gb to 200 in tenancy",
+  ]
 }

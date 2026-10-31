@@ -1,0 +1,197 @@
+{{- if .Values.pulsar.internal.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: pulsar
+          image: {{ .Values.pulsar.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
+          env:
+            - name: PULSAR_MEM
+              value: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+          ports:
+            - name: pulsar
+              containerPort: 6650
+            - name: pulsar-ssl
+              containerPort: 6651
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          resources:
+            {{- toYaml .Values.pulsar.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  type: ClusterIP
+  selector:
+    app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+  ports:
+    - name: pulsar
+      port: 6650
+      targetPort: 6650
+      protocol: TCP
+    - name: pulsar-ssl
+      port: 6651
+      targetPort: 6651
+      protocol: TCP
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vedge-api-pulsar-admin-internal-service
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  type: ClusterIP
+  selector:
+    app: pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+  ports:
+    - name: http
+      port: 12555
+      targetPort: 8080
+      protocol: TCP
+{{- end }}
+---
+{{- if .Values.pulsar.external.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pulsar-internal-cloud-qa-{{ .Values.becSuffix }}-broker
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: pulsar
+          image: {{ .Values.pulsar.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
+          env:
+            - name: PULSAR_MEM
+              value: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+          ports:
+            - name: pulsar
+              containerPort: 6650
+            - name: pulsar-ssl
+              containerPort: 6651
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          resources:
+            {{- toYaml .Values.pulsar.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  type: ClusterIP
+  selector:
+    app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+  ports:
+    - name: pulsar
+      port: 6650
+      targetPort: 6650
+      protocol: TCP
+    - name: pulsar-ssl
+      port: 6651
+      targetPort: 6651
+      protocol: TCP
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vedge-api-pulsar-admin-public-service
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+spec:
+  type: ClusterIP
+  selector:
+    app: pulsar-external-cloud-qa-{{ .Values.becSuffix }}-broker
+  ports:
+    - name: http
+      port: 12555
+      targetPort: 8080
+      protocol: TCP
+{{- end }}

@@ -1,0 +1,33 @@
+arm10Host: "10.0.0.216"
+namespace: "cloud-qa-router"
+
+coredns:
+  enabled: true
+  domainSuffix: "corp.intranet"
+
+postgres:
+  serviceName: "vedge-api-postgres-service"
+  port: 5432
+  user: "postgres"
+  password: "postgres_master_pass_2026"
+
+redis:
+  serviceName: "redb-cloud-qa-router-headless"
+  port: 12000
+  password: ""
+
+mongodb:
+  serviceName: "mck-mongodb-cloud-qa-router-mongos-lb"
+  port: 27017
+  user: "userAdmin"
+  password: "userAdminSecret123"
+
+pulsar:
+  brokerServiceName: "pulsar-noti-cloud-qa-router-broker"
+  adminServiceName: "vedge-api-pulsar-admin-notification-service"
+  ports:
+    broker: 6650
+    brokerTls: 6651
+    adminHttp: 8080
+    adminHttps: 8443
+  arm10AdminHttpPort: 12555

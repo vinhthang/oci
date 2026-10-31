@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qa-router-verifier
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: qa-router-verifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qa-router-verifier
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: qa-router-verifier
+    spec:
+      containers:
+        - name: verifier
+          image: docker.io/library/alpine:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "sleep 3600"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

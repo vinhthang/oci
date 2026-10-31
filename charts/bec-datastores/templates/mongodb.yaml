@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+    spec:
+      containers:
+        - name: mongodb
+          image: {{ .Values.mongodb.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["mongod", "--wiredTigerCacheSizeGB", "0.25", "--bind_ip_all"]
+          ports:
+            - containerPort: {{ .Values.mongodb.port }}
+              name: mongodb
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: {{ .Values.mongodb.user | quote }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: password
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+spec:
+  type: ClusterIP
+  selector:
+    app: mck-mongodb-cloud-qa-{{ .Values.becSuffix }}-mongos-lb
+  ports:
+    - name: mongodb
+      port: {{ .Values.mongodb.port }}
+      targetPort: {{ .Values.mongodb.port }}
+      protocol: TCP

@@ -62,6 +62,39 @@ data:
   02-init-replication.sh: |
     #!/bin/sh
     psql -U "$POSTGRES_USER" -c "DO \$do\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'replicator') THEN EXECUTE format('CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD %L', '$POSTGRES_PASSWORD'); END IF; END \$do\$;"
+  03-init-vedge-databases.sql: |
+    SELECT format('CREATE DATABASE %I;', datname)
+    FROM (
+      SELECT unnest(ARRAY[
+        'access_data', 'acs_data', 'alerts_data', 'assistant_data', 'avsystems_data',
+        'batch_firmware_upgrade_data', 'carrier_ethernet_data', 'cfm_data', 'configuration_manager_data',
+        'cpe_control_data', 'dashboard_data', 'dataset_data', 'device_event_data', 'device_init_data',
+        'deviceencryptionkey_data', 'enid_adapter_data', 'environment_data', 'esim_data', 'extension_data',
+        'federation_routing_data', 'firmware_upgrade_data', 'geometry_data', 'internal_ssm_adapter_data',
+        'ip_data', 'lacp_data', 'lionic_manager_data', 'mac_security_data', 'mountainview_websocket_adapter_data',
+        'network_element_info_data', 'network_element_operation_data', 'notification_data', 'oci_migration_registry',
+        'onboarding_migration_data', 'pulsar_admin_data', 'resource_provision_data', 'secret_manager_data',
+        'secretmanager_data', 'service_activation', 'service_assurance_data', 'service_provision_data',
+        'session_manager_data', 'speed_test_data', 'user_data', 'value_recovery_data', 'value_store_cleanup_data',
+        'vedge_control_data', 'vedge_device_event', 'vedge_file_transfer_data', 'voip_data', 'wifi_management_data',
+        'vedge_api_acl', 'vedge_api_admin', 'vedge_api_alert', 'vedge_api_analytic', 'vedge_api_app_qoe',
+        'vedge_api_audit', 'vedge_api_auth', 'vedge_api_backup', 'vedge_api_billing', 'vedge_api_bootstrap',
+        'vedge_api_campaign', 'vedge_api_cert', 'vedge_api_cloud_storage', 'vedge_api_config', 'vedge_api_cpe_proxy',
+        'vedge_api_customer', 'vedge_api_dashboard', 'vedge_api_device', 'vedge_api_diagnostics', 'vedge_api_event',
+        'vedge_api_federation', 'vedge_api_file', 'vedge_api_firmware', 'vedge_api_group', 'vedge_api_inventory',
+        'vedge_api_license', 'vedge_api_log', 'vedge_api_metrics', 'vedge_api_migration', 'vedge_api_Monitor',
+        'vedge_api_network', 'vedge_api_notification', 'vedge_api_onboarding', 'vedge_api_organization',
+        'vedge_api_policy', 'vedge_api_profile', 'vedge_api_provisioning', 'vedge_api_reports', 'vedge_api_role',
+        'vedge_api_scheduler', 'vedge_api_security', 'vedge_api_settings', 'vedge_api_site', 'vedge_api_speedtest',
+        'vedge_api_subscriber', 'vedge_api_system', 'vedge_api_tag', 'vedge_api_Telemetry', 'vedge_api_template',
+        'vedge_api_tenant', 'vedge_api_ticket', 'vedge_api_topology', 'vedge_api_upgrade', 'vedge_api_user',
+        'vedge_api_virtual_device', 'vedge_api_webhook', 'vedge_api_wifi', 'vedge_api_wifi_Scheduler', 'vedge_api_workflow'
+      ]) AS datname
+    ) required
+    WHERE NOT EXISTS (
+      SELECT 1 FROM pg_database WHERE pg_database.datname = required.datname
+    );
+    \gexec
 ---
 apiVersion: apps/v1
 kind: Deployment

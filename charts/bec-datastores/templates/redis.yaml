@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - "redis-server"
+            - "--port"
+            - "{{ .Values.redis.port }}"
+            - "--protected-mode"
+            - "no"
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+              name: redis
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+  namespace: cloud-qa-{{ .Values.becSuffix }}
+  labels:
+    app: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: redb-cloud-qa-{{ .Values.becSuffix }}-headless
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
+      protocol: TCP

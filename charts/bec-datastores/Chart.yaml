@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bec-datastores
+description: Parameterized compact local datastores for BEC clusters (pc1-bec1 / pc1-bec2)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

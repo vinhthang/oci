@@ -1,0 +1,6 @@
+apiVersion: v2
+name: qa-router-datastores
+description: Helm Chart for pc1-qa-router shared datastore routing, coredns resolution, and deterministic secrets
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

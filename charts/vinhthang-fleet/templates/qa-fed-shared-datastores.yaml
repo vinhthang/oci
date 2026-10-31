@@ -1,0 +1,96 @@
+{{- if .Values.qaFedDatastores.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qa-fed-proxy-scripts
+  namespace: data
+  labels:
+    app: qa-fed-datastore-proxy
+data:
+  run-proxies.sh: |
+    #!/bin/sh
+    set -e
+    echo "=================================================="
+    echo "Starting QA Fed Shared Datastore Proxies on hostNetwork..."
+    echo "Target node: arm10 (10.0.0.216)"
+    echo "=================================================="
+
+    # Trap signals to terminate child background jobs
+    trap "kill 0" EXIT TERM INT
+
+    # PostgreSQL: host 5432 -> postgres-primary.data.svc.cluster.local:5432
+    socat TCP-LISTEN:5432,fork,reuseaddr TCP:postgres-primary.data.svc.cluster.local:5432 &
+    echo "  [OK] Forwarding host 5432 -> postgres-primary:5432"
+
+    # Redis: host 6379 and 12000 -> redis.data.svc.cluster.local:6379
+    socat TCP-LISTEN:6379,fork,reuseaddr TCP:redis.data.svc.cluster.local:6379 &
+    socat TCP-LISTEN:12000,fork,reuseaddr TCP:redis.data.svc.cluster.local:6379 &
+    echo "  [OK] Forwarding host 6379 & 12000 -> redis:6379"
+
+    # MongoDB: host 27017 -> mongodb-rs0.data.svc.cluster.local:27017
+    socat TCP-LISTEN:27017,fork,reuseaddr TCP:mongodb-rs0.data.svc.cluster.local:27017 &
+    echo "  [OK] Forwarding host 27017 -> mongodb-rs0:27017"
+
+    # Apache Pulsar Broker: host 6650, 6651 -> fleet-pulsar-broker:6650
+    socat TCP-LISTEN:6650,fork,reuseaddr TCP:fleet-pulsar-broker.data.svc.cluster.local:6650 &
+    socat TCP-LISTEN:6651,fork,reuseaddr TCP:fleet-pulsar-broker.data.svc.cluster.local:6650 &
+    echo "  [OK] Forwarding host 6650 & 6651 -> fleet-pulsar-broker:6650"
+
+    # Apache Pulsar Admin HTTP: host 12555 -> fleet-pulsar-broker:8088
+    # (NEVER bind port 8080 per RULE[adr-governance])
+    socat TCP-LISTEN:12555,fork,reuseaddr TCP:fleet-pulsar-broker.data.svc.cluster.local:8088 &
+    echo "  [OK] Forwarding host 12555 -> fleet-pulsar-broker:8088 (Pulsar Admin HTTP)"
+
+    # Apache Pulsar Admin HTTPS: host 8443 -> fleet-pulsar-broker:8088
+    socat TCP-LISTEN:8443,fork,reuseaddr TCP:fleet-pulsar-broker.data.svc.cluster.local:8088 &
+    echo "  [OK] Forwarding host 8443 -> fleet-pulsar-broker:8088 (Pulsar Admin HTTPS)"
+
+    echo "=================================================="
+    echo "All proxies active. Entering event loop..."
+    echo "=================================================="
+    wait
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qa-fed-datastore-proxy
+  namespace: data
+  labels:
+    app: qa-fed-datastore-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qa-fed-datastore-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: qa-fed-datastore-proxy
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.qaFedDatastores.nodeHostname | default "arm10" }}
+      containers:
+        - name: socat-proxy
+          image: {{ .Values.qaFedDatastores.image | default "docker.io/alpine/socat:latest" }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/opt/proxy/run-proxies.sh"]
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          volumeMounts:
+            - name: proxy-scripts
+              mountPath: /opt/proxy
+      volumes:
+        - name: proxy-scripts
+          configMap:
+            name: qa-fed-proxy-scripts
+            defaultMode: 0755
+{{- end }}

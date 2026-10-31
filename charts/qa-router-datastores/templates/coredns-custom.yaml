@@ -1,0 +1,24 @@
+{{- if .Values.coredns.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+    k8s-app: kube-dns
+data:
+  corp-intranet.server: |
+    corp.intranet:53 {
+        errors
+        cache 30
+        hosts {
+            {{ .Values.arm10Host }} qa-fed-router-pg.corp.intranet
+            {{ .Values.arm10Host }} router-rds-lb-qa-fed.corp.intranet
+            {{ .Values.arm10Host }} router-mongo-lb-qa-fed.corp.intranet
+            {{ .Values.arm10Host }} pulsar-stream-qa-fed.corp.intranet
+            {{ .Values.arm10Host }} pulsar-admin-qa-fed.corp.intranet
+            fallthrough
+        }
+    }
+{{- end }}

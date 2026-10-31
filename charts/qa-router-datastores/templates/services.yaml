@@ -1,0 +1,170 @@
+# PostgreSQL service and endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgres.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: postgres
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.port }}
+      targetPort: {{ .Values.postgres.port }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.postgres.serviceName }}
+  namespace: {{ .Values.namespace }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.arm10Host }}
+    ports:
+      - name: postgres
+        port: {{ .Values.postgres.port }}
+        protocol: TCP
+---
+# Redis headless service and endpoints (port 12000)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.redis.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: redis
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.redis.serviceName }}
+  namespace: {{ .Values.namespace }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.arm10Host }}
+    ports:
+      - name: redis
+        port: {{ .Values.redis.port }}
+        protocol: TCP
+---
+# MongoDB service and endpoints (port 27017)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.mongodb.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mongodb
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: mongodb
+      port: {{ .Values.mongodb.port }}
+      targetPort: {{ .Values.mongodb.port }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.mongodb.serviceName }}
+  namespace: {{ .Values.namespace }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.arm10Host }}
+    ports:
+      - name: mongodb
+        port: {{ .Values.mongodb.port }}
+        protocol: TCP
+---
+# Pulsar Broker notification service and endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pulsar.brokerServiceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: pulsar-broker
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: pulsar
+      port: {{ .Values.pulsar.ports.broker }}
+      targetPort: {{ .Values.pulsar.ports.broker }}
+      protocol: TCP
+    - name: pulsar-ssl
+      port: {{ .Values.pulsar.ports.brokerTls }}
+      targetPort: {{ .Values.pulsar.ports.brokerTls }}
+      protocol: TCP
+    - name: http
+      port: {{ .Values.pulsar.ports.adminHttp }}
+      targetPort: {{ .Values.pulsar.arm10AdminHttpPort }}
+      protocol: TCP
+    - name: https
+      port: {{ .Values.pulsar.ports.adminHttps }}
+      targetPort: {{ .Values.pulsar.ports.adminHttps }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.pulsar.brokerServiceName }}
+  namespace: {{ .Values.namespace }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.arm10Host }}
+    ports:
+      - name: pulsar
+        port: {{ .Values.pulsar.ports.broker }}
+        protocol: TCP
+      - name: pulsar-ssl
+        port: {{ .Values.pulsar.ports.brokerTls }}
+        protocol: TCP
+      - name: http
+        port: {{ .Values.pulsar.arm10AdminHttpPort }}
+        protocol: TCP
+      - name: https
+        port: {{ .Values.pulsar.ports.adminHttps }}
+        protocol: TCP
+---
+# Pulsar Admin notification service (port 12555)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pulsar.adminServiceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: pulsar-admin
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ .Values.pulsar.arm10AdminHttpPort }}
+      targetPort: {{ .Values.pulsar.arm10AdminHttpPort }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.pulsar.adminServiceName }}
+  namespace: {{ .Values.namespace }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.arm10Host }}
+    ports:
+      - name: http
+        port: {{ .Values.pulsar.arm10AdminHttpPort }}
+        protocol: TCP

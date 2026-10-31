@@ -336,10 +336,10 @@ vector:
   image: docker.io/timberio/vector:0.45.0-alpine
   resources:
     limits:
-      memory: 128Mi
+      memory: 256Mi
     requests:
       cpu: 10m
-      memory: 20Mi
+      memory: 64Mi
 victoria-metrics-agent:
   namespaceOverride: observability
   nodeSelector:

@@ -53,6 +53,7 @@
 | [**ADR-0042**](adr/0042-remediate-security-exposures-and-harden-gitops-webhook.md) | **Remediate Security Exposures, Rotate WireGuard Keys, and Harden GitOps Webhook** | 🟢 Accepted | Security / Ingress | Rotate leaked WireGuard keys, move Weaviate key to K8s Secret, and add HMAC SHA256 verification to GitOps webhook. |
 | [**ADR-0043**](adr/0043-persistent-stream-json-supervisor-for-agy-proxy.md) | **Persistent Stream-JSON Supervisor Daemon for Antigravity Proxy** | 🟢 Accepted | AI / Host Services | Deploy persistent `agy` worker daemon with stream-json NDJSON, 5x lower latency, token streaming, and automatic recycling. |
 | [**ADR-0044**](adr/0044-public-caddy-ingress-for-web-reader-standalone-node.md) | **Public Edge Caddy Ingress for Web Reader Standalone Node (`reader.vinhthang.dev`)** | 🟢 Accepted | Security / Ingress | Public Caddy reverse proxy to standalone Next.js node over WireGuard mesh with unbuffered audio streaming. |
+| [**ADR-0045**](adr/0045-expand-arm10-boot-volume-storage.md) | **Online Expansion of `arm10` Boot Volume to 100 GB Within OCI Always Free Tier** | 🟢 Accepted | Infrastructure / Storage | Expand `arm10` boot volume from 47 GB to 100 GB online (`194/200 GB` free quota) and grow XFS root live via `oci-growfs`. |
 
 ---
 

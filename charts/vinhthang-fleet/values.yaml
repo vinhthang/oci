@@ -320,7 +320,7 @@ umami:
 vaultwarden:
   enabled: true
   image: docker.io/vaultwarden/server:1.37.2-alpine
-  invitationsAllowed: true
+  invitationsAllowed: false
   nodePort: 30010
   resources:
     limits:
@@ -328,7 +328,8 @@ vaultwarden:
     requests:
       cpu: 10m
       memory: 20Mi
-  signupsAllowed: true
+  signupsAllowed: false
+  storagePath: /opt/vaultwarden/data
   websocketEnabled: true
 vector:
   enabled: true

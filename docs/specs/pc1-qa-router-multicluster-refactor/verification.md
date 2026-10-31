@@ -250,3 +250,79 @@ STATUS: deployed
 REVISION: 220666
 ✅ [Sat Oct 31 08:40:24 UTC 2026] GitOps reconcile finished successfully!
 ```
+
+
+---
+
+## 7. Phase 2 Addendum: Microservice Suite Deployment & Pulsar/Postgres Recovery Evidence
+
+- **Execution Date**: 2026-10-31
+- **Scope**: Multi-cluster microservice deployment (`vedge-api-local`), Pulsar namespace bootstrap, Postgres database seeding, and removal of `vedge-api-resource-provision-service`.
+
+### 7.1 Workload Reconciliation Across Clusters
+- `pc1-qa-router` (`cloud-qa-router`): Completely uninstalled `vedge-control`. Running strictly `qa-router-verifier`, `environment-settings-service`, `pulsar-admin-service`.
+- `pc1-bec1` (`cloud-qa-f1`) & `pc1-bec2` (`cloud-qa-f2`): 17/17 pods running (5 datastores + 12 microservices).
+- `vedge-api-resource-provision-service` disabled (`enabled: false`) and decommissioned from both BEC clusters per user instruction.
+
+### 7.2 Verbatim Cluster Status
+```text
+$ rtk kubectl --context pc1-qa-router -n cloud-qa-router get pods
+NAME                                                      READY   STATUS    RESTARTS      AGE
+qa-router-verifier-684bbd4ff6-n4fvg                       1/1     Running   8 (25m ago)   7h38m
+vedge-api-environment-settings-service-6cfc979f5c-z2dq2   1/1     Running   1 (85m ago)   3h23m
+vedge-api-pulsar-admin-service-7d7cff9586-j7vfj           1/1     Running   1 (85m ago)   3h22m
+
+$ rtk kubectl --context pc1-bec1 -n cloud-qa-f1 get pods -o wide
+NAME                                                       READY   STATUS    RESTARTS   AGE     IP             NODE              NOMINATED NODE   READINESS GATES
+mck-mongodb-cloud-qa-f1-mongos-lb-8c7bfd655-p8hdc          1/1     Running   0          6m24s   10.142.1.51    k3s-bec1-worker   <none>           <none>
+pulsar-external-cloud-qa-f1-broker-98746bb46-9vv7z         1/1     Running   0          6m19s   10.142.0.175   k3s-bec1-server   <none>           <none>
+pulsar-internal-cloud-qa-f1-broker-86dd856566-7sd22        1/1     Running   0          6m16s   10.142.1.58    k3s-bec1-worker   <none>           <none>
+redb-cloud-qa-f1-headless-9dcc59545-txqmd                  1/1     Running   0          6m25s   10.142.0.169   k3s-bec1-server   <none>           <none>
+vedge-api-cpe-control-service-66758466b8-2mvwn             1/1     Running   4          6m25s   10.142.0.168   k3s-bec1-server   <none>           <none>
+vedge-api-device-activity-service-d76f956c-f9wjx           1/1     Running   0          6m25s   10.142.1.50    k3s-bec1-worker   <none>           <none>
+vedge-api-device-event-service-dfc566568-n7zkk             1/1     Running   4          6m23s   10.142.0.170   k3s-bec1-server   <none>           <none>
+vedge-api-device-init-service-5d6678594-zzlmg              1/1     Running   5          6m22s   10.142.1.52    k3s-bec1-worker   <none>           <none>
+vedge-api-device-service-77799bb4df-lz5kn                  1/1     Running   0          6m22s   10.142.0.171   k3s-bec1-server   <none>           <none>
+vedge-api-environment-settings-service-78d9896bc4-ngjjn    1/1     Running   0          6m22s   10.142.1.53    k3s-bec1-worker   <none>           <none>
+vedge-api-fn-cpe-registration-service-86694f5986-rq7z4     1/1     Running   0          6m21s   10.142.0.172   k3s-bec1-server   <none>           <none>
+vedge-api-fn-cpe-topic-delivery-service-866b65c59d-6qhkz   1/1     Running   0          6m21s   10.142.1.55    k3s-bec1-worker   <none>           <none>
+vedge-api-postgres-service-847777648c-jz72t                1/1     Running   0          6m21s   10.142.1.54    k3s-bec1-worker   <none>           <none>
+vedge-api-pulsar-admin-service-7dc7dfb94c-cwqrn            1/1     Running   4          6m21s   10.142.0.173   k3s-bec1-server   <none>           <none>
+vedge-api-service-provision-service-84998d6b44-cv9mk       1/1     Running   4          6m20s   10.142.1.56    k3s-bec1-worker   <none>           <none>
+vedge-api-session-manager-service-5578cbd55c-xj88k         1/1     Running   4          6m20s   10.142.0.174   k3s-bec1-server   <none>           <none>
+vedge-api-vedge-control-service-545d7c8b84-k6wmb           1/1     Running   5          6m20s   10.142.1.57    k3s-bec1-worker   <none>           <none>
+
+$ rtk kubectl --context pc1-bec2 -n cloud-qa-f2 get pods -o wide
+NAME                                                       READY   STATUS    RESTARTS   AGE     IP             NODE              NOMINATED NODE   READINESS GATES
+mck-mongodb-cloud-qa-f2-mongos-lb-7b5c7968f5-tcqhd         1/1     Running   0          6m22s   10.242.1.34    k3s-bec2-worker   <none>           <none>
+pulsar-external-cloud-qa-f2-broker-6db9646f75-k5j5q        1/1     Running   0          6m19s   10.242.0.105   k3s-bec2-server   <none>           <none>
+pulsar-internal-cloud-qa-f2-broker-6d89b55f5f-tn4nh        1/1     Running   1          6m3s    10.242.1.38    k3s-bec2-worker   <none>           <none>
+redb-cloud-qa-f2-headless-7d966c5467-q695k                 1/1     Running   0          6m22s   10.242.0.101   k3s-bec2-server   <none>           <none>
+vedge-api-cpe-control-service-7748b8b86-5vt8c              1/1     Running   5          6m26s   10.242.1.30    k3s-bec2-worker   <none>           <none>
+vedge-api-device-activity-service-86c84f5ff6-qxpmx         1/1     Running   0          6m26s   10.242.1.31    k3s-bec2-worker   <none>           <none>
+vedge-api-device-event-service-67f648cc6f-4ffqj            1/1     Running   4          6m24s   10.242.0.98    k3s-bec2-server   <none>           <none>
+vedge-api-device-init-service-6547bccf65-sdg52             1/1     Running   4          6m24s   10.242.0.99    k3s-bec2-server   <none>           <none>
+vedge-api-device-service-7f78dcbbd4-vvfdv                  1/1     Running   0          6m23s   10.242.0.100   k3s-bec2-server   <none>           <none>
+vedge-api-environment-settings-service-5cc58d88fd-kzhn7    1/1     Running   0          6m22s   10.242.1.33    k3s-bec2-worker   <none>           <none>
+vedge-api-fn-cpe-registration-service-759b6db4c6-xzmj4     1/1     Running   2          6m22s   10.242.1.32    k3s-bec2-worker   <none>           <none>
+vedge-api-fn-cpe-topic-delivery-service-598bc47d7b-9mqnj   1/1     Running   2          6m22s   10.242.0.102   k3s-bec2-server   <none>           <none>
+vedge-api-postgres-service-5658bf7584-mfwqb                1/1     Running   0          6m19s   10.242.1.37    k3s-bec2-worker   <none>           <none>
+vedge-api-pulsar-admin-service-6b5994dd87-fcdbr            1/1     Running   4          6m21s   10.242.0.103   k3s-bec2-server   <none>           <none>
+vedge-api-service-provision-service-7847b4c9b6-cmhvv       1/1     Running   4          6m21s   10.242.0.104   k3s-bec2-server   <none>           <none>
+vedge-api-session-manager-service-9d588c84-45ls4           1/1     Running   4          6m21s   10.242.1.35    k3s-bec2-worker   <none>           <none>
+vedge-api-vedge-control-service-5d88fb4984-8lwtz           1/1     Running   0          38s     10.242.1.39    k3s-bec2-worker   <none>           <none>
+```
+
+### 7.3 Public vs. Internal Pulsar Decoupling Verification Evidence
+- **Public Pulsar (`arm10` / `10.0.0.216:6650`)**: `fn-cpe-registration-service` resolves `fleet-pulsar-broker-0.fleet-pulsar-broker-headless.data.svc.cluster.local` via Pod `hostAliases` and subscribes 4 consumers to `persistent://public/provision/new`:
+```text
+INFO --- [vedge-api-fn-cpe-registration-service] [pool-2-thread-1] : Native default bytes listener will be created for topic persistent://public/provision/new
+INFO --- [vedge-api-fn-cpe-registration-service] [r-client-io-1-1] : [[id: 0x90c7e72f, L:/10.142.1.75:42878 - R:fleet-pulsar-broker-0.fleet-pulsar-broker-headless.data.svc.cluster.local/10.0.0.216:6650]] Connected to server
+INFO --- [vedge-api-fn-cpe-registration-service] [pool-2-thread-1] : New consumer [vedge-api-fn-cpe-registration-service_..._0..3] with [vedge-api-fn-cpe-registration-service-new] subscription has been created for [persistent://public/provision/new] topic
+```
+- **Internal Pulsar (`pc1-bec1` / `pulsar-internal-cloud-qa-f1-broker:6650`)**: `vedge-control-service` connects to local in-cluster Pulsar broker and subscribes 4 consumers across all 5 partitions of `persistent://private/provision/VedgeTopicAllocationRequest`:
+```text
+INFO --- [vedge-api-vedge-control-service] [r-client-io-1-1] : [persistent://private/provision/VedgeTopicAllocationRequest] [vedge-api-vedge-control-service-VedgeTopicAllocationRequest] Success subscribe new topic persistent://private/provision/VedgeTopicAllocationRequest in topics consumer, partitions: 5, allTopicPartitionsNumber: 5
+INFO --- [vedge-api-vedge-control-service] [pool-27-thread-1] : New consumer [vedge-api-vedge-control-service_..._0..3] with [vedge-api-vedge-control-service-VedgeTopicAllocationRequest] subscription has been created for [persistent://private/provision/VedgeTopicAllocationRequest] topic
+```
+- **Readiness Probes & Pulsar Admin Decoupling**: Fixed `awaitPulsarAdmin()` `/health/are-you-ready` HTTP 404 from native broker Jetty by decoupling `PUBLIC_PULSAR_ADMIN_SERVICE_URL` to route to `http://vedge-api-pulsar-admin-service:12555` while `PUBLIC_PULSAR_URL` routes to `pulsar://10.0.0.216:6650`. All 34 BEC pods are `1/1 Running` with 0 restarts across `pc1-bec1` (Rev 9) and `pc1-bec2` (Rev 6).

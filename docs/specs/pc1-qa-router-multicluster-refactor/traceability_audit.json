@@ -1,6 +1,6 @@
 {
   "spec_hash": "afa9a92a9906de9f4e9e57d6a96f945f91a42c1cdf66282c867ff91ec8f4c43b",
-  "evidence_hash": "872ab0d3136901f49bf0056c5aa81ec39c84f02d1e744c4af63847f35b6bb38a",
+  "evidence_hash": "d32b62ea2cd135ff7cf46cd8dcf7163172b2dae6136617e0774397ed886f937b",
   "auditor_model": "claude-opus-4-6",
   "verdict": "PASS",
   "requirements_evaluated": {

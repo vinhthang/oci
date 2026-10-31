@@ -37,7 +37,7 @@ spec:
           command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
           env:
             - name: PULSAR_MEM
-              value: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+              value: {{ .Values.pulsar.internal.pulsarMem | default .Values.pulsar.pulsarMem | default "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m" | quote }}
           ports:
             - name: pulsar
               containerPort: 6650
@@ -48,7 +48,7 @@ spec:
             - name: https
               containerPort: 8443
           resources:
-            {{- toYaml .Values.pulsar.resources | nindent 12 }}
+            {{- toYaml (.Values.pulsar.internal.resources | default .Values.pulsar.resources) | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service
@@ -136,7 +136,7 @@ spec:
           command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
           env:
             - name: PULSAR_MEM
-              value: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+              value: {{ .Values.pulsar.external.pulsarMem | default .Values.pulsar.pulsarMem | default "-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m" | quote }}
           ports:
             - name: pulsar
               containerPort: 6650
@@ -147,7 +147,7 @@ spec:
             - name: https
               containerPort: 8443
           resources:
-            {{- toYaml .Values.pulsar.resources | nindent 12 }}
+            {{- toYaml (.Values.pulsar.external.resources | default .Values.pulsar.resources) | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service

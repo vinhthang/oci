@@ -326,3 +326,27 @@ INFO --- [vedge-api-vedge-control-service] [r-client-io-1-1] : [persistent://pri
 INFO --- [vedge-api-vedge-control-service] [pool-27-thread-1] : New consumer [vedge-api-vedge-control-service_..._0..3] with [vedge-api-vedge-control-service-VedgeTopicAllocationRequest] subscription has been created for [persistent://private/provision/VedgeTopicAllocationRequest] topic
 ```
 - **Readiness Probes & Pulsar Admin Decoupling**: Fixed `awaitPulsarAdmin()` `/health/are-you-ready` HTTP 404 from native broker Jetty by decoupling `PUBLIC_PULSAR_ADMIN_SERVICE_URL` to route to `http://vedge-api-pulsar-admin-service:12555` while `PUBLIC_PULSAR_URL` routes to `pulsar://10.0.0.216:6650`. All 34 BEC pods are `1/1 Running` with 0 restarts across `pc1-bec1` (Rev 9) and `pc1-bec2` (Rev 6).
+
+### 7.4 External Pulsar 4Gi Scaling & Public Namespace Verification Evidence
+- **Resource Verification Across BEC1 & BEC2**:
+```bash
+$ rtk kubectl --context pc1-bec1 -n cloud-qa-f1 get pod -l app=pulsar-external-cloud-qa-f1-broker -o jsonpath='{.items[0].spec.containers[0].resources}'
+{"limits":{"cpu":"2","memory":"4Gi"},"requests":{"cpu":"200m","memory":"4Gi"}}
+
+$ rtk kubectl --context pc1-bec1 -n cloud-qa-f1 get pod -l app=pulsar-external-cloud-qa-f1-broker -o jsonpath='{.items[0].spec.containers[0].env}'
+[{"name":"PULSAR_MEM","value":"-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m"}]
+
+$ rtk kubectl --context pc1-bec2 -n cloud-qa-f2 get pod -l app=pulsar-external-cloud-qa-f2-broker -o jsonpath='{.items[0].spec.containers[0].resources}'
+{"limits":{"cpu":"2","memory":"4Gi"},"requests":{"cpu":"200m","memory":"4Gi"}}
+
+$ rtk kubectl --context pc1-bec2 -n cloud-qa-f2 get pod -l app=pulsar-external-cloud-qa-f2-broker -o jsonpath='{.items[0].spec.containers[0].env}'
+[{"name":"PULSAR_MEM","value":"-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m"}]
+```
+- **Public Namespaces Bootstrapped**:
+```bash
+$ rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/pulsar-external-cloud-qa-f1-broker -- curl -s http://localhost:8080/admin/v2/namespaces/public
+["public/0","public/C2G","public/G2C","public/default","public/provision"]
+
+$ rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/pulsar-external-cloud-qa-f2-broker -- curl -s http://localhost:8080/admin/v2/namespaces/public
+["public/0","public/C2G","public/G2C","public/default","public/provision"]
+```

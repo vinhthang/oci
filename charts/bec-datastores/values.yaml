@@ -56,12 +56,21 @@ pulsar:
   image: "docker.io/apachepulsar/pulsar:3.0.7"
   internal:
     enabled: true
+    pulsarMem: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "128Mi"
+      limits:
+        cpu: "1"
+        memory: "512Mi"
   external:
     enabled: true
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "128Mi"
-    limits:
-      cpu: "1"
-      memory: "512Mi"
+    pulsarMem: "-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m"
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "4Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"

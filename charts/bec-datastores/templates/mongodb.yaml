@@ -21,7 +21,7 @@ spec:
         - name: mongodb
           image: {{ .Values.mongodb.image }}
           imagePullPolicy: IfNotPresent
-          command: ["mongod", "--wiredTigerCacheSizeGB", "0.25", "--bind_ip_all"]
+          args: ["--wiredTigerCacheSizeGB", "0.25"]
           ports:
             - containerPort: {{ .Values.mongodb.port }}
               name: mongodb

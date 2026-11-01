@@ -17,6 +17,16 @@ data:
     SELECT 'CREATE DATABASE vedge_api_reports' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_reports')\gexec
     SELECT 'CREATE DATABASE "vedge_api_wifi_Scheduler"' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_wifi_Scheduler')\gexec
     SELECT 'CREATE DATABASE vedge_api_virtual_device' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_api_virtual_device')\gexec
+    SELECT 'CREATE DATABASE vedge_device_event' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_device_event')\gexec
+    SELECT 'CREATE DATABASE device_init_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'device_init_data')\gexec
+    SELECT 'CREATE DATABASE cpe_control_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'cpe_control_data')\gexec
+    SELECT 'CREATE DATABASE session_manager_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'session_manager_data')\gexec
+    SELECT 'CREATE DATABASE service_provision_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'service_provision_data')\gexec
+    SELECT 'CREATE DATABASE fn_cpe_registration_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'fn_cpe_registration_data')\gexec
+    SELECT 'CREATE DATABASE vedge_control_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_control_data')\gexec
+    SELECT 'CREATE DATABASE environment_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'environment_data')\gexec
+    SELECT 'CREATE DATABASE pulsar_admin_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'pulsar_admin_data')\gexec
+    SELECT 'CREATE DATABASE vedge_jsim_data' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'vedge_jsim_data')\gexec
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -41,6 +51,10 @@ spec:
         - name: postgres
           image: {{ .Values.postgres.image }}
           imagePullPolicy: IfNotPresent
+          {{- if .Values.postgres.args }}
+          args:
+            {{- toYaml .Values.postgres.args | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.postgres.port }}
               name: postgres

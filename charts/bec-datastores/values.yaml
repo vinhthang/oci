@@ -20,13 +20,30 @@ postgres:
     - "vedge_api_reports"
     - "vedge_api_wifi_Scheduler"
     - "vedge_api_virtual_device"
+    - "vedge_device_event"
+    - "device_init_data"
+    - "cpe_control_data"
+    - "session_manager_data"
+    - "service_provision_data"
+    - "fn_cpe_registration_data"
+    - "vedge_control_data"
+    - "environment_data"
+    - "pulsar_admin_data"
+    - "vedge_jsim_data"
+  args:
+    - "-c"
+    - "max_connections=2000"
+    - "-c"
+    - "shared_buffers=512MB"
+    - "-c"
+    - "work_mem=4MB"
   resources:
     requests:
-      cpu: "50m"
-      memory: "128Mi"
+      cpu: "100m"
+      memory: "512Mi"
     limits:
-      cpu: "1"
-      memory: "384Mi"
+      cpu: "2"
+      memory: "4Gi"
 
 redis:
   image: "docker.io/redis:7.4.2-alpine"

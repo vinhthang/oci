@@ -1,7 +1,7 @@
 # ADR 0034: Add On-Premise Hyper-V Nodes via WireGuard
 
 ## Status
-Accepted
+🔴 **Deprecated (Superseded by ADR-0048)**
 
 ## Context
 Our current K3s cluster spans Oracle Cloud Infrastructure (OCI) across `arm10`, `amd10`, and `amd11`. We want to scale our worker nodes by introducing on-premise compute capacity to handle heavier workloads without incurring additional cloud costs. We have `pc-1` running Oracle Linux 10 VMs via Hyper-V locally.

@@ -63,24 +63,24 @@ mongodb:
   password: "userAdminSecret123"
   resources:
     requests:
-      cpu: "50m"
-      memory: "128Mi"
+      cpu: "100m"
+      memory: "256Mi"
     limits:
-      cpu: "1"
-      memory: "512Mi"
+      cpu: "2"
+      memory: "2Gi"
 
 pulsar:
   image: "docker.io/apachepulsar/pulsar:3.0.7"
   internal:
     enabled: true
-    pulsarMem: "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m"
+    pulsarMem: "-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=512m"
     resources:
       requests:
-        cpu: "50m"
-        memory: "128Mi"
-      limits:
-        cpu: "1"
+        cpu: "100m"
         memory: "512Mi"
+      limits:
+        cpu: "2"
+        memory: "2Gi"
   external:
     enabled: true
     pulsarMem: "-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m"

@@ -1,0 +1,195 @@
+dbInit:
+  enabled: true
+  image: postgres:16.8-alpine
+defaultServiceConfig:
+  args: []
+  command: []
+  imageTag: ANO-17479
+  jvmHeap: -Xms64m -Xmx384m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=64m -Xss512k
+  pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1280Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+global:
+  databases:
+    mongo:
+      connectionString: mongodb://mck-mongodb-cloud-qa-f1-mongos-lb:27017
+    postgres:
+      host: vedge-api-postgres-service
+      password: postgres_master_pass_2026
+      port: 5432
+      username: postgres
+    pulsar:
+      adminUrl: http://vedge-api-pulsar-admin-service:12555
+      internalAdminUrl: http://vedge-api-pulsar-admin-service:12555
+      internalUrl: pulsar://pulsar-internal-cloud-qa-f1-broker:6650
+      notificationAdminUrl: http://10.0.0.216:12555
+      notificationUrl: pulsar://10.0.0.216:6650
+      publicAdminUrl: http://vedge-api-pulsar-admin-public-service:12555
+      publicUrl: pulsar://pulsar-external-cloud-qa-f1-broker:6650
+      url: pulsar://pulsar-internal-cloud-qa-f1-broker:6650
+    redis:
+      hosts: redb-cloud-qa-f1-headless:12000
+  imageRegistry: ""
+hostAliases:
+- hostnames:
+  - fleet-pulsar-broker-0.fleet-pulsar-broker-headless.data.svc.cluster.local
+  - fleet-pulsar-broker-0.fleet-pulsar-broker.data.svc.cluster.local
+  - fleet-pulsar-broker-headless.data.svc.cluster.local
+  - fleet-pulsar-broker-headless
+  - fleet-pulsar-broker
+  - qa-fed-router-pg.corp.intranet
+  - router-rds-lb-qa-fed.corp.intranet
+  - router-mongo-lb-qa-fed.corp.intranet
+  - pulsar-stream-qa-fed.corp.intranet
+  ip: 10.0.0.216
+encryptionKeysSecret:
+  enabled: true
+  name: ao-encryption-keys
+  secretsJson: |
+    {
+      "ao-encryption-key": {
+        "1": "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+      }
+    }
+services:
+  vedge-api-cpe-control-service:
+    dbName: cpe_control_data
+    enabled: true
+    port: 10888
+    postgresEnabled: true
+    pulsarEnabled: true
+    redisEnabled: true
+    replicas: 2
+  vedge-api-device-activity-service:
+    enabled: true
+    mongoEnabled: true
+    port: 9333
+    postgresEnabled: false
+    pulsarEnabled: true
+    redisEnabled: true
+  vedge-api-device-event-service:
+    dbName: vedge_device_event
+    enabled: true
+    port: 13000
+    postgresEnabled: true
+    pulsarEnabled: true
+  vedge-api-device-init-service:
+    dbName: device_init_data
+    enabled: true
+    port: 11120
+    postgresEnabled: true
+    pulsarEnabled: true
+  vedge-api-device-service:
+    enabled: true
+    mongoEnabled: true
+    port: 3333
+    postgresEnabled: false
+    pulsarEnabled: true
+    redisEnabled: true
+    replicas: 2
+  vedge-api-environment-settings-service:
+    dbName: environment_data
+    enabled: true
+    port: 17222
+    postgresEnabled: true
+  vedge-api-fn-cpe-registration-service:
+    dbName: fn_cpe_registration_data
+    enabled: true
+    port: 11555
+    postgresEnabled: true
+    pulsarEnabled: true
+    redisEnabled: true
+  vedge-api-fn-cpe-topic-delivery-service:
+    enabled: true
+    port: 11556
+    postgresEnabled: false
+    pulsarEnabled: true
+    redisEnabled: true
+  vedge-api-pulsar-admin-service:
+    dbName: pulsar_admin_data
+    enabled: true
+    env:
+    - name: VEDGE_PULSAR_MAX_TOPICS_PER_NAMESPACE
+      value: "50000"
+    - name: HANDSHAKE_TOPICS_CLEANUP_ENABLED
+      value: "false"
+    - name: PULSAR_ADMIN_NAME
+      value: vedge-api-pulsar-admin-service
+    - name: PULSAR_ADMIN_PARENT_CONTEXT
+      value: pulsar-admin-service
+    internalAdminUrl: http://vedge-api-pulsar-admin-internal-service:12555
+    port: 12555
+    postgresEnabled: true
+    pulsarAdminUrl: http://vedge-api-pulsar-admin-internal-service:12555
+    pulsarEnabled: true
+    redisEnabled: true
+  vedge-api-resource-provision-service:
+    dbName: resource_provision_data
+    enabled: false
+    port: 25558
+    postgresEnabled: true
+    pulsarEnabled: true
+  vedge-api-service-provision-service:
+    dbName: service_provision_data
+    enabled: true
+    port: 13333
+    postgresEnabled: true
+    pulsarEnabled: true
+    redisEnabled: true
+  vedge-api-session-manager-service:
+    dbName: session_manager_data
+    enabled: true
+    mongoEnabled: true
+    port: 12000
+    postgresEnabled: true
+    pulsarEnabled: true
+    redisEnabled: true
+    replicas: 2
+  vedge-api-vedge-control-service:
+    dbName: vedge_control_data
+    enabled: true
+    extraJvmArgs: -Dvedge.shard.max-size=2000
+    jvmHeap: -Xms128m -Xmx512m -XX:MaxMetaspaceSize=256m -XX:ReservedCodeCacheSize=64m -Xss512k
+    port: 11000
+    postgresEnabled: true
+    pulsarEnabled: true
+    redisEnabled: true
+    replicas: 2
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1280Mi
+      requests:
+        cpu: 20m
+        memory: 64Mi
+  vedge-api-secret-manager-service:
+    enabled: true
+    port: 17000
+    postgresEnabled: true
+    postgresHost: qa-fed-router-pg.corp.intranet
+    dbName: secret_manager_data
+    redisEnabled: true
+    redisHosts: router-rds-lb-qa-fed.corp.intranet:12000
+    extraJvmArgs: "-Dvedge.secret-manager.external-secret-manager=file -Dvedge.secret-manager.secret-file-path=/etc/ao/encryption-keys/secrets.json"
+    volumeMounts:
+      - name: ao-encryption-keys
+        mountPath: /etc/ao/encryption-keys
+        readOnly: true
+    volumes:
+      - name: ao-encryption-keys
+        secret:
+          secretName: ao-encryption-keys
+  vedge-api-device-encryption-key-service:
+    enabled: true
+    port: 17100
+    postgresEnabled: true
+    postgresHost: qa-fed-router-pg.corp.intranet
+    dbName: deviceencryptionkey_data
+    redisEnabled: true
+    redisHosts: router-rds-lb-qa-fed.corp.intranet:12000
+    pulsarEnabled: true

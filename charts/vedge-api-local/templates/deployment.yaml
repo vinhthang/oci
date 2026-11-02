@@ -1,0 +1,200 @@
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    {{- include "vedge-api-local.labels" $ | nindent 4 }}
+    service: {{ $serviceName }}
+spec:
+  replicas: {{ $serviceConfig.replicas | default 1 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      service: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        {{- include "vedge-api-local.labels" $ | nindent 8 }}
+        service: {{ $serviceName }}
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "vedge-api-local.name" $ }}
+      {{- if $.Values.hostAliases }}
+      hostAliases:
+        {{- toYaml $.Values.hostAliases | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceName }}
+          image: "{{ if $.Values.global.imageRegistry }}{{ $.Values.global.imageRegistry }}/{{ end }}{{ $serviceConfig.image | default $serviceName }}:{{ $serviceConfig.imageTag | default $.Values.defaultServiceConfig.imageTag }}"
+          imagePullPolicy: {{ $serviceConfig.pullPolicy | default $.Values.defaultServiceConfig.pullPolicy | quote }}
+          {{- if $serviceConfig.command }}
+          command: {{ $serviceConfig.command | toJson }}
+          {{- else if and $.Values.defaultServiceConfig.command (gt (len $.Values.defaultServiceConfig.command) 0) }}
+          command: {{ $.Values.defaultServiceConfig.command | toJson }}
+          {{- end }}
+          {{- if $serviceConfig.args }}
+          args: {{ $serviceConfig.args | toJson }}
+          {{- else if and $.Values.defaultServiceConfig.args (gt (len $.Values.defaultServiceConfig.args) 0) }}
+          args: {{ $.Values.defaultServiceConfig.args | toJson }}
+          {{- end }}
+          {{- if $serviceConfig.port }}
+          ports:
+            - containerPort: {{ $serviceConfig.port }}
+          {{- end }}
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            {{- if $serviceConfig.redisEnabled }}
+            - name: REDIS_HOSTS
+              value: {{ $serviceConfig.redisHosts | default $.Values.global.databases.redis.hosts | quote }}
+            {{- end }}
+            {{- if $serviceConfig.mongoEnabled }}
+            {{- if $.Values.global.databases }}
+            {{- if hasKey $.Values.global.databases "mongo" }}
+            - name: MONGO_CONNECTION_STRING
+              value: {{ $.Values.global.databases.mongo.connectionString | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if $serviceConfig.pulsarEnabled }}
+            {{- $pulsarUrl := $serviceConfig.pulsarUrl | default "" }}
+            {{- $pulsarAdminUrl := $serviceConfig.pulsarAdminUrl | default "" }}
+            {{- if not $pulsarUrl }}
+              {{- if $.Values.global.databases }}
+                {{- if hasKey $.Values.global.databases "pulsar" }}
+                  {{- $pulsarUrl = $.Values.global.databases.pulsar.url }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- if not $pulsarAdminUrl }}
+              {{- if $.Values.global.databases }}
+                {{- if hasKey $.Values.global.databases "pulsar" }}
+                  {{- $pulsarAdminUrl = $.Values.global.databases.pulsar.adminUrl }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- if not $pulsarUrl }}
+              {{- if $.Values.global.pulsar }}
+                {{- $pulsarUrl = $.Values.global.pulsar.url }}
+              {{- end }}
+            {{- end }}
+            {{- if not $pulsarAdminUrl }}
+              {{- if $.Values.global.pulsar }}
+                {{- $pulsarAdminUrl = $.Values.global.pulsar.adminUrl }}
+              {{- end }}
+            {{- end }}
+            {{- $internalPulsarUrl := $serviceConfig.internalPulsarUrl | default $.Values.global.databases.pulsar.internalUrl | default $.Values.global.databases.pulsar.url }}
+            {{- $internalPulsarAdminUrl := $serviceConfig.internalPulsarAdminUrl | default $.Values.global.databases.pulsar.internalAdminUrl | default $.Values.global.databases.pulsar.adminUrl }}
+            {{- $publicPulsarUrl := $serviceConfig.publicPulsarUrl | default $.Values.global.databases.pulsar.publicUrl | default $.Values.global.databases.pulsar.url }}
+            {{- $publicPulsarAdminUrl := $serviceConfig.publicPulsarAdminUrl | default $.Values.global.databases.pulsar.publicAdminUrl | default $.Values.global.databases.pulsar.adminUrl }}
+            {{- $notificationPulsarUrl := $serviceConfig.notificationPulsarUrl | default $.Values.global.databases.pulsar.notificationUrl | default $.Values.global.databases.pulsar.url }}
+            {{- $notificationPulsarAdminUrl := $serviceConfig.notificationPulsarAdminUrl | default $.Values.global.databases.pulsar.notificationAdminUrl | default $.Values.global.databases.pulsar.adminUrl }}
+            {{- $publicPulsarAdminServiceUrl := $serviceConfig.publicPulsarAdminServiceUrl | default $.Values.global.databases.pulsar.publicPulsarAdminServiceUrl | default $internalPulsarAdminUrl }}
+            {{- $notificationPulsarAdminServiceUrl := $serviceConfig.notificationPulsarAdminServiceUrl | default $.Values.global.databases.pulsar.notificationPulsarAdminServiceUrl | default $internalPulsarAdminUrl }}
+            - name: PULSAR_URL
+              value: {{ $pulsarUrl | quote }}
+            - name: PULSAR_ADMIN_URL
+              value: {{ $pulsarAdminUrl | quote }}
+            - name: INTERNAL_PULSAR_URL
+              value: {{ $internalPulsarUrl | quote }}
+            - name: INTERNAL_PULSAR_ADMIN_URL
+              value: {{ $internalPulsarAdminUrl | quote }}
+            - name: PUBLIC_PULSAR_URL
+              value: {{ $publicPulsarUrl | quote }}
+            - name: PUBLIC_PULSAR_ADMIN_URL
+              value: {{ $publicPulsarAdminUrl | quote }}
+            - name: PUBLIC_PULSAR_ADMIN_SERVICE_URL
+              value: {{ $publicPulsarAdminServiceUrl | quote }}
+            - name: NOTIFICATION_PULSAR_URL
+              value: {{ $notificationPulsarUrl | quote }}
+            - name: NOTIFICATION_PULSAR_ADMIN_URL
+              value: {{ $notificationPulsarAdminUrl | quote }}
+            - name: NOTIFICATION_PULSAR_ADMIN_SERVICE_URL
+              value: {{ $notificationPulsarAdminServiceUrl | quote }}
+            {{- end }}
+            {{- if $serviceConfig.postgresEnabled }}
+            {{- if $.Values.global.databases }}
+            {{- if hasKey $.Values.global.databases "postgres" }}
+            {{- $defaultDbName := printf "%s_data" (replace "vedge-api-" "" $serviceName | replace "-service" "" | replace "-" "_") }}
+            {{- $dbName := $serviceConfig.dbName | default $defaultDbName }}
+            - name: POSTGRES_USER
+              value: {{ $.Values.global.databases.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ $.Values.global.databases.postgres.password | quote }}
+            - name: POSTGRES_URL
+              value: {{ printf "jdbc:postgresql://%s:%v/%s" ($serviceConfig.postgresHost | default $.Values.global.databases.postgres.host) ($serviceConfig.postgresPort | default $.Values.global.databases.postgres.port | default 5432) $dbName | quote }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            - name: JAVA_TOOL_OPTIONS
+              value: >-
+                {{ $serviceConfig.jvmHeap | default $.Values.defaultServiceConfig.jvmHeap | default "-Xms64m -Xmx384m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=64m -Xss512k" }}
+                -Dspring.profiles.active=compose
+                -Dspring.cloud.consul.enabled=false
+                -Dspring.cloud.consul.discovery.enabled=false
+                -Djava.security.egd=file:/dev/urandom
+                -Djava.net.preferIPv4Stack=true
+                {{- if $serviceConfig.port }}
+                -Dserver.port={{ $serviceConfig.port }}
+                {{- end }}
+                -Dvedge.deploy.ignore-dependencies=vedge-api-firmware-upgrade-service,vedge-api-stats-service,vedge-api-dataset-service,vedge-api-notification-service,vedge-api-resource-provision-service,vedge-api-cfm-service,vedge-api-cpe-control-service,vedge-api-device-service,vedge-api-dashboard-service,vedge-api-device-activity-service,vedge-api-network-element-info-service,vedge-api-network-element-operation-service,vedge-api-lacp-service
+                {{- if $serviceConfig.redisEnabled }}
+                -Dspring.data.redis.url=redis://$(REDIS_HOSTS)
+                -Dvedge.redis.connection-string=$(REDIS_HOSTS)
+                -Dvedge.redis.password=
+                -Dvedge.redis.exporter-enabled=false
+                {{- end }}
+                {{- if $serviceConfig.postgresEnabled }}
+                -Dspring.datasource.url=$(POSTGRES_URL)?prepareThreshold=0
+                -Dspring.datasource.username=$(POSTGRES_USER)
+                -Dspring.datasource.password=$(POSTGRES_PASSWORD)
+                -Dvedge.postgres.exporter-enabled=false
+                {{- end }}
+                {{- if $serviceConfig.pulsarEnabled }}
+                -Dvedge.pulsar.service-url=$(INTERNAL_PULSAR_URL)
+                -Dvedge.pulsar.admin.admin-url=$(INTERNAL_PULSAR_ADMIN_URL)
+                -Dvedge.internal-pulsar.service-url=$(INTERNAL_PULSAR_URL)
+                -Dvedge.internal-pulsar.pulsar-admin-service-url=$(INTERNAL_PULSAR_ADMIN_URL)
+                -Dvedge.public-pulsar.service-url=$(PUBLIC_PULSAR_URL)
+                -Dvedge.public-pulsar.pulsar-admin-service-url=$(PUBLIC_PULSAR_ADMIN_SERVICE_URL)
+                -Dvedge.notification-pulsar.service-url=$(NOTIFICATION_PULSAR_URL)
+                -Dvedge.notification-pulsar.pulsar-admin-service-url=$(NOTIFICATION_PULSAR_ADMIN_SERVICE_URL)
+                {{- end }}
+                {{- if $serviceConfig.mongoEnabled }}
+                -Dvedge.mongo.connection-string=$(MONGO_CONNECTION_STRING)
+                -Dspring.data.mongodb.uri=$(MONGO_CONNECTION_STRING)
+                {{- end }}
+                {{- if $serviceConfig.extraJvmArgs }} {{ $serviceConfig.extraJvmArgs }} {{- end }}
+            {{- if $serviceConfig.env }}
+            {{- toYaml $serviceConfig.env | nindent 12 }}
+            {{- end }}
+          {{- if $serviceConfig.volumeMounts }}
+          volumeMounts:
+          {{- toYaml $serviceConfig.volumeMounts | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml ($serviceConfig.resources | default $.Values.defaultServiceConfig.resources) | nindent 12 }}
+      {{- if $serviceConfig.volumes }}
+      volumes:
+      {{- toYaml $serviceConfig.volumes | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

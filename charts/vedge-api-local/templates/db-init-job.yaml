@@ -1,0 +1,71 @@
+{{- $hasPostgres := false }}
+{{- if $.Values.global.databases }}
+  {{- if hasKey $.Values.global.databases "postgres" }}
+    {{- $hasPostgres = true }}
+  {{- end }}
+{{- end }}
+{{- $dbList := list }}
+{{- if $hasPostgres }}
+  {{- range $serviceName, $serviceConfig := .Values.services }}
+    {{- if and $serviceConfig.enabled $serviceConfig.postgresEnabled }}
+      {{- $defaultDbName := printf "%s_data" (replace "vedge-api-" "" $serviceName | replace "-service" "" | replace "-" "_") }}
+      {{- $dbName := $serviceConfig.dbName | default $defaultDbName }}
+      {{- $dbList = append $dbList $dbName }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- if and (default false .Values.dbInit.enabled) $hasPostgres (gt (len $dbList) 0) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "vedge-api-local.fullname" . }}-db-init
+  labels:
+    {{- include "vedge-api-local.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-initializer
+          image: {{ .Values.dbInit.image | quote }}
+          env:
+            - name: PGHOST
+              value: "{{ .Values.global.databases.postgres.host }}"
+            - name: PGPORT
+              value: "{{ .Values.global.databases.postgres.port | default 5432 }}"
+            - name: PGUSER
+              value: "{{ .Values.global.databases.postgres.username }}"
+            - name: PGPASSWORD
+              value: "{{ .Values.global.databases.postgres.password }}"
+            - name: DB_LIST
+              value: {{ join " " $dbList | quote }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              TIMEOUT=60
+              INTERVAL=2
+              ELAPSED=0
+              until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" || [ $ELAPSED -ge $TIMEOUT ]; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep $INTERVAL
+                ELAPSED=$((ELAPSED + INTERVAL))
+              done
+              if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "PostgreSQL did not become ready in time"
+                exit 1
+              fi
+              for db in $DB_LIST; do
+                echo "Checking database: $db"
+                exists=$(psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$db'")
+                if [ "$exists" != "1" ]; then
+                  echo "Creating database: $db"
+                  psql -d postgres -c "CREATE DATABASE $db"
+                else
+                  echo "Database $db already exists."
+                fi
+              done
+{{- end }}

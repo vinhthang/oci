@@ -1,0 +1,19 @@
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if and $serviceConfig.enabled $serviceConfig.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    {{- include "vedge-api-local.labels" $ | nindent 4 }}
+    service: {{ $serviceName }}
+spec:
+  type: {{ $serviceConfig.serviceType | default "ClusterIP" }}
+  selector:
+    service: {{ $serviceName }}
+  ports:
+    - port: {{ $serviceConfig.port }}
+      targetPort: {{ $serviceConfig.port }}
+{{- end }}
+{{- end }}

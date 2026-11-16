@@ -218,6 +218,13 @@ openviking.vinhthang.dev {
 review.vinhthang.dev {
     import security_headers
 
+    # Allow public healthcheck for uptime monitors
+    handle /api/health {
+        reverse_proxy 10.0.0.216:30015 {
+            flush_interval -1
+        }
+    }
+
     # Allow authenticated API requests via Bearer Token for CLI/CI
     @api_auth {
         header Authorization "Bearer *"

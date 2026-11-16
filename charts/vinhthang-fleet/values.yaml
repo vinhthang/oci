@@ -307,6 +307,23 @@ mongodb:
       cpu: 50m
       memory: 256Mi
 
+reviewServer:
+  enabled: true
+  port: 8765
+  nodePort: 30015
+  nodeSelector: arm10
+  image:
+    repository: ghcr.io/vinhthang/review-server
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+
 umami:
   enabled: true
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0

@@ -1,0 +1,82 @@
+{{- if .Values.reviewServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: review-server
+  namespace: {{ .Values.reviewServer.namespace | default "apps" }}
+  labels:
+    app: review-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: review-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: review-server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.reviewServer.nodeSelector | default "arm10" }}
+      containers:
+        - name: review-server
+          image: "{{ .Values.reviewServer.image.repository }}:{{ .Values.reviewServer.image.tag }}"
+          imagePullPolicy: {{ .Values.reviewServer.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - containerPort: {{ .Values.reviewServer.port | default 8765 }}
+              name: http
+          env:
+            - name: PORT
+              value: "{{ .Values.reviewServer.port | default 8765 }}"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/review_service?sslmode=disable"
+            - name: REVIEW_BEARER_TOKEN
+              value: "{{ .Values.reviewServer.bearerToken | default "review-secret-token" }}"
+            {{- if .Values.reviewServer.deepseekApiKey }}
+            - name: DEEPSEEK_API_KEY
+              value: "{{ .Values.reviewServer.deepseekApiKey }}"
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.reviewServer.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: review-server
+  namespace: {{ .Values.reviewServer.namespace | default "apps" }}
+  labels:
+    app: review-server
+spec:
+  type: NodePort
+  selector:
+    app: review-server
+  ports:
+    - protocol: TCP
+      port: {{ .Values.reviewServer.port | default 8765 }}
+      targetPort: {{ .Values.reviewServer.port | default 8765 }}
+      nodePort: {{ .Values.reviewServer.nodePort | default 30015 }}
+{{- end }}

@@ -224,7 +224,7 @@ review.vinhthang.dev {
         path /api/v1/*
     }
     handle @api_auth {
-        reverse_proxy 10.0.0.216:8765 {
+        reverse_proxy 10.0.0.216:30015 {
             flush_interval -1
         }
     }
@@ -239,7 +239,7 @@ review.vinhthang.dev {
             copy_headers X-Auth-Request-User X-Auth-Request-Email
         }
 
-        reverse_proxy 10.0.0.216:8765 {
+        reverse_proxy 10.0.0.216:30015 {
             flush_interval -1
         }
     }

@@ -45,6 +45,15 @@ spec:
             - name: DEEPSEEK_API_KEY
               value: "{{ .Values.reviewServer.deepseekApiKey }}"
             {{- end }}
+            - name: AGY_PATH
+              value: "/usr/local/bin/agy"
+          volumeMounts:
+            - name: host-agy
+              mountPath: /usr/local/bin/agy
+            - name: host-gemini
+              mountPath: /root/.gemini
+            - name: host-config
+              mountPath: /root/.config
           livenessProbe:
             httpGet:
               path: /api/health
@@ -62,6 +71,19 @@ spec:
             timeoutSeconds: 3
           resources:
             {{- toYaml .Values.reviewServer.resources | nindent 12 }}
+      volumes:
+        - name: host-agy
+          hostPath:
+            path: /home/opc/.local/bin/agy
+            type: File
+        - name: host-gemini
+          hostPath:
+            path: /home/opc/.gemini
+            type: Directory
+        - name: host-config
+          hostPath:
+            path: /home/opc/.config
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service

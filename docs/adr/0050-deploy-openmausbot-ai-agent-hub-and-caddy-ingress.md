@@ -1,6 +1,6 @@
 # ADR-0050: Deploy OpenMausBot AI Agent Team and Caddy Edge Ingress
 
-* **Status**: Accepted
+* **Status**: Superseded by [ADR-0051](0051-deploy-review-vinhthang-dev-server.md) (Retired & Removed)
 * **Date**: 2026-11-13
 * **Category**: AI / Ingress & Multi-Agent Infrastructure
 

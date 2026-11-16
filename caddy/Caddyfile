@@ -253,14 +253,6 @@ reader.vinhthang.dev {
     }
 }
 
-# 19. OpenMausBot Local-First AI Agent Team (Zero-Trust Native Pairing Auth + SSE Streaming)
-mausbot.vinhthang.dev, openmausbot.vinhthang.dev {
-    import security_headers
-    reverse_proxy 10.0.0.216:30014 {
-        flush_interval -1
-    }
-}
-
 :2019 {
     metrics
 }

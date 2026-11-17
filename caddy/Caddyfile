@@ -230,6 +230,22 @@ review.vinhthang.dev {
         }
     }
 
+    # Allow authenticated webhook POST ingestion (raw-body HMAC / GitLab token verified in Fastify)
+    @webhook {
+        method POST
+        path /api/v1/webhook/github /api/v1/webhook/gitlab
+    }
+    handle @webhook {
+        request_body {
+            max_size 10MB
+        }
+        reverse_proxy 10.0.0.216:30015 {
+            header_up -X-Auth-Request-User
+            header_up -X-Auth-Request-Email
+            flush_interval -1
+        }
+    }
+
     # Allow authenticated API requests via Bearer Token for CLI/CI
     @api_auth {
         header Authorization "Bearer *"
@@ -237,6 +253,8 @@ review.vinhthang.dev {
     }
     handle @api_auth {
         reverse_proxy 10.0.0.216:30015 {
+            header_up -X-Auth-Request-User
+            header_up -X-Auth-Request-Email
             flush_interval -1
         }
     }

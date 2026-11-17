@@ -1,4 +1,33 @@
+{{- if and .Values.reviewServer.enabled .Values.reviewServer.createSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.reviewServer.existingSecret | default "review-server-secrets" }}
+  namespace: {{ .Values.reviewServer.namespace | default "apps" }}
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  REVIEW_BEARER_TOKEN: {{ required "reviewServer.bearerToken is required when createSecret=true" .Values.reviewServer.bearerToken | quote }}
+  {{- if .Values.reviewServer.deepseekApiKey }}
+  DEEPSEEK_API_KEY: {{ .Values.reviewServer.deepseekApiKey | quote }}
+  {{- end }}
+  {{- if .Values.reviewServer.githubToken }}
+  GITHUB_TOKEN: {{ .Values.reviewServer.githubToken | quote }}
+  {{- end }}
+  {{- if .Values.reviewServer.gitlabToken }}
+  GITLAB_TOKEN: {{ .Values.reviewServer.gitlabToken | quote }}
+  {{- end }}
+  {{- if .Values.reviewServer.githubWebhookSecret }}
+  GITHUB_WEBHOOK_SECRET: {{ .Values.reviewServer.githubWebhookSecret | quote }}
+  {{- end }}
+  {{- if .Values.reviewServer.gitlabWebhookSecret }}
+  GITLAB_WEBHOOK_SECRET: {{ .Values.reviewServer.gitlabWebhookSecret | quote }}
+  {{- end }}
+---
+{{- end }}
 {{- if .Values.reviewServer.enabled }}
+{{- $secretName := .Values.reviewServer.existingSecret | default "review-server-secrets" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,11 +69,42 @@ spec:
             - name: DATABASE_URL
               value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/review_service?sslmode=disable"
             - name: REVIEW_BEARER_TOKEN
-              value: "{{ .Values.reviewServer.bearerToken | default "review-secret-token" }}"
-            {{- if .Values.reviewServer.deepseekApiKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: REVIEW_BEARER_TOKEN
             - name: DEEPSEEK_API_KEY
-              value: "{{ .Values.reviewServer.deepseekApiKey }}"
-            {{- end }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: DEEPSEEK_API_KEY
+                  optional: true
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: GITHUB_TOKEN
+                  optional: true
+            - name: GITLAB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: GITLAB_TOKEN
+                  optional: true
+            - name: GITHUB_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: GITHUB_WEBHOOK_SECRET
+                  optional: true
+            - name: GITLAB_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: GITLAB_WEBHOOK_SECRET
+                  optional: true
+            - name: GITLAB_ALLOWED_HOSTS
+              value: {{ .Values.reviewServer.gitlabAllowedHosts | default "gitlab.com" | quote }}
             - name: AGY_PATH
               value: "/usr/local/bin/agy"
           volumeMounts:

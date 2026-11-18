@@ -21,7 +21,7 @@ Upgrading `review-server` to **`v0.3.0`** introduces:
 ## Decision
 
 1. **Helm Image Upgrade (`charts/vinhthang-fleet/values.yaml`)**:
-   - Bump `reviewServer.image.tag` from `v0.2.0` to **`v0.3.0`** (`ghcr.io/vinhthang/review-server:v0.3.0`), pre-built and imported into `arm10` K3s containerd (`k8s.io`) before rollout (`pullPolicy: IfNotPresent`).
+   - Bump `reviewServer.image.tag` from `v0.2.0` to **`v0.3.0`** (`ghcr.io/vinhthang/review-server:v0.3.0`), and subsequently to **`v0.3.1`** (`ghcr.io/vinhthang/review-server:v0.3.1`), pre-built and imported into `arm10` K3s containerd (`k8s.io`) before rollout (`pullPolicy: IfNotPresent`).
    - Preserve `port: 8765`, `nodePort: 30015`, `nodeSelector: arm10`, and `existingSecret: "review-server-secrets"` (`createSecret: false`).
 2. **Additive Database Schema & Finding Ledger (`review_service`)**:
    - Apply idempotent DDL (`CREATE TABLE IF NOT EXISTS` / `CREATE INDEX IF NOT EXISTS`) on startup for `review_service.agents`, `review_service.workstreams`, `review_service.workstream_rounds`, and `review_service.finding_ledger` (keyed by `UNIQUE(workstream_id, stage, finding_key)`).
@@ -30,7 +30,7 @@ Upgrading `review-server` to **`v0.3.0`** introduces:
    - Enforce `maxSpecialistsPerRound = 4` in both `auto` and `manual` triage modes, preserving `MAX_CONCURRENT_JOBS = 2` and `MAX_CONCURRENT_AGY = 1` resource ceilings on `arm10`.
    - Route specialist candidate findings, open ledger items, and developer rebuttals through `skeptic-judge` to dismiss false positives and maintain cross-round state transitions.
 4. **Caddy Ingress & Retained Secret Continuity (`ADR-0052`)**:
-   - Retain the existing `review.vinhthang.dev` configuration in `caddy/Caddyfile` without modification: public `/api/health` and `/assets/*`, `@webhook` (`POST /api/v1/webhook/github`, `/api/v1/webhook/gitlab` with `10MB` cap and `header_up -X-Auth-Request-*`), `@api_auth` (`Bearer *` on `/api/v1/*` with `header_up -X-Auth-Request-*`), and Google OAuth2 Forward-Auth for the web dashboard.
+   - Extend the `review.vinhthang.dev` configuration in `caddy/Caddyfile` for **`v0.3.1`** with explicit public `handle /llms.txt` and `handle /api/llms.txt` routes (mirroring `/api/health` and `/assets/*`) with `header_up -X-Auth-Request-User`, `header_up -X-Auth-Request-Email` spoof-header stripping and `flush_interval -1`, while retaining `@webhook` (`POST /api/v1/webhook/github`, `/api/v1/webhook/gitlab` with `10MB` cap and `header_up -X-Auth-Request-*`), `@api_auth` (`Bearer *` on `/api/v1/*` with `header_up -X-Auth-Request-*`), and Google OAuth2 Forward-Auth for the web dashboard.
    - Retain live Kubernetes Secret `review-server-secrets` (`"helm.sh/resource-policy": "keep"`) across GitOps Helm upgrades (`createSecret: false`).
 5. **Zero-Data-Loss Rollback Plan to `v0.2.0`**:
    - Because all `v0.3.0` schema additions (`agents`, `workstreams`, `workstream_rounds`, `finding_ledger`) are strictly additive and leave `reviews` and `findings` backward-compatible, rolling back requires only reverting `reviewServer.image.tag` to `v0.2.0` in `charts/vinhthang-fleet/values.yaml` and running `helm upgrade --install fleet ./charts/vinhthang-fleet` — no database migrations or table drops are needed, and all `v0.3.0` workstream history remains safely preserved in PostgreSQL.

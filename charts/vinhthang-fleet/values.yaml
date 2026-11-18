@@ -318,7 +318,7 @@ reviewServer:
   gitlabAllowedHosts: "gitlab.com"
   image:
     repository: ghcr.io/vinhthang/review-server
-    tag: v0.3.0
+    tag: v0.3.1
     pullPolicy: IfNotPresent
   resources:
     requests:

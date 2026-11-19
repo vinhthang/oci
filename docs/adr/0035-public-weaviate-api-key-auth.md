@@ -1,5 +1,8 @@
 # ADR 0035: Public Weaviate via Caddy using Native API Key Auth
 
+* **Status**: 🟢 Accepted
+* **Date**: 2026-09-11
+
 ## Context
 Previously, Weaviate was isolated to a private Tailscale-only perimeter (ADR-0022). This required the AI Incident Commander or other integrations to run Tailscale locally or on specific nodes to communicate with the vector database.
 

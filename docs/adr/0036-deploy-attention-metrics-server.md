@@ -1,5 +1,8 @@
 # ADR 0036: Deploy Attention Metrics Server to K3s Fleet
 
+* **Status**: 🟢 Accepted
+* **Date**: 2026-09-17
+
 ## Context
 The Antigravity Attention Guard plugin collects agent telemetry, attention metrics, and lifecycle execution signals. To centralize attention metrics persistence, provide real-time agent analytics dashboards, and enable observability across autonomous agent executions, a dedicated centralized ingestion and dashboard service is required.
 

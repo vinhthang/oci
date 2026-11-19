@@ -29,13 +29,6 @@ resource "oci_core_public_ip" "reserved_ip" {
   display_name   = "static-ip-oracle-linux-10"
 }
 
-# 4. Render Cloud-Init user_data script using native templatefile function
-locals {
-  user_data = templatefile("${path.module}/cloud-init.sh.tpl", {
-    domain_name = var.domain_name
-  })
-}
-
 # ==============================================================================
 # Node 1: amd10 (Frontend Gateway & Ingress - Reserved Public IP 152.70.101.162)
 # ==============================================================================
@@ -51,7 +44,7 @@ resource "oci_core_instance" "amd10" {
   }
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.public_subnet.id
+    subnet_id        = var.live_cluster_subnet_ocid != "" ? var.live_cluster_subnet_ocid : oci_core_subnet.public_subnet.id
     display_name     = "vnic-amd10"
     assign_public_ip = false # Using Reserved Static IP instead
     hostname_label   = "amd10"
@@ -59,10 +52,19 @@ resource "oci_core_instance" "amd10" {
 
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
-    user_data           = base64encode(local.user_data)
   }
 
-  preserve_boot_volume = false
+  preserve_boot_volume = true
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [
+      create_vnic_details[0].subnet_id,
+      source_details[0].source_id,
+      metadata,
+      defined_tags,
+    ]
+  }
 }
 
 # Bind Reserved Public IP to amd10 Primary Private IP
@@ -79,7 +81,7 @@ resource "null_resource" "bind_reserved_ip" {
   depends_on = [oci_core_instance.amd10]
 
   provisioner "local-exec" {
-    command = "oci network public-ip update --public-ip-id ${oci_core_public_ip.reserved_ip.id} --private-ip-id ${data.oci_core_private_ips.amd10_private_ip.private_ips[0].id} --force 2>/dev/null || true"
+    command = "oci network public-ip update --public-ip-id ${oci_core_public_ip.reserved_ip.id} --private-ip-id ${data.oci_core_private_ips.amd10_private_ip.private_ips[0].id} --force"
   }
 }
 
@@ -98,7 +100,7 @@ resource "oci_core_instance" "amd11" {
   }
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.private_subnet.id
+    subnet_id        = var.live_cluster_subnet_ocid != "" ? var.live_cluster_subnet_ocid : oci_core_subnet.public_subnet.id
     display_name     = "vnic-amd11"
     assign_public_ip = false
     hostname_label   = "amd11"
@@ -108,7 +110,17 @@ resource "oci_core_instance" "amd11" {
     ssh_authorized_keys = var.ssh_public_key
   }
 
-  preserve_boot_volume = false
+  preserve_boot_volume = true
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [
+      create_vnic_details[0].subnet_id,
+      source_details[0].source_id,
+      metadata,
+      defined_tags,
+    ]
+  }
 }
 
 # ==============================================================================
@@ -132,7 +144,7 @@ resource "oci_core_instance" "arm10" {
   }
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.private_subnet.id
+    subnet_id        = var.live_cluster_subnet_ocid != "" ? var.live_cluster_subnet_ocid : oci_core_subnet.public_subnet.id
     display_name     = "vnic-arm10"
     assign_public_ip = false
     hostname_label   = "arm10"
@@ -142,7 +154,17 @@ resource "oci_core_instance" "arm10" {
     ssh_authorized_keys = var.ssh_public_key
   }
 
-  preserve_boot_volume = false
+  preserve_boot_volume = true
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [
+      create_vnic_details[0].subnet_id,
+      source_details[0].source_id,
+      metadata,
+      defined_tags,
+    ]
+  }
 }
 
 # ==============================================================================

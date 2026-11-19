@@ -1,7 +1,7 @@
 # ADR-0027: Deploy Kube-State-Metrics and VMagent for Native Kubernetes Health Monitoring
 
-## Status
-Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-31
 
 ## Context
 Our existing observability stack utilized Vector to scrape Kubernetes logs and stream them to VictoriaLogs. However, we lacked a mechanism to capture cluster state metrics (like pod restarts, CPU/memory limits, and node health) into our VictoriaMetrics TSDB. As a result, our Grafana alerting engine was failing because the required Prometheus metrics (e.g., `kube_pod_container_status_restarts_total`) did not exist in the database.

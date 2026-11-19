@@ -1,12 +1,3 @@
-{{- if and .Values.mongodbOperator.enabled (not .Values.redisOperator.enabled) }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: operators
-  labels:
-    app.kubernetes.io/managed-by: Helm
----
-{{- end }}
 {{- if .Values.mongodbOperator.enabled }}
 apiVersion: v1
 kind: ServiceAccount
@@ -127,7 +118,7 @@ spec:
     spec:
       serviceAccountName: psmdb-operator
       nodeSelector:
-        kubernetes.io/hostname: {{ .Values.mongodbOperator.nodeHostname | default "arm10" }}
+        kubernetes.io/hostname: {{ .Values.mongodbOperator.nodeHostname | default .Values.global.armNodeHostname }}
       containers:
         - name: psmdb-operator
           image: {{ .Values.mongodbOperator.image | default "percona/percona-server-mongodb-operator:1.23.0" }}

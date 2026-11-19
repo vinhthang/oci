@@ -1,7 +1,7 @@
 # Implementation Tasks: Online `arm10` Boot Volume Expansion to 100 GB
 
 **Feature ID**: `arm10-boot-volume-expansion`  
-**Status**: Complete  
+**Status**: Completed  
 
 ---
 
@@ -33,3 +33,13 @@
   - Create `docs/adr/0045-expand-arm10-boot-volume-storage.md` and register in `docs/README.md`.
   - Record verbatim verification outputs in `docs/specs/arm10-boot-volume-expansion/verification.md`.
   - Traceability: `REQ-005`
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-005` & completed | **PASS** | Tasks 1–5 checked off with verbatim outputs in `verification.md` |
+| Terraform & governance invariants satisfied | **PASS** | `compute.tf` updated & `ADR-0045` registered in `docs/README.md` |

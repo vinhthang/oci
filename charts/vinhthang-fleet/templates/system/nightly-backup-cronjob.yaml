@@ -1,0 +1,105 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-fleet-backup
+  namespace: system
+  labels:
+    app: nightly-fleet-backup
+spec:
+  schedule: "0 19 * * *"  # Runs at 19:00 UTC daily (02:00 AM Indochina Time)
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: nightly-fleet-backup
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
+          containers:
+            - name: backup
+              image: docker.io/pgvector/pgvector:pg18
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  set -e
+                  DATE=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_DIR="/backup/daily"
+                  mkdir -p "$BACKUP_DIR"
+
+                  echo "💾 [Backup] 1. Dumping PostgreSQL 18 databases..."
+                  pg_dumpall -h postgres.data -U postgres > "/tmp/pg_dump_$DATE.sql"
+
+                  echo "📦 [Backup] 2. Archiving database dumps and fleet persistent data..."
+                  tar -czf "$BACKUP_DIR/fleet-backup-$DATE.tar.gz" \
+                    -C /tmp "pg_dump_$DATE.sql" \
+                    -C /backup-src vaultwarden memos anythingllm weaviate openviking
+
+                  rm -f "/tmp/pg_dump_$DATE.sql"
+
+                  echo "🧹 [Backup] 3. Pruning backups older than 7 days..."
+                  find "$BACKUP_DIR" -name "fleet-backup-*.tar.gz" -mtime +7 -delete
+
+                  echo "✅ [Backup] Backup created successfully: $BACKUP_DIR/fleet-backup-$DATE.tar.gz"
+                  ls -lh "$BACKUP_DIR"
+              volumeMounts:
+                - name: host-backups
+                  mountPath: /backup/daily
+                - name: vaultwarden-storage
+                  mountPath: /backup-src/vaultwarden
+                  readOnly: true
+                - name: memos-storage
+                  mountPath: /backup-src/memos
+                  readOnly: true
+                - name: anythingllm-storage
+                  mountPath: /backup-src/anythingllm
+                  readOnly: true
+                - name: weaviate-storage
+                  mountPath: /backup-src/weaviate
+                  readOnly: true
+                - name: openviking-storage
+                  mountPath: /backup-src/openviking
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 30m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: host-backups
+              hostPath:
+                path: /opt/backups
+                type: DirectoryOrCreate
+            - name: vaultwarden-storage
+              hostPath:
+                path: /opt/vaultwarden/data
+                type: DirectoryOrCreate
+            - name: memos-storage
+              hostPath:
+                path: /opt/memos
+                type: DirectoryOrCreate
+            - name: anythingllm-storage
+              hostPath:
+                path: /opt/anythingllm
+                type: DirectoryOrCreate
+            - name: weaviate-storage
+              hostPath:
+                path: /opt/weaviate/data
+                type: DirectoryOrCreate
+            - name: openviking-storage
+              hostPath:
+                path: /opt/openviking/data
+                type: DirectoryOrCreate

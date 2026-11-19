@@ -1,5 +1,10 @@
 # ADR 0038: Dedicated Operators Namespace & Ephemeral Redis HA Cluster on On-Premise Hyper-V Nodes
 
+* **Status**: 🟢 Accepted (Hyper-V worker pinning superseded by ADR-0047 & ADR-0048)
+* **Date**: 2026-09-30
+
+> **Supersession Note**: The four on-premise Hyper-V worker nodes (`k3s-worker-1..4`) were decommissioned in `ADR-0048`. The Opstree `RedisReplication` resource in the `data` namespace is repinned to `arm10` (`clusterSize: 1`) per `ADR-0047` and `ADR-0048`, while the `operators` namespace and Opstree Redis Operator remain active on `arm10`.
+
 ## Context
 - **On-Premise Infrastructure Expansion**: Following ADR-0034, four on-premise Hyper-V worker nodes (`k3s-worker-1` to `k3s-worker-4`) were added to the K3s cluster over an encrypted WireGuard mesh. These nodes are hosted on high-performance local developer hardware but are inherently intermittent (powered off outside work hours).
 - **Ghost Standalone Redis on Cloud Control Plane**: A standalone Redis instance has been running on the `arm10` cloud control plane node in the `data` namespace, consuming a 512Mi memory limit despite having 0 persistent keys and 0 client commands from cloud services.

@@ -1,4 +1,4 @@
-# PostgreSQL service and endpoints
+# PostgreSQL service and EndpointSlice
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,20 +15,26 @@ spec:
       targetPort: {{ .Values.postgres.port }}
       protocol: TCP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
-  name: {{ .Values.postgres.serviceName }}
+  name: {{ .Values.postgres.serviceName }}-1
   namespace: {{ .Values.namespace }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ .Values.postgres.serviceName }}
+    app.kubernetes.io/name: postgres
+addressType: IPv4
+ports:
+  - name: postgres
+    port: {{ .Values.postgres.port }}
+    protocol: TCP
+endpoints:
   - addresses:
-      - ip: {{ .Values.arm10Host }}
-    ports:
-      - name: postgres
-        port: {{ .Values.postgres.port }}
-        protocol: TCP
+      - {{ .Values.arm10Host | quote }}
+    conditions:
+      ready: true
 ---
-# Redis headless service and endpoints (port 12000)
+# Redis headless service and EndpointSlice (port 12000)
 apiVersion: v1
 kind: Service
 metadata:
@@ -45,20 +51,26 @@ spec:
       targetPort: {{ .Values.redis.port }}
       protocol: TCP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
-  name: {{ .Values.redis.serviceName }}
+  name: {{ .Values.redis.serviceName }}-1
   namespace: {{ .Values.namespace }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ .Values.redis.serviceName }}
+    app.kubernetes.io/name: redis
+addressType: IPv4
+ports:
+  - name: redis
+    port: {{ .Values.redis.port }}
+    protocol: TCP
+endpoints:
   - addresses:
-      - ip: {{ .Values.arm10Host }}
-    ports:
-      - name: redis
-        port: {{ .Values.redis.port }}
-        protocol: TCP
+      - {{ .Values.arm10Host | quote }}
+    conditions:
+      ready: true
 ---
-# MongoDB service and endpoints (port 27017)
+# MongoDB service and EndpointSlice (port 27017)
 apiVersion: v1
 kind: Service
 metadata:
@@ -75,20 +87,26 @@ spec:
       targetPort: {{ .Values.mongodb.port }}
       protocol: TCP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
-  name: {{ .Values.mongodb.serviceName }}
+  name: {{ .Values.mongodb.serviceName }}-1
   namespace: {{ .Values.namespace }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ .Values.mongodb.serviceName }}
+    app.kubernetes.io/name: mongodb
+addressType: IPv4
+ports:
+  - name: mongodb
+    port: {{ .Values.mongodb.port }}
+    protocol: TCP
+endpoints:
   - addresses:
-      - ip: {{ .Values.arm10Host }}
-    ports:
-      - name: mongodb
-        port: {{ .Values.mongodb.port }}
-        protocol: TCP
+      - {{ .Values.arm10Host | quote }}
+    conditions:
+      ready: true
 ---
-# Pulsar Broker notification service and endpoints
+# Pulsar Broker notification service and EndpointSlice
 apiVersion: v1
 kind: Service
 metadata:
@@ -117,27 +135,33 @@ spec:
       targetPort: {{ .Values.pulsar.ports.adminHttps }}
       protocol: TCP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
-  name: {{ .Values.pulsar.brokerServiceName }}
+  name: {{ .Values.pulsar.brokerServiceName }}-1
   namespace: {{ .Values.namespace }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ .Values.pulsar.brokerServiceName }}
+    app.kubernetes.io/name: pulsar-broker
+addressType: IPv4
+ports:
+  - name: pulsar
+    port: {{ .Values.pulsar.ports.broker }}
+    protocol: TCP
+  - name: pulsar-ssl
+    port: {{ .Values.pulsar.ports.brokerTls }}
+    protocol: TCP
+  - name: http
+    port: {{ .Values.pulsar.arm10AdminHttpPort }}
+    protocol: TCP
+  - name: https
+    port: {{ .Values.pulsar.ports.adminHttps }}
+    protocol: TCP
+endpoints:
   - addresses:
-      - ip: {{ .Values.arm10Host }}
-    ports:
-      - name: pulsar
-        port: {{ .Values.pulsar.ports.broker }}
-        protocol: TCP
-      - name: pulsar-ssl
-        port: {{ .Values.pulsar.ports.brokerTls }}
-        protocol: TCP
-      - name: http
-        port: {{ .Values.pulsar.arm10AdminHttpPort }}
-        protocol: TCP
-      - name: https
-        port: {{ .Values.pulsar.ports.adminHttps }}
-        protocol: TCP
+      - {{ .Values.arm10Host | quote }}
+    conditions:
+      ready: true
 ---
 # Pulsar Admin notification service (port 12555)
 apiVersion: v1
@@ -156,15 +180,21 @@ spec:
       targetPort: {{ .Values.pulsar.arm10AdminHttpPort }}
       protocol: TCP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
-  name: {{ .Values.pulsar.adminServiceName }}
+  name: {{ .Values.pulsar.adminServiceName }}-1
   namespace: {{ .Values.namespace }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ .Values.pulsar.adminServiceName }}
+    app.kubernetes.io/name: pulsar-admin
+addressType: IPv4
+ports:
+  - name: http
+    port: {{ .Values.pulsar.arm10AdminHttpPort }}
+    protocol: TCP
+endpoints:
   - addresses:
-      - ip: {{ .Values.arm10Host }}
-    ports:
-      - name: http
-        port: {{ .Values.pulsar.arm10AdminHttpPort }}
-        protocol: TCP
+      - {{ .Values.arm10Host | quote }}
+    conditions:
+      ready: true

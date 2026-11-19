@@ -15,10 +15,16 @@ variable "region" {
   default     = "ap-tokyo-1"
 }
 
-variable "instance_shape" {
-  description = "Always Free compute instance shape (VM.Standard.E2.1.Micro or VM.Standard.A1.Flex)"
+variable "live_cluster_subnet_ocid" {
+  description = "Existing live cluster subnet OCID to bind instances to (empty defaults to oci_core_subnet.public_subnet.id)"
   type        = string
-  default     = "VM.Standard.E2.1.Micro"
+  default     = ""
+}
+
+variable "ssh_allowed_cidrs" {
+  description = "List of CIDR blocks permitted for SSH (port 22) ingress"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
 
 variable "ssh_public_key" {

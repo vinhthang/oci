@@ -4,7 +4,7 @@
 - **Status**: `Completed`
 - **Date**: 2026-11-02
 - **Repositories**: `/Users/thanghoang/github/oci`, `axon-networks2/axon-orchestrator/kube_vedge` (`!2597`), `axon-networks2/axon-orchestrator/vedge_api` (`ANO-16455`)
-- **Governing ADRs**: `ADR-0047`, `ADR-0048`
+- **Governing ADRs**: `ADR-0047`, `ADR-0049`
 
 ---
 

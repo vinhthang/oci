@@ -3,30 +3,40 @@ aiIncidentCommander:
   port: 8085
   model: gemini-3.7-flash # Upgraded to Gemini 3.7 Flash; TestFakeAlertIgnored synthetic alert validated
   image:
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: latest
+    tag: "0.3.0"
+    digest: sha256:c70f0014ef22d916a76a00c752051fda30439ef8a92efc3ebd8fa47298c68682
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 20m
+      memory: 64Mi
 anythingllm:
+  createSecret: false
+  existingSecret: "anythingllm-secret"
+  agyProxySecret: "agy-proxy-secret"
   apiKey: "" # REQUIRED: pass via --set anythingllm.apiKey=<key> at deploy time
   enabled: true
   image: docker.io/mintplexlabs/anythingllm:1.16.0
   nodePort: 30001
   resources:
     limits:
-      memory: 1024Mi
+      memory: 1536Mi
     requests:
-      cpu: 50m
-      memory: 256Mi
+      cpu: 100m
+      memory: 512Mi
 attentionMetricsServer:
   enabled: true
   port: 8086
   nodePort: 30012
   image:
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/attention-metrics-server
-    tag: latest
+    tag: "914b6fa"
   nodeSelector: arm10
   resources:
     limits:
@@ -37,6 +47,7 @@ attentionMetricsServer:
 filebrowser:
   enabled: true
   image: docker.io/filebrowser/filebrowser:v2.63.23
+  nodePort: 30002
   resources:
     limits:
       memory: 80Mi
@@ -48,6 +59,8 @@ global:
   armNodeHostname: arm10
   domain: vinhthang.dev
 grafana:
+  createSecret: false
+  existingSecret: "grafana-secret"
   adminPassword: "" # REQUIRED: pass via --set grafana.adminPassword=<pw> at deploy time
   enabled: true
   alerting:
@@ -116,7 +129,7 @@ otelCollector:
       memory: 64Mi
 pgpool:
   enabled: false
-  image: docker.io/pgpool/pgpool:latest
+  image: docker.io/pgpool/pgpool:4.5.4
   nodeHostname: arm10
   resources:
     limits:
@@ -296,6 +309,8 @@ mongodbOperator:
 
 mongodb:
   enabled: true
+  createSecret: false
+  existingSecret: "mongodb-secrets"
   image: percona/percona-server-mongodb:8.0.26-11
   clusterSize: 1
   nodeHostname: arm10
@@ -356,6 +371,9 @@ collabMcp:
 
 umami:
   enabled: true
+  createSecret: false
+  existingSecret: "umami-secret"
+  appSecret: "" # REQUIRED: pass via --set umami.appSecret=<secret> when createSecret=true
   image: ghcr.io/umami-software/umami:postgresql-v2.13.0
   nodePort: 30003
   resources:
@@ -383,10 +401,10 @@ vector:
   image: docker.io/timberio/vector:0.45.0-alpine
   resources:
     limits:
-      memory: 256Mi
+      memory: 128Mi
     requests:
       cpu: 10m
-      memory: 64Mi
+      memory: 32Mi
 victoria-metrics-agent:
   namespaceOverride: observability
   nodeSelector:
@@ -425,8 +443,10 @@ victoriaMetrics:
   retentionPeriod: 30d
 vietcalendar:
   enabled: true
-  image: ghcr.io/vinhthang/vietcalendar:latest
+  image: ghcr.io/vinhthang/vietcalendar:sha-e95a3d4
+  port: 8087
   nodePort: 30006
+  nodeSelector: arm10
   resources:
     limits:
       memory: 80Mi
@@ -460,6 +480,7 @@ weaviate:
       prometheus.io/port: "8080"
 openviking:
   enabled: true
+  createSecret: false
   existingSecret: openviking-secret
   image:
     pullPolicy: IfNotPresent
@@ -494,6 +515,6 @@ gitopsWebhook:
 qaFedDatastores:
   enabled: true
   nodeHostname: arm10
-  image: docker.io/alpine/socat:latest
+  image: docker.io/alpine/socat:1.8.0.1
 
 

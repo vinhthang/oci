@@ -1,7 +1,7 @@
 # Architecture Decisions: Online `arm10` Boot Volume Expansion to 100 GB
 
 **Feature ID**: `arm10-boot-volume-expansion`  
-**Status**: Planning  
+**Status**: Completed  
 
 ---
 
@@ -20,3 +20,13 @@
   - **Negative**:
     - OCI boot volume sizes can only be increased in-place, never shrunk without recreating the boot volume.
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`, `REQ-005`
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-005`) unambiguous & testable | **PASS** | `spec.md` §2 defines exact GB quotas, kernel rescan, and `df -Th /` bounds |
+| Decisions & trade-offs recorded (`ADR-0045`) | **PASS** | Option A in-place resize chosen over secondary block volume; documented in `ADR-0045` |
+| No blocking open questions or ungrounded claims | **PASS** | OCIDs and free quota math (`47+47+100 = 194 <= 200 GB`) verified |

@@ -44,16 +44,19 @@ resource "oci_core_security_list" "main_security_list" {
   }
 
   # Ingress: SSH (22)
-  ingress_security_rules {
-    protocol    = "6" # TCP
-    source      = "0.0.0.0/0"
-    source_type = "CIDR_BLOCK"
-    stateless   = false
-    description = "SSH"
+  dynamic "ingress_security_rules" {
+    for_each = var.ssh_allowed_cidrs
+    content {
+      protocol    = "6" # TCP
+      source      = ingress_security_rules.value
+      source_type = "CIDR_BLOCK"
+      stateless   = false
+      description = "SSH"
 
-    tcp_options {
-      min = 22
-      max = 22
+      tcp_options {
+        min = 22
+        max = 22
+      }
     }
   }
 
@@ -82,20 +85,6 @@ resource "oci_core_security_list" "main_security_list" {
     tcp_options {
       min = 443
       max = 443
-    }
-  }
-
-  # Ingress: VietCalendar Port (8080)
-  ingress_security_rules {
-    protocol    = "6"
-    source      = "0.0.0.0/0"
-    source_type = "CIDR_BLOCK"
-    stateless   = false
-    description = "VietCalendar API 8080"
-
-    tcp_options {
-      min = 8080
-      max = 8080
     }
   }
 
@@ -138,20 +127,6 @@ resource "oci_core_security_list" "main_security_list" {
     tcp_options {
       min = 853
       max = 853
-    }
-  }
-
-  # Ingress: AdGuard Setup UI (3000)
-  ingress_security_rules {
-    protocol    = "6"
-    source      = "0.0.0.0/0"
-    source_type = "CIDR_BLOCK"
-    stateless   = false
-    description = "AdGuard Setup 3000"
-
-    tcp_options {
-      min = 3000
-      max = 3000
     }
   }
 

@@ -2,7 +2,7 @@
 
 **Feature ID**: `vaultwarden-data-mount-and-lockdown`  
 **Execution Timestamp**: `2026-10-31T04:54:05Z` – `2026-10-31T04:55:45Z`  
-**Status**: Passed (All Acceptance Criteria Met)
+**Status**: Verified (All Acceptance Criteria Met)
 
 ---
 

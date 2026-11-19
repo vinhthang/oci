@@ -1,7 +1,7 @@
 # ADR-0016: Active-Active Geo-Distributed Dual-Edge Ingress for Hugo Blog
 
-## Status
-🟢 **Accepted** (2026-08-27)
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-27
 
 ## Context
 The tech blog (`vinhthang.dev`) was originally served exclusively from `amd10` in OCI Tokyo, Japan (`152.70.101.162`). While performance was optimal for visitors within Asia and the Western Pacific, readers in the Americas and Europe incurred ~140–180 ms cross-ocean round-trip latency.

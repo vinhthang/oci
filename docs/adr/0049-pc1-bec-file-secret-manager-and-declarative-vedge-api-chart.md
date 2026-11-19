@@ -1,4 +1,4 @@
-# ADR-0048: Declarative `vedge-api-local` Chart & File-Backed Secret Manager (`ANO-16455` / `kube_vedge!2597`) Across `pc1-bec1` and `pc1-bec2`
+# ADR-0049: Declarative `vedge-api-local` Chart & File-Backed Secret Manager (`ANO-16455` / `kube_vedge!2597`) Across `pc1-bec1` and `pc1-bec2`
 
 * **Status**: 🟢 Accepted
 * **Date**: 2026-11-02

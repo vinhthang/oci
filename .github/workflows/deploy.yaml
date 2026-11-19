@@ -17,14 +17,50 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Lint Helm Chart
-        run: |
-          echo "🔍 Linting charts/vinhthang-fleet..."
-          helm lint charts/vinhthang-fleet
-          echo "✅ Helm chart validation passed!"
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
-      - name: Render Helm Template
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Test Dependencies
         run: |
-          echo "📦 Rendering Helm template..."
-          helm template fleet charts/vinhthang-fleet > /dev/null
-          echo "✅ Helm templating verified!"
+          python -m pip install --upgrade pip
+          pip install pytest pyyaml fastapi httpx
+
+      - name: Lint Helm Charts
+        run: |
+          for chart in vinhthang-fleet bec-datastores qa-router-datastores vedge-api-local; do
+            echo "🔍 Linting charts/$chart..."
+            if [ -f "charts/$chart/values.secrets.example.yaml" ]; then
+              helm lint "charts/$chart" -f "charts/$chart/values.secrets.example.yaml"
+            else
+              helm lint "charts/$chart"
+            fi
+          done
+          echo "✅ All Helm charts linted!"
+
+      - name: Render Helm Templates
+        run: |
+          for chart in vinhthang-fleet bec-datastores qa-router-datastores vedge-api-local; do
+            echo "📦 Rendering charts/$chart..."
+            if [ -f "charts/$chart/values.secrets.example.yaml" ]; then
+              helm template test "charts/$chart" -f "charts/$chart/values.secrets.example.yaml" > /dev/null
+            else
+              helm template test "charts/$chart" > /dev/null
+            fi
+          done
+          echo "✅ All Helm templates rendered!"
+
+      - name: Check Terraform Formatting
+        run: |
+          terraform fmt -check -recursive
+          echo "✅ Terraform formatting verified!"
+
+      - name: Run Offline Architectural Fitness Suite
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 pytest -v tests/

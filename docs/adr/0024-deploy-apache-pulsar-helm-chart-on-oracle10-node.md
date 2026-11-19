@@ -1,10 +1,7 @@
 # 24. Deploy Apache Pulsar Helm Chart on Oracle10 Node
 
-Date: 2026-08-29
-
-## Status
-
-Deprecated (Superseded by ADR-0029)
+* **Status**: 🔴 Deprecated (Superseded by ADR-0029)
+* **Date**: 2026-08-29
 
 ## Context
 

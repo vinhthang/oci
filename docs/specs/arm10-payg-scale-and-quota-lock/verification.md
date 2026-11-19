@@ -2,7 +2,7 @@
 
 **Feature ID**: `arm10-payg-scale-and-quota-lock`  
 **Execution Timestamp**: `2026-10-31T05:13:03Z` – `2026-10-31T05:21:24Z`  
-**Status**: Passed (All Acceptance Criteria Met)
+**Status**: Verified (All Acceptance Criteria Met)
 
 ---
 
@@ -279,5 +279,5 @@ and found no differences, so no changes are needed.
 ### `REQ-004`: Architecture Governance (`ADR-0046`)
 
 - **ADR Document**: [`docs/adr/0046-scale-arm10-4ocpu-24gb-and-lock-payg-quotas.md`](../../adr/0046-scale-arm10-4ocpu-24gb-and-lock-payg-quotas.md) authored in Nygard format.
-- **Master Registry**: Registered in [`docs/README.md`](../../README.md#architecture-decision-records-adrs) under table entry `ADR-0046`.
+- **Master Registry**: Registered in [`docs/README.md`](../../README.md) under table entry `ADR-0046`.
 - **System Invariant Updated**: Registered updated `arm10` hardware profile (`4 OCPUs and 24 GB RAM`, `100 GB Boot Volume`, locked to the OCI Always Free PAYG ceiling via `always-free-payg-guardrail`) in `docs/README.md`.

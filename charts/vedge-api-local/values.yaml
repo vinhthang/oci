@@ -1,3 +1,4 @@
+createSecrets: false
 dbInit:
   enabled: true
   image: postgres:16.8-alpine
@@ -20,7 +21,9 @@ global:
       connectionString: mongodb://mck-mongodb-cloud-qa-f1-mongos-lb:27017
     postgres:
       host: vedge-api-postgres-service
-      password: postgres_master_pass_2026
+      password: "" # Pass via values.secrets.yaml or reference existingSecret
+      existingSecret: postgres-secret
+      secretKey: POSTGRES_PASSWORD
       port: 5432
       username: postgres
     pulsar:
@@ -50,12 +53,7 @@ hostAliases:
 encryptionKeysSecret:
   enabled: true
   name: ao-encryption-keys
-  secretsJson: |
-    {
-      "ao-encryption-key": {
-        "1": "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
-      }
-    }
+  secretsJson: "" # REQUIRED when createSecrets=true; pass via values.secrets.yaml
 services:
   vedge-api-cpe-control-service:
     dbName: cpe_control_data

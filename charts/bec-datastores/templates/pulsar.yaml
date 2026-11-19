@@ -34,7 +34,10 @@ spec:
         - name: pulsar
           image: {{ .Values.pulsar.image }}
           imagePullPolicy: IfNotPresent
-          command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "sed -i 's/^webServicePort=.*/webServicePort=8088/' conf/standalone.conf && exec bin/pulsar standalone --no-functions-worker --no-stream-storage"
           env:
             - name: PULSAR_MEM
               value: {{ .Values.pulsar.internal.pulsarMem | default .Values.pulsar.pulsarMem | default "-Xms64m -Xmx256m -XX:MaxDirectMemorySize=128m" | quote }}
@@ -44,7 +47,7 @@ spec:
             - name: pulsar-ssl
               containerPort: 6651
             - name: http
-              containerPort: 8080
+              containerPort: 8088
             - name: https
               containerPort: 8443
           resources:
@@ -71,8 +74,8 @@ spec:
       targetPort: 6651
       protocol: TCP
     - name: http
-      port: 8080
-      targetPort: 8080
+      port: 8088
+      targetPort: 8088
       protocol: TCP
     - name: https
       port: 8443
@@ -93,7 +96,7 @@ spec:
   ports:
     - name: http
       port: 12555
-      targetPort: 8080
+      targetPort: 8088
       protocol: TCP
 {{- end }}
 ---
@@ -133,7 +136,10 @@ spec:
         - name: pulsar
           image: {{ .Values.pulsar.image }}
           imagePullPolicy: IfNotPresent
-          command: ["bin/pulsar", "standalone", "--no-functions-worker", "--no-stream-storage"]
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "sed -i 's/^webServicePort=.*/webServicePort=8088/' conf/standalone.conf && exec bin/pulsar standalone --no-functions-worker --no-stream-storage"
           env:
             - name: PULSAR_MEM
               value: {{ .Values.pulsar.external.pulsarMem | default .Values.pulsar.pulsarMem | default "-Xms1024m -Xmx1536m -XX:MaxDirectMemorySize=1024m" | quote }}
@@ -143,7 +149,7 @@ spec:
             - name: pulsar-ssl
               containerPort: 6651
             - name: http
-              containerPort: 8080
+              containerPort: 8088
             - name: https
               containerPort: 8443
           resources:
@@ -170,8 +176,8 @@ spec:
       targetPort: 6651
       protocol: TCP
     - name: http
-      port: 8080
-      targetPort: 8080
+      port: 8088
+      targetPort: 8088
       protocol: TCP
     - name: https
       port: 8443
@@ -192,6 +198,6 @@ spec:
   ports:
     - name: http
       port: 12555
-      targetPort: 8080
+      targetPort: 8088
       protocol: TCP
 {{- end }}

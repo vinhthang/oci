@@ -1,7 +1,9 @@
 # ADR-0019: In-Memory Redis Data Infrastructure (Pulsar Decommissioned)
 
-## Status
-🟢 **Accepted & Implemented** (Pulsar standalone decommissioned; In-Memory Redis active)
+* **Status**: 🟢 Accepted & Implemented (Superseded in part by ADR-0038, ADR-0040, ADR-0047)
+* **Date**: 2026-08-31
+
+> **Supersession Note**: Standalone Redis on `arm10` was later superseded by the Opstree Redis Operator (`ADR-0038`, repinned to `arm10` per `ADR-0047` / `ADR-0048`), and Apache Pulsar was re-introduced in the `data` namespace on `arm10` with broker HTTP port `8088` (`ADR-0040`, `ADR-0047`).
 
 ## Context
 Following the cluster-wide domain namespace partitioning into `data`, `apps`, `observability`, and `system` (ADR-0018), the fleet required a unified **high-speed in-memory caching layer**:

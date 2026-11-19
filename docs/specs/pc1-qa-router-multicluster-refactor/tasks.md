@@ -36,3 +36,13 @@
 - [x] **Task 6: Author `ADR-0047` & Record End-to-End Verification Evidence** (`REQ-006`)
   - [x] Create `/Users/thanghoang/github/oci/docs/adr/0047-pc1-multi-cluster-qa-router-federation-topology.md` and register in `/Users/thanghoang/github/oci/docs/README.md` (`REQ-006`).
   - [x] Record verbatim verification outputs in `verification.md` mapped to `REQ-001` through `REQ-006` (`REQ-006`).
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-006` & completed | **PASS** | Tasks 1–6 checked off with verbatim outputs in `verification.md` |
+| Multi-cluster datastore & ADR invariants satisfied | **PASS** | `ADR-0047` registered & `arm10` / BEC datastores verified |

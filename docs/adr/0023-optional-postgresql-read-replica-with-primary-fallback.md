@@ -1,7 +1,7 @@
 # ADR-0023: Optional PostgreSQL Read-Replica with Resilient Primary Fallback
 
-## Status
-🟢 **Accepted & Implemented**
+* **Status**: 🟢 Accepted & Implemented
+* **Date**: 2026-08-31
 
 ## Context
 PostgreSQL 18 (`data` namespace) is deployed with:

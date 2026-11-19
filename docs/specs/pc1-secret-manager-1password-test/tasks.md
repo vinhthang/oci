@@ -25,3 +25,13 @@
   - [x] Verify `Loaded [1] secrets from file [/etc/ao/encryption-keys/secrets.json].` in pod logs on `pc1-bec1` and `pc1-bec2` and verify Liquibase table creation in `arm10` PostgreSQL `secret_manager_data` (`REQ-004`).
   - [x] Execute `POST /secret-manager` (`{"name":"ao-encryption-key","version":"1"}`) on `pc1-bec1` (`cloud-qa-f1`) and verify cross-BEC synchronization via `GET /secret-manager/name/ao-encryption-key` and `GET /secret-manager/all` on `pc1-bec2` (`cloud-qa-f2`) (`REQ-004`).
   - [x] Record all verbatim verification evidence in `docs/specs/pc1-secret-manager-1password-test/verification.md` (`REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`).
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-004` & completed | **PASS** | Tasks 1–4 checked off with verbatim outputs in `verification.md` |
+| Helm-only & port governance invariants satisfied | **PASS** | `charts/vedge-api-local/` linted & deployed on ports `17000`/`17100` |

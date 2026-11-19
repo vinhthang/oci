@@ -8,9 +8,9 @@
 
 ## 1. Context & Problem Statement
 
-The K3s control-plane and stateful database node `arm10` (`VM.Standard.A1.Flex`, 2 OCPUs, 12 GB RAM) was originally provisioned with the default **47 GB** Oracle Linux 10.2 (`aarch64`) boot volume (`ocid1.bootvolume.oc1.ap-tokyo-1.abxhiljrhktr73l7neuytuukt2a2yyvbher7soj3ndrkylx2a2yyvbher7soj3ndrkylx2y4uj6ugavtca`).
+The K3s control-plane and stateful database node `arm10` (`VM.Standard.A1.Flex`, 2 OCPUs, 12 GB RAM) was originally provisioned with the default **47 GB** Oracle Linux 10.2 (`aarch64`) boot volume (`ocid1.bootvolume.oc1.ap-tokyo-1.abxhiljrhktr73l7neuytuukt2a2yyvbher7soj3ndrkylx2y4uj6ugavtca`).
 
-As the microservice fleet expanded to include Apache Pulsar (`apachepulsar/pulsar-all:4.0.12`, 3.17 GB image), AnythingLLM (`1.1 GB` image), VictoriaMetrics (`5.6 GB` TSDB), VictoriaLogs (`478 MB`), PostgreSQL 18 (`310 MB`), OpenViking (`295 MB`), andPercona MongoDB (`315 MB`), the root LVM XFS filesystem (`/dev/mapper/ocivolume-root`) reached **92% utilization** (`41 GB` used out of `45 GB`, leaving only `3.6 GB` free):
+As the microservice fleet expanded to include Apache Pulsar (`apachepulsar/pulsar-all:4.0.12`, 3.17 GB image), AnythingLLM (`1.1 GB` image), VictoriaMetrics (`5.6 GB` TSDB), VictoriaLogs (`478 MB`), PostgreSQL 18 (`310 MB`), OpenViking (`295 MB`), and Percona MongoDB (`315 MB`), the root LVM XFS filesystem (`/dev/mapper/ocivolume-root`) reached **92% utilization** (`41 GB` used out of `45 GB`, leaving only `3.6 GB` free):
 - `/var/lib/rancher/k3s`: **21 GB** (`14 GB` containerd overlayfs snapshots + `5.8 GB` content blobs).
 - `/opt`: **7.9 GB** (`local-storage` PVs and `hostPath` volumes).
 - `/usr` & `/home/opc`: **6.1 GB**.

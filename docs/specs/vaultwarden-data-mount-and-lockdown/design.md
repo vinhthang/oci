@@ -1,7 +1,7 @@
 # Technical Design: Vaultwarden HostPath Data Mount & Registration Lockdown Remediation
 
 **Feature ID**: `vaultwarden-data-mount-and-lockdown`  
-**Status**: In-Progress  
+**Status**: Completed  
 
 ---
 

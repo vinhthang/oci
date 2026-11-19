@@ -1,0 +1,10 @@
+[Interface]
+Address = 10.10.0.3/24
+PrivateKey = <THANG_MAC_WIREGUARD_PRIVATE_KEY>
+
+# amd10 Hub Peer (Split Tunnel - ONLY routes personal 10.10.0.0/24 network)
+[Peer]
+PublicKey = <AMD10_WG0_PUBLIC_KEY>
+Endpoint = 152.70.101.162:51820
+AllowedIPs = 10.10.0.0/24
+PersistentKeepalive = 25

@@ -1,7 +1,7 @@
 # Implementation Tasks: Scale `arm10` to 4 OCPUs / 24 GB RAM & Lock Always-Free PAYG Quotas
 
 **Feature ID**: `arm10-payg-scale-and-quota-lock`  
-**Status**: Complete  
+**Status**: Completed  
 
 ---
 
@@ -27,3 +27,13 @@
   - Author `docs/adr/0046-scale-arm10-4ocpu-24gb-and-lock-payg-quotas.md` and register in `docs/README.md`.
   - Record verbatim verification outputs in `docs/specs/arm10-payg-scale-and-quota-lock/verification.md`.
   - Traceability: `REQ-004`
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-004` & completed | **PASS** | Tasks 1–4 checked off with verbatim outputs in `verification.md` |
+| Terraform & governance invariants satisfied | **PASS** | `compute.tf` updated (`4 OCPUs`, `24 GB`) & `ADR-0046` registered in `docs/README.md` |

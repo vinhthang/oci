@@ -1,7 +1,7 @@
 # Verification Report: `pc-1` Multi-Cluster K3s Refactor & Hybrid Federation Datastores
 
 - **Feature ID**: `pc1-qa-router-multicluster-refactor`
-- **Status**: `Completed`
+- **Status**: `Verified`
 - **Date**: 2026-10-31
 - **Requirements Verified**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`
 
@@ -198,8 +198,8 @@ vedge-api-postgres-service-7f5877948-p2krs            1/1     Running   0       
   - `rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/vedge-api-postgres-service -- psql -U postgres -Atc "SELECT datname FROM pg_database WHERE datname LIKE 'vedge%' ORDER BY datname;"`
   - `rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/redb-cloud-qa-f1-headless -- redis-cli -p 12000 ping`
   - `rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/redb-cloud-qa-f2-headless -- redis-cli -p 12000 ping`
-  - `rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/mck-mongodb-cloud-qa-f1-mongos-lb -- mongosh -u userAdmin -p userAdminSecret123 --authenticationDatabase admin --eval "db.runCommand({ping: 1})"`
-  - `rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/mck-mongodb-cloud-qa-f2-mongos-lb -- mongosh -u userAdmin -p userAdminSecret123 --authenticationDatabase admin --eval "db.runCommand({ping: 1})"`
+  - `rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/mck-mongodb-cloud-qa-f1-mongos-lb -- mongosh -u userAdmin -p <REDACTED> --authenticationDatabase admin --eval "db.runCommand({ping: 1})"`
+  - `rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/mck-mongodb-cloud-qa-f2-mongos-lb -- mongosh -u userAdmin -p <REDACTED> --authenticationDatabase admin --eval "db.runCommand({ping: 1})"`
   - `rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/pulsar-internal-cloud-qa-f1-broker -- bin/pulsar-admin clusters list`
   - `rtk kubectl --context pc1-bec1 exec -n cloud-qa-f1 deployment/pulsar-external-cloud-qa-f1-broker -- bin/pulsar-admin clusters list`
   - `rtk kubectl --context pc1-bec2 exec -n cloud-qa-f2 deployment/pulsar-internal-cloud-qa-f2-broker -- bin/pulsar-admin clusters list`

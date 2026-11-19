@@ -1,5 +1,8 @@
 # ADR 0040: Migrate Apache Pulsar to Data Namespace & Broker Port 8088 Governance
 
+* **Status**: 🟢 Accepted
+* **Date**: 2026-09-30
+
 ## Context
 - **Absence of Official ASF Operator & Up-to-Date Release**: Apache Pulsar does not maintain an officially supported, feature-complete Kubernetes operator in the ASF ecosystem. The cluster runs on the latest upstream Apache Pulsar version 4.0.12 deployed via official Pulsar Helm Chart 4.7.0.
 - **Namespace Domain Isolation Drift**: Pulsar components (Zookeeper, BookKeeper, Broker, Autorecovery) were historically deployed into the `default` Kubernetes namespace, violating ADR-0018 cluster-wide namespace domain partitioning (`data`, `apps`, `observability`, `system`).

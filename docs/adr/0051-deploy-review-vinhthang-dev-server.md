@@ -32,7 +32,7 @@ The platform enforces:
    - Allocate resource bounds: `requests: { cpu: 100m, memory: 256Mi }`, `limits: { cpu: 1000m, memory: 1024Mi }`.
    - Connect to cluster PostgreSQL via `postgres-primary.data.svc.cluster.local:5432/review_service`.
 3. **Declarative Dual-Layer Ingress (`caddy/Caddyfile`)**:
-   - Expose `review.vinhthang.dev` through Caddy reverse proxy to `10.0.0.216:8765` with `flush_interval -1` for unbuffered SSE streaming.
+   - Expose `review.vinhthang.dev` through Caddy reverse proxy to `10.0.0.216:30015` (NodePort `30015` -> container port `8765`) with `flush_interval -1` for unbuffered SSE streaming.
    - Dual-layer security perimeter:
      - `/api/v1/*` with `Authorization: Bearer *` header is proxied directly for Antigravity, CLI, and CI/CD pipelines.
      - Web dashboard requests without API bearer headers are protected via Google OAuth2 Forward-Auth (`auth.vinhthang.dev`).

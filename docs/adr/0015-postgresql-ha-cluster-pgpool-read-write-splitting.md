@@ -1,7 +1,7 @@
 # ADR-0015: PostgreSQL 18 High-Availability Cluster with Physical Streaming Replication and Pgpool-II Read/Write Splitting
 
-## Status
-🟢 **Accepted** (2026-08-27)
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-27
 
 ## Context
 As the `vinhthang.dev` fleet grew across multiple services (Umami analytics, Memos microblogging, AnythingLLM knowledge base, and VietCalendar), database operations were concentrated on a single PostgreSQL instance on `arm10`. While `arm10` possesses ample CPU and RAM (12 GB), running a single database node creates a single point of failure (SPOF) for persistence and concentrates all analytical read load on the master instance.

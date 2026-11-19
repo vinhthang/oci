@@ -52,6 +52,13 @@ spec:
           {{- if $serviceConfig.port }}
           ports:
             - containerPort: {{ $serviceConfig.port }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ $serviceConfig.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
           {{- end }}
           env:
             - name: MY_POD_NAME
@@ -138,7 +145,14 @@ spec:
             - name: POSTGRES_USER
               value: {{ $.Values.global.databases.postgres.username | quote }}
             - name: POSTGRES_PASSWORD
+              {{- if $.Values.global.databases.postgres.password }}
               value: {{ $.Values.global.databases.postgres.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.global.databases.postgres.existingSecret | default "postgres-secret" }}
+                  key: {{ $.Values.global.databases.postgres.secretKey | default "POSTGRES_PASSWORD" }}
+              {{- end }}
             - name: POSTGRES_URL
               value: {{ printf "jdbc:postgresql://%s:%v/%s" ($serviceConfig.postgresHost | default $.Values.global.databases.postgres.host) ($serviceConfig.postgresPort | default $.Values.global.databases.postgres.port | default 5432) $dbName | quote }}
             {{- end }}

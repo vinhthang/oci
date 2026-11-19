@@ -1,7 +1,7 @@
 # Architecture Decisions: Vaultwarden HostPath Data Mount & Registration Lockdown Remediation
 
 **Feature ID**: `vaultwarden-data-mount-and-lockdown`  
-**Status**: In-Progress  
+**Status**: Completed  
 
 ---
 
@@ -16,3 +16,13 @@
   - **Alternative 1 (Copy `/opt/vaultwarden/data/*` up into `/opt/vaultwarden/`)**: Rejected because it diverges from `ADR-0011` (`/opt/vaultwarden/data`) and risks clobbering the active SQLite WAL/SHM journal if copied while mounted.
   - **Alternative 2 (Enable Bitwarden Enterprise OIDC SSO)**: Rejected because Bitwarden SSO still requires the client-side Master Password (or a separate key connector) to decrypt zero-knowledge vault ciphers, and `ADR-0011` explicitly establishes native zero-knowledge authentication for single-user operation.
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-003`) unambiguous & testable | **PASS** | `spec.md` §2 defines exact HostPath, lockdown flags, and `/api/config` check |
+| Decisions & trade-offs recorded (`ADR-0011`) | **PASS** | Remount `/opt/vaultwarden/data` chosen over copying files or enabling SSO |
+| No blocking open questions or ungrounded claims | **PASS** | Existing SQLite WAL & cipher inventory verified on `arm10` |

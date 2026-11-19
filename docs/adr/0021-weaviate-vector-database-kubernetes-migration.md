@@ -1,7 +1,7 @@
 # ADR-0021: Migration of Weaviate Vector Database & Native MCP Engine to Kubernetes (`ai` Namespace on `arm10`)
 
-## Status
-🟢 **Accepted & Implemented**
+* **Status**: 🟢 Accepted & Implemented
+* **Date**: 2026-08-31
 
 ## Context
 Prior to this migration, Weaviate 1.39.0 was deployed as a standalone Docker container (`weaviate-central`) on the workstation `oracle10`.

@@ -1,6 +1,5 @@
 # Terraform local state and cache
 .terraform/
-.terraform.lock.hcl
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
@@ -25,8 +24,18 @@ arm_instance.json
 *private*
 *public*
 *client-qr*
-wireguard/
+wireguard/*.conf
+!wireguard/*.conf.example
+!wireguard/README.md
 !docs/adr/*.md
+
+# Helm secrets
+charts/*/values.secrets.yaml
+
+# Python / pytest cache
+.pytest_cache/
+__pycache__/
+*.pyc
 
 # Scratch & ephemeral agent files
 patch-*.py

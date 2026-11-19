@@ -1,7 +1,7 @@
 # Functional Specification: Scale `arm10` to 4 OCPUs / 24 GB RAM & Lock Always-Free PAYG Quotas
 
 **Feature ID**: `arm10-payg-scale-and-quota-lock`  
-**Status**: Planning (Pending Human Approval)  
+**Status**: Completed  
 **Target Host**: `arm10` (`10.0.0.216`, `VM.Standard.A1.Flex`, `ap-tokyo-1`)  
 **Scope**: OCI Compute Shape Scaling / OCI Compartment Quotas / Terraform IaC / K3s Control Plane  
 

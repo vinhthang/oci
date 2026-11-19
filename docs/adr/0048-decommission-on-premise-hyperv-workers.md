@@ -1,7 +1,7 @@
 # ADR 0048: Decommission On-Premise Hyper-V Worker Nodes
 
-## Status
-Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-11-01
 
 ## Context
 ADR-0034 added four on-premise Hyper-V worker nodes (`k3s-worker-1` to `k3s-worker-4`) to the K3s cluster over the WireGuard mesh, and ADR-0038 / ADR-0039 placed the Redis HA cluster and the MongoDB replica set on those workers via required `nodeAffinity`.

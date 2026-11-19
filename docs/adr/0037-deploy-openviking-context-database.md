@@ -1,5 +1,8 @@
 # ADR 0037: Deploy OpenViking Context Database to K3s Fleet
 
+* **Status**: 🟢 Accepted
+* **Date**: 2026-09-20
+
 ## Context
 AI agents require structured, persistent memory and context retrieval across sessions. Traditional RAG systems suffer from context fragmentation and flat vector search limitations. OpenViking is an open-source context database designed by Volcengine specifically for AI agents, structuring context, memories, and skills into a hierarchical, navigable virtual filesystem (`viking://`) with a built-in Model Context Protocol (MCP) server and REST API.
 

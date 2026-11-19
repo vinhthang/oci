@@ -1,7 +1,7 @@
 # ADR 0042: Remediate Security Exposures, Rotate WireGuard Keys, and Harden GitOps Webhook
 
-## Status
-🟢 Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-10-16
 
 ## Context
 A security review identified critical and high vulnerabilities in the repository:

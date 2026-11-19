@@ -16,3 +16,13 @@
   - Normalize file ownership on `/opt/vaultwarden/data` on `arm10` and deploy via `helm upgrade fleet ./charts/vinhthang-fleet` (and GitOps commit/push).
   - Verify `vaultwarden` pod is `1/1 Running`, mounts `/opt/vaultwarden/data`, serves `thanghv@gmail.com` (`324` ciphers), and reports `"disableUserRegistration": true` on `/api/config`.
   - Traceability: `REQ-001`, `REQ-002`, `REQ-003`
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-003` & completed | **PASS** | Tasks 1–2 checked off with verbatim outputs in `verification.md` |
+| Helm-only & security lockdown invariants satisfied | **PASS** | `signupsAllowed: false`, `invitationsAllowed: false`, `storagePath: /opt/vaultwarden/data` |

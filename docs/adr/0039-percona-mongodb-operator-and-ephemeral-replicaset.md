@@ -1,5 +1,10 @@
 # ADR 0039: Percona MongoDB Operator & Ephemeral ReplicaSet Fleet on On-Premise Hyper-V Nodes
 
+* **Status**: 🟢 Accepted (Hyper-V worker pinning superseded by ADR-0047 & ADR-0048)
+* **Date**: 2026-09-30
+
+> **Supersession Note**: The four on-premise Hyper-V worker nodes (`k3s-worker-1..4`) were decommissioned in `ADR-0048`. The `PerconaServerMongoDB` resource in the `data` namespace is repinned to `arm10` (`clusterSize: 1`) per `ADR-0047` and `ADR-0048`, while the Percona MongoDB Operator remains active in `operators` on `arm10`.
+
 ## Context
 - **On-Premise Infrastructure Expansion**: Following ADR-0034, four on-premise Hyper-V worker nodes (`k3s-worker-1` to `k3s-worker-4`) were integrated into the K3s cluster over an encrypted WireGuard mesh. These nodes are hosted on high-performance local developer hardware but are inherently intermittent (powered off outside work hours).
 - **NoSQL Document Storage Requirement**: Upcoming AI, agentic workflows, and batch pipelines executing on on-premise PC nodes require document/NoSQL persistence and scratch state without generating cross-WAN traffic or consuming precious cloud memory.

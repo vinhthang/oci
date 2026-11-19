@@ -1,7 +1,7 @@
 # Functional Specification: Online `arm10` Boot Volume Expansion to 100 GB (OCI Always Free Tier)
 
 **Feature ID**: `arm10-boot-volume-expansion`  
-**Status**: Planning (Pending Human Approval)  
+**Status**: Completed  
 **Target Host**: `arm10` (`10.0.0.216`, `VM.Standard.A1.Flex`, 2 OCPUs, 12 GB RAM, `ap-tokyo-1`)  
 **Scope**: OCI Block Storage / Oracle Linux 10 LVM+XFS / Terraform IaC / K3s Control Plane  
 

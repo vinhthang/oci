@@ -1,7 +1,7 @@
 # Functional Specification: WireGuard US VPN Server on GCP Host (`gce10`)
 
 **Feature ID**: `wireguard-us-vpn`  
-**Status**: Proposed (Pending Human Approval)  
+**Status**: Completed  
 **Target Host**: `gce10` (`gce-free-vm`, GCP US-Central1, Public IPv4: `136.111.37.17`)  
 **Scope**: Host Networking / GCP Cloud Firewall / WireGuard VPN  
 

@@ -1,7 +1,7 @@
 # ADR-0030: Revert K3s Flannel Backend to VXLAN (Remove WireGuard-Native)
 
-## Status
-🟢 Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-31
 
 ## Context
 In ADR-0025, we switched the K3s Flannel backend from `vxlan` to `wireguard-native` to resolve cross-node routing issues specifically for our external physical node (`oracle10`) over Tailscale.

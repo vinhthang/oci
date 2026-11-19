@@ -1,0 +1,90 @@
+{{- if and .Values.umami.enabled .Values.umami.createSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.umami.existingSecret | default "umami-secret" }}
+  namespace: apps
+  labels:
+    app: umami
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  APP_SECRET: {{ required "umami.appSecret is required when createSecret=true" .Values.umami.appSecret | quote }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: umami
+  namespace: apps
+  labels:
+    app: umami
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: umami
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: umami
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
+      containers:
+        - name: umami
+          image: {{ .Values.umami.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: UMAMI_DATABASE_URL
+            - name: DATABASE_TYPE
+              value: "postgresql"
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.umami.existingSecret | default "umami-secret" }}
+                  key: APP_SECRET
+            - name: DISABLE_TELEMETRY
+              value: "1"
+          livenessProbe:
+            httpGet:
+              path: /api/heartbeat
+              port: http
+            initialDelaySeconds: 25
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/heartbeat
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.umami.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: umami
+  namespace: apps
+spec:
+  type: NodePort
+  selector:
+    app: umami
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: {{ .Values.umami.nodePort }}

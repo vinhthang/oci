@@ -1,7 +1,7 @@
 # Architecture Decisions: Scale `arm10` to 4 OCPUs / 24 GB RAM & Lock Always-Free PAYG Quotas
 
 **Feature ID**: `arm10-payg-scale-and-quota-lock`  
-**Status**: Planning  
+**Status**: Completed  
 
 ---
 
@@ -24,3 +24,13 @@ Upgrading the OCI tenancy (`thanghv`) to Pay-As-You-Go (`PAYG`) unlocked the ful
 - **Alternative 2: Rely Only on Billing Budget Email Alerts Without Compartment Quotas**: Rejected because budget alerts are asynchronous and notify *after* billable resources are provisioned, whereas OCI Compartment Quotas enforce synchronous pre-provisioning admission control at the IAM/Limits API layer.
 
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-004`) unambiguous & testable | **PASS** | `spec.md` §2 locks `4 OCPUs / 24 GB RAM` & `200 GB` storage bounds |
+| Decisions & trade-offs recorded (`ADR-0046`) | **PASS** | Quota-first admission lock chosen over budget alerts or 2-instance split |
+| No blocking open questions or ungrounded claims | **PASS** | Always-Free PAYG quota ceilings verified in `compute.tf` |

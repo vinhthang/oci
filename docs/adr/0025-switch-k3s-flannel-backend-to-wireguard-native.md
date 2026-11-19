@@ -1,9 +1,7 @@
 # 25. Switch K3s Flannel Backend to Wireguard-Native
 
-Date: 2026-08-29
-
-## Status
-Deprecated (Superseded by ADR-0030)
+* **Status**: 🔴 Deprecated (Superseded by ADR-0030)
+* **Date**: 2026-08-29
 
 ## Context
 In ADR-0020, we optimized the local network throughput between `arm10` and `amd11` by removing Tailscale as the primary K3s network interface. This forced K3s to use the high-speed Oracle VCN (`eth0` / `enp0s6`) as the internal node IP.

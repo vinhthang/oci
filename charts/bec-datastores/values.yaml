@@ -1,5 +1,6 @@
 becSuffix: "f1"
 arm10Host: "10.0.0.216"
+createSecrets: false
 
 coredns:
   enabled: true
@@ -8,7 +9,7 @@ postgres:
   image: "docker.io/postgres:16.8-alpine"
   port: 5432
   user: "postgres"
-  password: "postgres_master_pass_2026"
+  password: "" # REQUIRED when createSecrets=true; pass via values.secrets.yaml or --set postgres.password=<pw>
   databases:
     - "vedge_api_device"
     - "vedge_api_firmware"
@@ -60,7 +61,7 @@ mongodb:
   image: "docker.io/mongo:7.0.16"
   port: 27017
   user: "userAdmin"
-  password: "userAdminSecret123"
+  password: "" # REQUIRED when createSecrets=true; pass via values.secrets.yaml or --set mongodb.password=<pw>
   resources:
     requests:
       cpu: "100m"

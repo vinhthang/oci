@@ -1,7 +1,7 @@
 # ADR-0018: Cluster-Wide Namespace Domain Partitioning (`data`, `apps`, `observability`, `system`)
 
-## Status
-🟢 **Accepted & Implemented**
+* **Status**: 🟢 Accepted & Implemented
+* **Date**: 2026-08-31
 
 ## Context
 As the **Vinh Thang Cloud & AI Fleet (`vinhthang.dev`)** expanded to host over 22+ microservices, databases, streaming nodes, AI engines, and observability agents, maintaining all resources within the single unpartitioned `default` Kubernetes namespace introduced operational friction:

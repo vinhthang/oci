@@ -1,0 +1,20 @@
+{{- range $ns := (list "ai" "apps" "data" "observability" "openviking" "operators" "system") }}
+{{- $existing := lookup "v1" "Namespace" "" $ns }}
+{{- $managedBy := "" }}
+{{- $releaseName := "" }}
+{{- if $existing }}
+  {{- $managedBy = index ($existing.metadata.labels | default dict) "app.kubernetes.io/managed-by" | default "" }}
+  {{- $releaseName = index ($existing.metadata.annotations | default dict) "meta.helm.sh/release-name" | default "" }}
+{{- end }}
+{{- if or (not $existing) (and (eq $managedBy "Helm") (eq $releaseName $.Release.Name)) }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $ns }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/resource-policy": "keep"
+---
+{{- end }}
+{{- end }}

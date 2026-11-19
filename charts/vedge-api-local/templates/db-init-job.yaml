@@ -4,17 +4,22 @@
     {{- $hasPostgres = true }}
   {{- end }}
 {{- end }}
-{{- $dbList := list }}
+{{- $dbsByHost := dict }}
 {{- if $hasPostgres }}
+  {{- $defaultHost := $.Values.global.databases.postgres.host }}
   {{- range $serviceName, $serviceConfig := .Values.services }}
     {{- if and $serviceConfig.enabled $serviceConfig.postgresEnabled }}
+      {{- $pgHost := $serviceConfig.postgresHost | default $defaultHost }}
       {{- $defaultDbName := printf "%s_data" (replace "vedge-api-" "" $serviceName | replace "-service" "" | replace "-" "_") }}
       {{- $dbName := $serviceConfig.dbName | default $defaultDbName }}
-      {{- $dbList = append $dbList $dbName }}
+      {{- $existing := index $dbsByHost $pgHost | default list }}
+      {{- if not (has $dbName $existing) }}
+        {{- $_ := set $dbsByHost $pgHost (append $existing $dbName) }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and (default false .Values.dbInit.enabled) $hasPostgres (gt (len $dbList) 0) }}
+{{- if and (default false .Values.dbInit.enabled) $hasPostgres (gt (len $dbsByHost) 0) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -28,44 +33,60 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      {{- if $.Values.hostAliases }}
+      hostAliases:
+        {{- toYaml $.Values.hostAliases | nindent 8 }}
+      {{- end }}
       containers:
         - name: db-initializer
           image: {{ .Values.dbInit.image | quote }}
           env:
-            - name: PGHOST
-              value: "{{ .Values.global.databases.postgres.host }}"
             - name: PGPORT
               value: "{{ .Values.global.databases.postgres.port | default 5432 }}"
             - name: PGUSER
               value: "{{ .Values.global.databases.postgres.username }}"
             - name: PGPASSWORD
-              value: "{{ .Values.global.databases.postgres.password }}"
-            - name: DB_LIST
-              value: {{ join " " $dbList | quote }}
+              {{- if .Values.global.databases.postgres.password }}
+              value: {{ .Values.global.databases.postgres.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databases.postgres.existingSecret | default "postgres-secret" }}
+                  key: {{ .Values.global.databases.postgres.secretKey | default "POSTGRES_PASSWORD" }}
+              {{- end }}
           command: ["/bin/sh", "-c"]
           args:
             - |
               set -e
-              TIMEOUT=60
-              INTERVAL=2
-              ELAPSED=0
-              until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" || [ $ELAPSED -ge $TIMEOUT ]; do
-                echo "Waiting for PostgreSQL to be ready..."
-                sleep $INTERVAL
-                ELAPSED=$((ELAPSED + INTERVAL))
-              done
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "PostgreSQL did not become ready in time"
-                exit 1
-              fi
-              for db in $DB_LIST; do
-                echo "Checking database: $db"
-                exists=$(psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$db'")
-                if [ "$exists" != "1" ]; then
-                  echo "Creating database: $db"
-                  psql -d postgres -c "CREATE DATABASE $db"
-                else
-                  echo "Database $db already exists."
+              init_host() {
+                PGHOST="$1"
+                shift
+                export PGHOST
+                TIMEOUT=60
+                INTERVAL=2
+                ELAPSED=0
+                until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" || [ $ELAPSED -ge $TIMEOUT ]; do
+                  echo "Waiting for PostgreSQL ($PGHOST) to be ready..."
+                  sleep $INTERVAL
+                  ELAPSED=$((ELAPSED + INTERVAL))
+                done
+                if [ $ELAPSED -ge $TIMEOUT ]; then
+                  echo "PostgreSQL ($PGHOST) did not become ready in time"
+                  exit 1
                 fi
-              done
+                for db in "$@"; do
+                  echo "Checking database: $db on $PGHOST"
+                  exists=$(psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$db'")
+                  if [ "$exists" != "1" ]; then
+                    echo "Creating database: $db on $PGHOST"
+                    psql -d postgres -c 'CREATE DATABASE "'"$db"'"'
+                  else
+                    echo "Database $db already exists on $PGHOST."
+                  fi
+                done
+              }
+              {{- range $pgHost := (keys $dbsByHost | sortAlpha) }}
+              {{- $hostDbs := index $dbsByHost $pgHost }}
+              init_host {{ $pgHost | quote }}{{ range $hostDbs }} {{ . | quote }}{{ end }}
+              {{- end }}
 {{- end }}

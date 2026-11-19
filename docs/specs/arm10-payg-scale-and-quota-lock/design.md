@@ -1,7 +1,7 @@
 # Technical Design: Scale `arm10` to 4 OCPUs / 24 GB RAM & Lock Always-Free PAYG Quotas
 
 **Feature ID**: `arm10-payg-scale-and-quota-lock`  
-**Status**: Planning  
+**Status**: Completed  
 
 ---
 
@@ -80,8 +80,8 @@ In [`compute.tf`](file:///Users/thanghoang/github/oci/compute.tf#L117-L145):
      name           = "always-free-payg-guardrail"
      description    = "Hard lock on Compute A1 and Block Storage to prevent usage beyond OCI Always Free PAYG tier ($0/mo)"
      statements = [
-       "set compute-core quota standard-a1-core-count to <LOCKED_A1_CORES> in tenancy",
-       "set compute-memory quota standard-a1-memory-count to <LOCKED_A1_MEMORY_GB> in tenancy",
+       "set compute-core quota standard-a1-core-count to 4 in tenancy",
+       "set compute-memory quota standard-a1-memory-count to 24 in tenancy",
        "set block-storage quota total-storage-gb to 200 in tenancy",
      ]
    }

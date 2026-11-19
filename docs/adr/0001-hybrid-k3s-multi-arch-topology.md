@@ -1,8 +1,10 @@
 # ADR-0001: 3-Node Hybrid Multi-Architecture K3s Kubernetes Fleet
 
-* **Status**: 🟢 Accepted & In Production
+* **Status**: 🟢 Accepted & In Production (Hardware/Nodes superseded in part by ADR-0010, ADR-0014, ADR-0045, ADR-0046, ADR-0053)
 * **Date**: 2026-08-24
 * **Authors**: Thang Hoang & Antigravity
+
+> **Supersession Note**: `arm10` was later expanded to `100 GB` boot storage (`ADR-0045`) and `4 OCPUs / 24 GB RAM` (`ADR-0046`); `gce10` (`1 GB` RAM) was added as a cross-cloud worker (`ADR-0014`); and Uptime Kuma was retired into Grafana 11 (`ADR-0010`).
 
 ---
 

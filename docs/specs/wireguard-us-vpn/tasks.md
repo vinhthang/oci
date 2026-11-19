@@ -1,7 +1,7 @@
 # Implementation Tasks: WireGuard US VPN Server on GCP Host (`gce10`)
 
 **Feature ID**: `wireguard-us-vpn`  
-**Status**: Complete  
+**Status**: Completed  
 
 ---
 
@@ -44,3 +44,13 @@
   - Register in `docs/README.md`.
   - Commit and push to Git.
   - Traceability: `REQ-006`
+
+---
+
+## Gate 2 — Execution & Verification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Gate 1 passed before implementation | **PASS** | `decisions.md` Gate 1 verified |
+| All tasks traced to `REQ-001`–`REQ-006` & completed | **PASS** | Tasks 1–7 checked off with verbatim outputs in `verification.md` |
+| Governance & 1 GB RAM invariant satisfied | **PASS** | `wg1` runs in-kernel (`wg-quick@wg1`) and `ADR-0041` registered |

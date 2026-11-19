@@ -1,7 +1,7 @@
 # Architecture Decisions: WireGuard US VPN Server on GCP Host (`gce10`)
 
 **Feature ID**: `wireguard-us-vpn`  
-**Status**: Proposed  
+**Status**: Completed  
 
 ---
 
@@ -37,3 +37,13 @@
 - **Consequences**:
   - Positive: Clean, declarative cloud infrastructure configuration without manual Web Console edits.
   - Negative: Requires valid credentials for `thanghv@gmail.com`.
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-006`) unambiguous & testable | **PASS** | `spec.md` §2 defines exact interface `wg1`, port `51820`, subnet `10.66.0.0/24` |
+| Decisions & trade-offs recorded (`ADR-0041`) | **PASS** | In-kernel `wg-quick@wg1` selected over userspace VPNs; subnet isolated from `wg0` |
+| No blocking open questions or ungrounded claims | **PASS** | `gce10` `1 GB` RAM constraint and `136.111.37.17` IP verified |

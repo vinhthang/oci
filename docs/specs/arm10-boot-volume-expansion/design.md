@@ -1,7 +1,7 @@
 # Technical Design: Online `arm10` Boot Volume Expansion to 100 GB
 
 **Feature ID**: `arm10-boot-volume-expansion`  
-**Status**: Planning  
+**Status**: Completed  
 
 ---
 

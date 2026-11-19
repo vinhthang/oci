@@ -12,6 +12,7 @@ import json
 import time
 import uuid
 import re
+import hmac
 import sqlite3
 import logging
 import asyncio
@@ -30,8 +31,15 @@ logging.basicConfig(
 logger = logging.getLogger("agy_proxy")
 
 AGY_BIN = os.environ.get("AGY_BIN", "/home/opc/.local/bin/agy")
+AGY_PROXY_HOST = os.environ.get("AGY_PROXY_HOST", "127.0.0.1")
+AGY_PROXY_PORT = int(os.environ.get("AGY_PROXY_PORT", "8000"))
+AGY_ALLOW_SKIP_PERMISSIONS = os.environ.get("AGY_ALLOW_SKIP_PERMISSIONS", "false").strip().lower() == "true"
 DEFAULT_TIMEOUT_SECONDS = 600
 MAX_TURNS_PER_WORKER = 30
+
+
+def _allow_skip_permissions() -> bool:
+    return os.environ.get("AGY_ALLOW_SKIP_PERMISSIONS", "false").strip().lower() == "true"
 
 # Dynamically discover CLI version at startup
 try:
@@ -71,7 +79,10 @@ def _latest_conversation_id() -> Optional[str]:
         return None
 
 def _discover_conversation_id(pre_id: Optional[str]) -> Optional[str]:
-    return _latest_conversation_id()
+    latest = _latest_conversation_id()
+    if not latest or latest == pre_id:
+        return None
+    return latest
 
 def format_messages_to_prompt(messages: List[Dict[str, str]]) -> str:
     if len(messages) == 1 and messages[0].get("role") == "user":
@@ -129,8 +140,9 @@ class AgySupervisor:
             self.agy_bin,
             "--input-format", "stream-json",
             "--output-format", "stream-json",
-            "--dangerously-skip-permissions"
         ]
+        if _allow_skip_permissions():
+            cmd.append("--dangerously-skip-permissions")
 
         logger.info(f"Spawning agy stream-json supervisor: {' '.join(cmd)}")
         try:
@@ -269,6 +281,9 @@ class AgySupervisor:
         if self.proc and self.proc.returncode is None:
             try:
                 self.proc.kill()
+                await self.proc.wait()
+            except ProcessLookupError:
+                pass
             except Exception:
                 pass
         async with self.lock:
@@ -500,6 +515,56 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
+@app.middleware("http")
+async def bearer_auth_middleware(request: Request, call_next):
+    if request.method == "GET" and request.url.path == "/healthz":
+        return await call_next(request)
+
+    expected_key = os.environ.get("AGY_PROXY_API_KEY", "").strip()
+    if not expected_key:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Unauthorized: AGY_PROXY_API_KEY is not configured"},
+        )
+
+    auth_header = request.headers.get("Authorization", "")
+    scheme, _, token = auth_header.partition(" ")
+    if scheme.lower() != "bearer" or not token or not hmac.compare_digest(token.strip(), expected_key):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Unauthorized: invalid or missing Bearer token"},
+        )
+
+    return await call_next(request)
+
+
+async def _run_async_subprocess(cmd: List[str], timeout: int = DEFAULT_TIMEOUT_SECONDS) -> tuple[int, str, str]:
+    proc = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout_bytes, stderr_bytes = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except (asyncio.TimeoutError, asyncio.CancelledError):
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            pass
+        await proc.wait()
+        raise
+    return (
+        proc.returncode if proc.returncode is not None else -1,
+        stdout_bytes.decode("utf-8", errors="replace"),
+        stderr_bytes.decode("utf-8", errors="replace"),
+    )
+
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
 @app.get("/")
 def root():
     backend_str = f"agy v{CLI_VERSION}" if CLI_VERSION != "unknown" else "agy"
@@ -628,8 +693,9 @@ async def chat_completions(request: Request):
     cmd = [
         AGY_BIN,
         "-p", prompt,
-        "--dangerously-skip-permissions"
     ]
+    if _allow_skip_permissions():
+        cmd.append("--dangerously-skip-permissions")
     if model_id:
         cmd += ["--model", model_id]
     elif req_model:
@@ -640,19 +706,26 @@ async def chat_completions(request: Request):
 
     if stream:
         async def stream_generator():
+            proc: Optional[asyncio.subprocess.Process] = None
             try:
-                proc = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    bufsize=1
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
                 start_stream_time = time.time()
-                for line in proc.stdout:
-                    if time.time() - start_stream_time > DEFAULT_TIMEOUT_SECONDS:
-                        proc.kill()
+                assert proc.stdout is not None
+                while True:
+                    remaining = DEFAULT_TIMEOUT_SECONDS - (time.time() - start_stream_time)
+                    if remaining <= 0:
                         raise TimeoutError(f"Subprocess exceeded {DEFAULT_TIMEOUT_SECONDS}s timeout")
+                    try:
+                        line_bytes = await asyncio.wait_for(proc.stdout.readline(), timeout=remaining)
+                    except asyncio.TimeoutError:
+                        raise TimeoutError(f"Subprocess exceeded {DEFAULT_TIMEOUT_SECONDS}s timeout")
+                    if not line_bytes:
+                        break
+                    line = line_bytes.decode("utf-8", errors="replace")
                     if line:
                         chunk = {
                             "id": chat_id,
@@ -669,7 +742,7 @@ async def chat_completions(request: Request):
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
 
-                proc.wait()
+                await proc.wait()
                 end_chunk = {
                     "id": chat_id,
                     "object": "chat.completion.chunk",
@@ -685,6 +758,8 @@ async def chat_completions(request: Request):
                 }
                 yield f"data: {json.dumps(end_chunk)}\n\n"
                 yield "data: [DONE]\n\n"
+            except asyncio.CancelledError:
+                raise
             except Exception as e:
                 err_chunk = {
                     "id": chat_id,
@@ -695,6 +770,13 @@ async def chat_completions(request: Request):
                 }
                 yield f"data: {json.dumps(err_chunk)}\n\n"
                 yield "data: [DONE]\n\n"
+            finally:
+                if proc and proc.returncode is None:
+                    try:
+                        proc.kill()
+                    except ProcessLookupError:
+                        pass
+                    await proc.wait()
 
         return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
@@ -702,23 +784,20 @@ async def chat_completions(request: Request):
         # Non-streaming execution with server-side timeout
         pre_conv_id = None if conversation_id else _latest_conversation_id()
         try:
-            res = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=DEFAULT_TIMEOUT_SECONDS
+            returncode, stdout_text, stderr_text = await _run_async_subprocess(
+                cmd, timeout=DEFAULT_TIMEOUT_SECONDS
             )
-        except subprocess.TimeoutExpired:
+        except asyncio.TimeoutError:
             raise HTTPException(
                 status_code=504,
                 detail=f"Antigravity CLI execution timed out after {DEFAULT_TIMEOUT_SECONDS}s"
             )
 
         used_conversation_id = conversation_id or _discover_conversation_id(pre_conv_id)
-        if res.returncode != 0:
-            content = f"Error from Antigravity CLI: {res.stderr.strip()}"
+        if returncode != 0:
+            content = f"Error from Antigravity CLI: {stderr_text.strip()}"
         else:
-            content = res.stdout.strip()
+            content = stdout_text.strip()
 
         return JSONResponse({
             "id": chat_id,
@@ -787,10 +866,11 @@ async def review_endpoint(request: Request):
     cmd = [
         AGY_BIN,
         "-p", prompt,
-        "--dangerously-skip-permissions",
         "--output-format", "json",
         "--json-schema", json_schema_str,
     ]
+    if _allow_skip_permissions():
+        cmd.append("--dangerously-skip-permissions")
     if model_id:
         cmd += ["--model", model_id]
     if effort_level:
@@ -803,13 +883,10 @@ async def review_endpoint(request: Request):
     start_time = time.time()
     pre_conv_id = None if conversation_id else _latest_conversation_id()
     try:
-        res = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=DEFAULT_TIMEOUT_SECONDS
+        returncode, stdout_text, stderr_text = await _run_async_subprocess(
+            cmd, timeout=DEFAULT_TIMEOUT_SECONDS
         )
-    except subprocess.TimeoutExpired:
+    except asyncio.TimeoutError:
         raise HTTPException(
             status_code=504,
             detail=f"Antigravity CLI review execution timed out after {DEFAULT_TIMEOUT_SECONDS}s"
@@ -817,27 +894,27 @@ async def review_endpoint(request: Request):
 
     duration_ms = int((time.time() - start_time) * 1000)
 
-    if res.returncode != 0:
+    if returncode != 0:
         return JSONResponse(
             status_code=500,
             content={
                 "error": "Antigravity CLI execution failed",
-                "returncode": res.returncode,
-                "stderr": res.stderr.strip(),
-                "stdout": res.stdout.strip(),
+                "returncode": returncode,
+                "stderr": stderr_text.strip(),
+                "stdout": stdout_text.strip(),
                 "duration_ms": duration_ms
             }
         )
 
     # 6. Parse structured result
     try:
-        agy_output = json.loads(res.stdout)
+        agy_output = json.loads(stdout_text)
     except json.JSONDecodeError:
         return JSONResponse(
             status_code=500,
             content={
                 "error": "Failed to decode JSON output from Antigravity CLI",
-                "raw_output": res.stdout.strip(),
+                "raw_output": stdout_text.strip(),
                 "duration_ms": duration_ms
             }
         )
@@ -872,4 +949,4 @@ async def review_endpoint(request: Request):
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=AGY_PROXY_HOST, port=AGY_PROXY_PORT)

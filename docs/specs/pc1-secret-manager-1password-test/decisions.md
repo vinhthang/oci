@@ -1,13 +1,13 @@
 # Architecture Decisions: End-to-End Verification of `kube_vedge!2597` (`ANO-16455`) on `pc-1`
 
 - **Feature ID**: `pc1-secret-manager-1password-test`
-- **Status**: `In-Progress`
+- **Status**: `Completed`
 - **Date**: 2026-11-02
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`
 
 ---
 
-## ADR-0048: Declarative `vedge-api-local` Chart & File-Backed Secret Manager (`ANO-16455` / `kube_vedge!2597`) Across `pc1-bec1` and `pc1-bec2`
+## ADR-0049: Declarative `vedge-api-local` Chart & File-Backed Secret Manager (`ANO-16455` / `kube_vedge!2597`) Across `pc1-bec1` and `pc1-bec2`
 
 - **Status**: Accepted
 - **Date**: 2026-11-02
@@ -41,3 +41,13 @@ To test `kube_vedge!2597` on the `pc-1` multi-cluster QA-Router topology (`pc1-b
    - *Rejected*: Violates `RULE[no-kubectl-mutation]` and `RULE[adr-governance]` (Mandatory Helm-Only Kubernetes Policy). All Kubernetes state changes must be performed via `helm upgrade`.
 2. **Point `vedge-api-secret-manager-service` to BEC-Local PostgreSQL/Redis**:
    - *Rejected*: In `kube_vedge/vedge-mv-unify-singleapp/placeholder/oci-cloud-qa-f1-values.yaml` and `oci-cloud-qa-f2-values.yaml`, `vedge-api-secret-manager-service` explicitly uses `qa-fed-router-pg.corp.intranet` (`secret_manager_data`) and `router-rds-lb-qa-fed.corp.intranet:12000` so encryption keys are shared across all BECs in the federation.
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-004`) unambiguous & testable | **PASS** | `spec.md` §2 defines exact Helm templates, ports (`17000`/`17100`), and SQL/Redis sync checks |
+| Decisions & trade-offs recorded (`ADR-0049`) | **PASS** | Declarative `charts/vedge-api-local/` chosen over imperative `kubectl` secrets |
+| No blocking open questions or ungrounded claims | **PASS** | Shared `arm10` Federation PostgreSQL & Redis endpoints verified |

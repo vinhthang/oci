@@ -1,8 +1,10 @@
 # ADR-0011: Deployment of Vaultwarden Self-Hosted Password Manager
 
-* **Status**: 🟢 Accepted & In Production
+* **Status**: 🟢 Accepted & In Production (Host placement relocated to `arm10`)
 * **Date**: 2026-08-26
 * **Authors**: Thang Hoang & Antigravity
+
+> **Supersession Note**: Vaultwarden was subsequently relocated from `amd11` to `arm10` (`nodeSelector: kubernetes.io/hostname: arm10`, `10.0.0.216:30010`) with `/opt/vaultwarden/data` HostPath persistence and single-user registration lockdown (`SIGNUPS_ALLOWED=false`, `INVITATIONS_ALLOWED=false`) enforced via Helm (see `docs/specs/vaultwarden-data-mount-and-lockdown/`).
 
 ---
 

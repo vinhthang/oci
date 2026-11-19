@@ -1,7 +1,7 @@
 # ADR-0017: Strict Exit Codes for AI Incident Commander Telemetry
 
-## Status
-🟢 Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-31
 
 ## Context
 The AI Incident Commander is an event-driven system that relies exclusively on Grafana alerts (via Prometheus metrics and `kube-state-metrics`) to detect and triage infrastructure failures. 

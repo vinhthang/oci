@@ -1,7 +1,7 @@
 # Architecture Design: End-to-End Verification of `kube_vedge!2597` (`ANO-16455`) on `pc-1`
 
 - **Feature ID**: `pc1-secret-manager-1password-test`
-- **Status**: `In-Progress`
+- **Status**: `Completed`
 - **Date**: 2026-11-02
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`
 
@@ -66,7 +66,7 @@ Create `/Users/thanghoang/github/oci/charts/vedge-api-local/`:
   ```json
   {
     "ao-encryption-key": {
-      "1": "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+      "1": "<BASE64_AES256_KEY>"
     }
   }
   ```
@@ -82,4 +82,4 @@ Create `/Users/thanghoang/github/oci/charts/vedge-api-local/`:
 1. Inspect pod logs of `vedge-api-secret-manager-service` in `cloud-qa-f1` and `cloud-qa-f2` for `Loaded [1] secrets from file [/etc/ao/encryption-keys/secrets.json].`
 2. Inspect `arm10` PostgreSQL `secret_manager_data` tables (`encryption_key_metadata`) and `deviceencryptionkey_data` tables (`device_encryption_key`).
 3. Call `POST http://vedge-api-secret-manager-service:17000/secret-manager` with `{"name":"ao-encryption-key","version":"1"}` in `cloud-qa-f1` (`pc1-bec1`).
-4. Verify `GET http://vedge-api-secret-manager-service:17000/secret-manager/name/ao-encryption-key` and `GET http://vedge-api-secret-manager-service:17000/secret-manager/all` in `cloud-qa-f2` (`pc1-bec2`) return the synchronized key (`name="ao-encryption-key"`, `version="1"`, `currentVersion=true`, `secret="MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="`).
+4. Verify `GET http://vedge-api-secret-manager-service:17000/secret-manager/name/ao-encryption-key` and `GET http://vedge-api-secret-manager-service:17000/secret-manager/all` in `cloud-qa-f2` (`pc1-bec2`) return the synchronized key (`name="ao-encryption-key"`, `version="1"`, `currentVersion=true`, `secret="<BASE64_AES256_KEY>"`).

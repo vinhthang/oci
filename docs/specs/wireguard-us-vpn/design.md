@@ -1,7 +1,7 @@
 # Technical Design: WireGuard US VPN Server on GCP Host (`gce10`)
 
 **Feature ID**: `wireguard-us-vpn`  
-**Status**: Proposed  
+**Status**: Completed  
 
 ---
 

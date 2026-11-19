@@ -1,7 +1,9 @@
 # ADR-0022: Private Tailscale-Only Perimeter for Weaviate Vector Database & MCP Endpoint
 
-## Status
-🟢 **Accepted & Implemented**
+* **Status**: 🔴 Deprecated (Superseded by ADR-0035)
+* **Date**: 2026-08-31
+
+> **Supersession Note**: Replaced by `ADR-0035`, which exposed Weaviate via public Caddy TLS ingress (`weaviate.vinhthang.dev`) protected by Weaviate's native API key authentication (and secret hygiene per `ADR-0042` / `ADR-0052`).
 
 ## Context
 Following the migration of the Weaviate Vector Database into the `ai` namespace on `arm10` (ADR-0021):

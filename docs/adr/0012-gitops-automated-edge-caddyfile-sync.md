@@ -1,8 +1,10 @@
 # ADR-0012: GitOps Automated Edge Caddyfile Synchronization
 
-* **Status**: 🟢 Accepted & In Production
+* **Status**: 🟢 Accepted (Edge sync mechanism superseded by ADR-0053)
 * **Date**: 2026-08-26
 * **Authors**: Thang Hoang & Antigravity
+
+> **Supersession Note**: Automated `gitops-webhook` push to `amd10` and `caddy reload` were later superseded by manual `scripts/gitops-sync.sh` synchronization using Caddy's local Admin API (`http://127.0.0.1:2019/load`) on both `amd10` and `gce10` (`ADR-0053`), because `caddy reload` silently no-ops against the `:2019` metrics catch-all listener.
 
 ---
 

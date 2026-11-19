@@ -1,7 +1,7 @@
 # ADR-0029: Remove External Node `oracle10` from K3s Cluster
 
-## Status
-🟢 Accepted
+* **Status**: 🟢 Accepted
+* **Date**: 2026-08-31
 
 ## Context
 Previously, we integrated a 32 GB RAM external physical node, `oracle10`, to handle heavy Java microservices and Apache Pulsar (ADR-0020, ADR-0024, ADR-0028). 

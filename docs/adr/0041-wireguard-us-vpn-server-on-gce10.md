@@ -1,5 +1,8 @@
 # ADR 0041: In-Kernel WireGuard US VPN Server on GCP Host (`gce10`)
 
+* **Status**: 🟢 Accepted
+* **Date**: 2026-10-15
+
 ## Context
 - **Need for US Egress IP Address**: Accessing US-restricted services, conducting geographic testing, and maintaining secure remote tunneling requires an authentic US-based IP address (`136.111.37.17`) without recurring subscription costs or privacy compromises associated with commercial third-party VPN providers.
 - **Hardware Memory Boundary on `gce10`**: The host `gce10` (GCP e2-micro instance in us-central1) is strictly memory-capped at **1 GB RAM**. Heavy userspace VPN daemons or GUI-based VPN suites (such as OpenVPN, Pritunl, or WireGuard Docker wrappers) introduce unacceptable memory overhead and risk triggering the Linux OOM killer on existing K3s worker and Caddy edge services.

@@ -1,0 +1,119 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-ai-briefing
+  namespace: system
+  labels:
+    app: daily-ai-briefing
+spec:
+  schedule: "0 0 * * *"  # Runs every morning at 00:00 UTC (07:00 AM Indochina Time)
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: daily-ai-briefing
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
+          initContainers:
+            - name: fetch-live-data
+              image: curlimages/curl:8.10.1
+              imagePullPolicy: IfNotPresent
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  set -eu
+                  TODAY_SOLAR=$(date +%Y-%m-%d)
+                  TODAY_STR=$(date "+%A, %d/%m/%Y")
+                  VIETCAL_PORT={{ .Values.vietcalendar.port | default 8087 }}
+                  CALENDAR_RAW=$(curl -fsS --max-time 10 "http://vietcalendar.apps.svc.cluster.local:${VIETCAL_PORT}/api/today" 2>/dev/null || curl -fsS --max-time 10 "http://vietcalendar.apps.svc.cluster.local:${VIETCAL_PORT}/today" 2>/dev/null || echo "VietCalendar API temporarily unavailable")
+                  ONLINE_ENDPOINTS=$(curl -fsS --max-time 10 -G --data-urlencode 'query=sum(max by (http_url) ((httpcheck_status{http_status_class="2xx"} == 1) or (httpcheck_status{http_status_class="3xx"} == 1)))' "http://victoriametrics.observability.svc.cluster.local:8428/api/v1/query" 2>/dev/null || echo "VictoriaMetrics query unavailable")
+
+                  cat <<EOF > /work/briefing.md
+                  # ☀️ Chào buổi sáng, Thắng! • Daily AI Briefing ($TODAY_SOLAR)
+
+                  ### 📅 Lịch & Phong Thủy Hôm Nay (VietCalendar Live)
+                  * **Dương Lịch**: $TODAY_STR
+                  * **Dữ Liệu Live (VietCalendar)**:
+                  \`\`\`json
+                  $CALENDAR_RAW
+                  \`\`\`
+
+                  ---
+
+                  ### 📊 Tình Trạng Hạ Tầng & Cloud Fleet (VictoriaMetrics Live)
+                  * **VictoriaMetrics Synthetic Probe Summary**:
+                  \`\`\`json
+                  $ONLINE_ENDPOINTS
+                  \`\`\`
+                  * **Ingress**: {{ .Values.global.domain }} • TLS Active • Google SSO Forward-Auth Active
+                  * **GitOps State**: Automated Webhook Ingress Active (webhook.{{ .Values.global.domain }})
+
+                  ---
+                  *Tags: #DailyBriefing #VietCalendar #AI #CloudFleet #MorningBrief*
+                  EOF
+              volumeMounts:
+                - name: briefing-work
+                  mountPath: /work
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          containers:
+            - name: briefing
+              image: docker.io/pgvector/pgvector:pg18
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  set -eu
+                  echo "📝 [AI Briefing] Delivering live briefing into Memos PostgreSQL database..."
+                  NOW_EPOCH=$(date +%s)
+                  MEMO_UID=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | cut -c1-16)
+                  BRIEFING_CONTENT=$(cat /work/briefing.md)
+
+                  psql -h postgres.data -U postgres -d memos \
+                    -v memo_uid="$MEMO_UID" \
+                    -v now_epoch="$NOW_EPOCH" \
+                    -v briefing="$BRIEFING_CONTENT" <<'SQL'
+                  INSERT INTO memo (uid, creator_id, content, visibility, pinned, created_ts, updated_ts, payload)
+                  VALUES (
+                    :'memo_uid',
+                    1,
+                    :'briefing',
+                    'PRIVATE',
+                    true,
+                    :now_epoch,
+                    :now_epoch,
+                    '{}'::jsonb
+                  );
+                  SQL
+
+                  echo "✅ [AI Briefing] Successfully delivered into Memos!"
+              volumeMounts:
+                - name: briefing-work
+                  mountPath: /work
+              resources:
+                requests:
+                  cpu: 30m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: briefing-work
+              emptyDir: {}

@@ -2,7 +2,7 @@
 
 **Feature ID**: `arm10-boot-volume-expansion`  
 **Execution Timestamp**: `2026-10-25T07:57:07Z` – `2026-10-25T08:01:38Z`  
-**Status**: Passed (All Acceptance Criteria Met)
+**Status**: Verified (All Acceptance Criteria Met)
 
 ---
 
@@ -261,4 +261,4 @@ Allocatable:
 ### `REQ-005`: Architecture Governance (ADR-0045)
 
 - **ADR Document**: [`docs/adr/0045-expand-arm10-boot-volume-storage.md`](../../adr/0045-expand-arm10-boot-volume-storage.md) authored in Nygard format.
-- **Master Registry**: Registered in [`docs/README.md`](../../README.md#architecture-decision-records-adrs) under table entry `ADR-0045`.
+- **Master Registry**: Registered in [`docs/README.md`](../../README.md) under table entry `ADR-0045`.

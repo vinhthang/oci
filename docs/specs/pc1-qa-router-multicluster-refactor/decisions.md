@@ -1,7 +1,7 @@
 # Architecture Decisions: `pc-1` Multi-Cluster K3s Refactor & Hybrid Federation Datastores
 
 - **Feature ID**: `pc1-qa-router-multicluster-refactor`
-- **Status**: `Planning`
+- **Status**: `Completed`
 - **Date**: 2026-10-31
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`
 
@@ -9,7 +9,7 @@
 
 ## ADR-0047: Dedicated 3-Cluster K3s Topology on `pc-1` with `arm10` External Federation Datastores (Datastore Foundation Phase)
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-10-31
 - **Addresses**: `REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`
 
@@ -47,3 +47,13 @@ Furthermore, to ensure clean phase separation and verify datastore stability bef
    - *Rejected*: Explicitly superseded by user instruction (`"the arm10 is my external services, I want all these qa-router and becs on my pc-1 only"`).
 3. **Collapse `qa-router`, `bec1`, and `bec2` into a Single K3s Cluster**:
    - *Rejected*: Three independent K3s clusters (`pc1-qa-router`, `pc1-bec1`, `pc1-bec2`) preserve 1:1 multi-cluster isolation for `cloud-qa-router`, `cloud-qa-f1`, and `cloud-qa-f2`.
+
+---
+
+## Gate 1 — Architecture & Specification Readiness
+
+| Check | Status | Evidence |
+| :--- | :---: | :--- |
+| Requirements (`REQ-001`–`REQ-006`) unambiguous & testable | **PASS** | `spec.md` §2 defines exact VM IPs, 3 K3s contexts, and datastore ports |
+| Decisions & trade-offs recorded (`ADR-0047`) | **PASS** | 3-cluster `pc-1` split + `arm10` external shared datastores documented |
+| No blocking open questions or ungrounded claims | **PASS** | WireGuard `10.10.0.0/24` and CoreDNS `*.corp.intranet` layout verified |

@@ -1,7 +1,7 @@
 # Specification: `pc-1` Multi-Cluster K3s Refactor & Hybrid Federation Datastores (`qa-router`, `bec1`, `bec2`)
 
 - **Feature ID**: `pc1-qa-router-multicluster-refactor`
-- **Status**: `Planning`
+- **Status**: `Completed`
 - **Date**: 2026-10-31
 - **Repositories**: `/Users/thanghoang/github/oci`, `/Users/thanghoang/gitlab/kube_vedge`
 - **Governing ADRs**: `ADR-0001`, `ADR-0019`, `ADR-0034`, `ADR-0038`, `ADR-0039`, `ADR-0042`, `ADR-0044`, `ADR-0046`, `ADR-0047`

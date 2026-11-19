@@ -1,7 +1,7 @@
 # ADR-0020: Hybrid-Cloud External Node Integration for 20+ Java Microservices via Tailscale
 
-## Status
-🔴 **Deprecated (Superseded by ADR-0029)**
+* **Status**: 🔴 Deprecated (Superseded by ADR-0029)
+* **Date**: 2026-08-31
 
 ## Context
 Following the cluster-wide domain namespace partitioning (ADR-0018) and high-speed data backbone setup (ADR-0019), the fleet required a massive compute expansion to host **20+ Java/Spring Boot microservices**.
@@ -21,7 +21,7 @@ Following the cluster-wide domain namespace partitioning (ADR-0018) and high-spe
    * **Worker Node (`oracle10`)**: Joined via `k3s agent` targeting `https://100.110.28.71:6443` with `--flannel-iface tailscale0`, `--node-ip 100.86.104.67`, and node labels `workload=java-services` and `compute=high-ram`.
 
 3. **Terraform-First Codification & Local Pre-Flight Testing**:
-   * Codified in [`hybrid_nodes.tf`](../../hybrid_nodes.tf) and [`outputs.tf`](../../outputs.tf).
+   * Codified in `hybrid_nodes.tf` (removed in ADR-0029) and [`outputs.tf`](../../outputs.tf).
    * Verified on Mac using OpenTofu `v1.12.6` and HashiCorp Terraform `v1.16.0` (`tofu validate` and `tofu fmt`).
 
 4. **Dedicated Workload Allocation for 20+ Java Services**:

@@ -5,8 +5,9 @@ compartment_ocid = "ocid1.tenancy.oc1..your_compartment_ocid_here"
 # Target Region
 region = "ap-tokyo-1"
 
-# Compute Shape (Always Free AMD 1GB or Ampere ARM 12GB)
-instance_shape = "VM.Standard.E2.1.Micro"
+# Optional: Existing Live Subnet OCID and Restricted SSH CIDRs
+# live_cluster_subnet_ocid = "ocid1.subnet.oc1..your_subnet_ocid_here"
+# ssh_allowed_cidrs        = ["203.0.113.10/32"]
 
 # SSH Public Key (Paste the contents of ~/.ssh/id_ed25519.pub)
 ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... user@host"

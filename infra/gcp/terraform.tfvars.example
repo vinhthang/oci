@@ -1,0 +1,12 @@
+# GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Always Free Region and Zone
+region = "us-central1"
+zone   = "us-central1-a"
+
+# Reserved Static External IP
+static_ip_address = "136.111.37.17"
+
+# SSH Public Key (Paste the contents of ~/.ssh/id_ed25519.pub)
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... user@host"

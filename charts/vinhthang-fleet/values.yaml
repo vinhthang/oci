@@ -443,10 +443,10 @@ victoriaMetrics:
   retentionPeriod: 30d
 vietcalendar:
   enabled: true
-  image: ghcr.io/vinhthang/vietcalendar:sha-e95a3d4
+  image: ghcr.io/vinhthang/vietcalendar@sha256:fef1b8cc754a13f190d1d2f247da3f3020919abc98acd205bfb7d36ad4132231
   port: 8087
   nodePort: 30006
-  nodeSelector: arm10
+  nodeSelector: amd11
   resources:
     limits:
       memory: 80Mi

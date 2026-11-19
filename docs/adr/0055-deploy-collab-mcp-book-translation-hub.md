@@ -21,7 +21,7 @@ Collaborative multi-agent book translation (`en -> vi` and `zh -> vi`) previousl
 1. **Upgrade `review-server` to `v0.4.0`**:
    - Bump `reviewServer.image.tag` from `v0.3.1` to **`v0.4.0`** (`ghcr.io/vinhthang/review-server:v0.4.0`), pre-loaded into `arm10` K3s containerd (`k8s.io`).
 2. **Deploy `collab-mcp` (`charts/vinhthang-fleet/templates/collab-mcp.yaml` & `values.yaml`)**:
-   - Deploy `ghcr.io/vinhthang/collab-mcp:v0.1.0` (`IfNotPresent`) in namespace `apps` on `arm10`, container port **`8766`**, NodePort **`30016`**, bounded at `128Mi` request / `512Mi` limit.
+   - Deploy `ghcr.io/vinhthang/collab-mcp:v0.1.1` (`IfNotPresent`, bumped from `v0.1.0` to add built-in MCP `instructions`/`@mcp.prompt()`, readable 3-word `AGENT_KEY`s, per-book write-restricted allowlists, and the Google SSO `/admin` dashboard) in namespace `apps` on `arm10`, container port **`8766`**, NodePort **`30016`**, bounded at `128Mi` request / `512Mi` limit.
    - Persist operational state in PostgreSQL (`collab_service` schema inside `review_service`) and mount `/opt/collab-mcp/data` (`/data`) for the synchronized `vinhthang/collab-books` git checkout.
    - Reuse `review-server-secrets` (`REVIEW_BEARER_TOKEN`, `GITHUB_TOKEN`) for internal `http://review-server.apps.svc.cluster.local:8765` calls and `vinhthang/collab-books` pushes, and store `COLLAB_ADMIN_TOKEN` in a retained `collab-mcp-secrets` Secret (`"helm.sh/resource-policy": "keep"`).
 3. **Dual-Edge Caddy Ingress (`caddy/Caddyfile` — `collab.vinhthang.dev`)**:

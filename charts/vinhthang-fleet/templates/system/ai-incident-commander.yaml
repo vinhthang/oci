@@ -112,6 +112,12 @@ spec:
               value: "/mnt/host-gemini-cli"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "{{ .Values.aiIncidentCommander.otelEndpoint | default "otel-collector.observability.svc.cluster.local:4317" }}"
+            - name: SOAK_DURATION
+              value: "{{ .Values.aiIncidentCommander.soakDuration | default "60s" }}"
+            - name: AUTO_MERGE
+              value: "{{ .Values.aiIncidentCommander.autoMerge | default false }}"
+            - name: VICTORIAMETRICS_URL
+              value: "{{ .Values.aiIncidentCommander.dailyReport.victoriametricsUrl | default "http://victoriametrics.observability.svc.cluster.local:8428" }}"
             - name: WEBHOOK_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -129,6 +135,8 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: DB_DSN
               value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/incident_data?sslmode=disable"
+            - name: MEMOS_DB_DSN
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres-primary.data.svc.cluster.local:5432/memos?sslmode=disable"
           resources:
             {{- toYaml .Values.aiIncidentCommander.resources | nindent 12 }}
           livenessProbe:
@@ -208,5 +216,54 @@ data:
   {{ $key }}: |-
 {{ $val | indent 4 }}
   {{- end }}
+{{- end }}
+{{- if .Values.aiIncidentCommander.dailyReport.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ai-commander-daily-report
+  namespace: system
+  labels:
+    app: ai-incident-commander
+spec:
+  schedule: {{ .Values.aiIncidentCommander.dailyReport.schedule | default "15 0 * * *" | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: ai-commander-daily-report
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: {{ .Values.aiIncidentCommander.nodeSelector | default .Values.global.armNodeHostname }}
+          containers:
+            - name: trigger
+              image: {{ .Values.aiIncidentCommander.dailyReport.image | default "curlimages/curl:8.10.1" }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: WEBHOOK_AUTH_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.aiIncidentCommander.webhookSecretName | default "ai-commander-webhook-secret" }}
+                      key: WEBHOOK_AUTH_TOKEN
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  set -eu
+                  curl -fsS --fail-with-body --max-time 25 -X POST \
+                    -H "Authorization: Bearer ${WEBHOOK_AUTH_TOKEN}" \
+                    "http://ai-incident-commander.system.svc.cluster.local:{{ .Values.aiIncidentCommander.port | default 8085 }}/daily-report"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
 {{- end }}
 {{- end }}

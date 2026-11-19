@@ -3,14 +3,21 @@ aiIncidentCommander:
   port: 8085
   model: gemini-3.8-flash-medium # Validated via agy models on arm10
   otelEndpoint: otel-collector.observability.svc.cluster.local:4317
+  soakDuration: "60s"
+  autoMerge: false
   createWebhookSecret: false
   webhookSecretName: ai-commander-webhook-secret
   webhookToken: "" # REQUIRED when createWebhookSecret=true: pass via --set aiIncidentCommander.webhookToken=<token>
+  dailyReport:
+    enabled: true
+    schedule: "15 0 * * *" # 07:15 AM ICT daily (00:15 UTC)
+    image: curlimages/curl:8.10.1
+    victoriametricsUrl: http://victoriametrics.observability.svc.cluster.local:8428
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: "0.4.0"
-    digest: sha256:2e7385d61773d9ebd2c928dbffecb4df21a659eb7cc65901df1951c2c99e2cbb
+    tag: "0.5.0"
+    digest: sha256:3992ca52b070ba1ea2f54a88209b2914f37a05a41a80678a87e306c3156265cd
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
   resources:

@@ -464,3 +464,59 @@ def test_ai_commander_hardening_and_grafana_webhook_auth(
     for sec in webhook_secrets:
         anns = (sec.get("metadata") or {}).get("annotations") or {}
         assert anns.get("helm.sh/resource-policy") == "keep"
+
+
+def test_ai_commander_v050_soak_human_gate_and_daily_report_cronjob(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    # 1. Deployment env vars for diagnostic soak, human-gated PRs, VictoriaMetrics, and Memos DB
+    commander_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "ai-incident-commander"
+    ]
+    assert len(commander_deps) == 1, "Expected Deployment/ai-incident-commander"
+    env_map = {
+        e.get("name"): e.get("value")
+        for e in (commander_deps[0]["spec"]["template"]["spec"]["containers"][0].get("env") or [])
+    }
+    assert env_map.get("SOAK_DURATION") == "60s"
+    assert env_map.get("AUTO_MERGE") == "false"
+    assert env_map.get("VICTORIAMETRICS_URL") == "http://victoriametrics.observability.svc.cluster.local:8428"
+    memos_dsn = env_map.get("MEMOS_DB_DSN") or ""
+    assert "$(POSTGRES_PASSWORD)" in memos_dsn and "/memos" in memos_dsn, (
+        f"MEMOS_DB_DSN must reference $(POSTGRES_PASSWORD) and /memos, got {memos_dsn!r}"
+    )
+
+    # 2. ClusterRole/ai-incident-commander-reader must retain zero Secret permissions
+    roles = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "ClusterRole" and (d.get("metadata") or {}).get("name") == "ai-incident-commander-reader"
+    ]
+    assert len(roles) == 1, "Expected ClusterRole/ai-incident-commander-reader"
+    for idx, rule in enumerate(roles[0].get("rules") or []):
+        assert "secrets" not in (rule.get("resources") or []), (
+            f"ClusterRole/ai-incident-commander-reader rule[{idx}] must NOT grant access to secrets"
+        )
+
+    # 3. CronJob/ai-commander-daily-report triggers POST /daily-report at 15 0 * * *
+    cronjobs = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "CronJob" and (d.get("metadata") or {}).get("name") == "ai-commander-daily-report"
+    ]
+    assert len(cronjobs) == 1, "Expected CronJob/ai-commander-daily-report in system namespace"
+    cj = cronjobs[0]
+    assert (cj.get("metadata") or {}).get("namespace") == "system"
+    cj_spec = cj["spec"]
+    assert cj_spec.get("schedule") == "15 0 * * *"
+    assert cj_spec.get("concurrencyPolicy") == "Forbid"
+
+    pod_spec = cj_spec["jobTemplate"]["spec"]["template"]["spec"]
+    assert (pod_spec.get("nodeSelector") or {}).get("kubernetes.io/hostname") == "arm10"
+    container = pod_spec["containers"][0]
+    assert _is_pinned_image(container.get("image", ""))
+    cj_env = {e.get("name"): e for e in (container.get("env") or [])}
+    token_ref = (cj_env.get("WEBHOOK_AUTH_TOKEN") or {}).get("valueFrom", {}).get("secretKeyRef", {})
+    assert token_ref.get("name") == "ai-commander-webhook-secret"
+    assert token_ref.get("key") == "WEBHOOK_AUTH_TOKEN"
+    joined_args = " ".join(container.get("command") or []) + " " + " ".join(container.get("args") or [])
+    assert "/daily-report" in joined_args, f"CronJob must POST /daily-report, got cmd={joined_args!r}"

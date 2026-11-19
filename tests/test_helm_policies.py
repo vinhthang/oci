@@ -355,3 +355,112 @@ def test_grafana_ingress_5xx_alert_uses_real_caddy_metric_and_preserves_labels(
         assert label_ref in desc, (
             f"ingress_5xx_error description must reference {label_ref}: {desc}"
         )
+
+
+def test_ai_commander_hardening_and_grafana_webhook_auth(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    # 1. deploy.yaml triggers CI on pull_request to main
+    deploy_wf = yaml.safe_load(
+        (Path(__file__).resolve().parent.parent / ".github" / "workflows" / "deploy.yaml").read_text(encoding="utf-8")
+    )
+    # Note: PyYAML parses unquoted `on:` as boolean True
+    on_block = deploy_wf.get(True) or deploy_wf.get("on") or {}
+    pr_block = on_block.get("pull_request") or {}
+    assert "main" in (pr_block.get("branches") or []), (
+        f".github/workflows/deploy.yaml must trigger pull_request CI on main, got: {on_block}"
+    )
+
+    # 2. Deployment/ai-incident-commander hardening
+    commander_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "ai-incident-commander"
+    ]
+    assert len(commander_deps) == 1, "Expected Deployment/ai-incident-commander"
+    pod_spec = commander_deps[0]["spec"]["template"]["spec"]
+    container = pod_spec["containers"][0]
+
+    # Memory limit >= 1 GiB (1536Mi expected)
+    mem_limit = ((container.get("resources") or {}).get("limits") or {}).get("memory", "")
+    assert mem_limit.endswith("Mi") and int(mem_limit[:-2]) >= 1024, (
+        f"ai-incident-commander memory limit must be >= 1024Mi, got {mem_limit!r}"
+    )
+
+    # Env vars: OTLP endpoint, AGY_MODEL, AGY_HOST_AUTH_DIR, WEBHOOK_AUTH_TOKEN, no GEMINI_API_KEY
+    env_map = {e.get("name"): e for e in (container.get("env") or [])}
+    assert "GEMINI_API_KEY" not in env_map, "Unused GEMINI_API_KEY env var should be removed"
+    assert env_map.get("OTEL_EXPORTER_OTLP_ENDPOINT", {}).get("value") == "otel-collector.observability.svc.cluster.local:4317"
+    assert env_map.get("AGY_MODEL", {}).get("value") == "gemini-3.8-flash-medium"
+    assert env_map.get("AGY_HOST_AUTH_DIR", {}).get("value") == "/mnt/host-gemini-cli"
+    webhook_secret_ref = (env_map.get("WEBHOOK_AUTH_TOKEN") or {}).get("valueFrom", {}).get("secretKeyRef", {})
+    assert webhook_secret_ref.get("name") == "ai-commander-webhook-secret"
+    assert webhook_secret_ref.get("key") == "WEBHOOK_AUTH_TOKEN"
+
+    # Probes: HTTP GET /healthz instead of TCP socket
+    for probe_name in ("livenessProbe", "readinessProbe"):
+        probe = container.get(probe_name) or {}
+        http_get = probe.get("httpGet") or {}
+        assert http_get.get("path") == "/healthz", (
+            f"{probe_name} must use HTTP GET /healthz, got: {probe}"
+        )
+
+    # Volumes & mounts: host auth mounted read-only at /mnt/host-gemini-cli, /root/.gemini is emptyDir
+    vol_map = {v.get("name"): v for v in (pod_spec.get("volumes") or [])}
+    mount_map = {m.get("name"): m for m in (container.get("volumeMounts") or [])}
+
+    auth_mount = next((m for m in mount_map.values() if m.get("mountPath") == "/mnt/host-gemini-cli"), None)
+    assert auth_mount is not None, "Expected read-only host auth mount at /mnt/host-gemini-cli"
+    assert auth_mount.get("readOnly") is True, "/mnt/host-gemini-cli must be mounted readOnly: true"
+    auth_vol = vol_map.get(auth_mount["name"], {})
+    assert (auth_vol.get("hostPath") or {}).get("path") == "/home/opc/.gemini/antigravity-cli"
+
+    runtime_mount = next((m for m in mount_map.values() if m.get("mountPath") == "/root/.gemini"), None)
+    assert runtime_mount is not None, "Expected ephemeral emptyDir mount at /root/.gemini"
+    assert "emptyDir" in vol_map.get(runtime_mount["name"], {}), "/root/.gemini must use emptyDir, not hostPath"
+
+    # 3. Grafana Deployment & alerting contact point Bearer auth
+    grafana_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "grafana"
+    ]
+    assert len(grafana_deps) == 1, "Expected Deployment/grafana"
+    gf_env = {e.get("name"): e for e in (grafana_deps[0]["spec"]["template"]["spec"]["containers"][0].get("env") or [])}
+    gf_secret_ref = (gf_env.get("AI_COMMANDER_WEBHOOK_TOKEN") or {}).get("valueFrom", {}).get("secretKeyRef", {})
+    assert gf_secret_ref.get("name") == "ai-commander-webhook-secret"
+    assert gf_secret_ref.get("key") == "WEBHOOK_AUTH_TOKEN"
+
+    alerting_cms = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "ConfigMap" and (d.get("metadata") or {}).get("name") == "grafana-alerting"
+    ]
+    assert len(alerting_cms) == 1, "Expected ConfigMap/grafana-alerting"
+    alerting_data = yaml.safe_load(alerting_cms[0]["data"]["alerting.yaml"])
+    settings = alerting_data["contactPoints"][0]["receivers"][0]["settings"]
+    assert settings.get("authorization_scheme") == "Bearer"
+    assert settings.get("authorization_credentials") == "${AI_COMMANDER_WEBHOOK_TOKEN}"
+
+    # 4. Retained secret template renders in both system and observability with keep policy when enabled
+    proc = subprocess.run(
+        [
+            "helm",
+            "template",
+            "test",
+            str(CHARTS_DIR / "vinhthang-fleet"),
+            "--set",
+            "aiIncidentCommander.createWebhookSecret=true",
+            "--set",
+            "aiIncidentCommander.webhookToken=test-only-placeholder",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    rendered_with_secret = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
+    webhook_secrets = [
+        d for d in rendered_with_secret
+        if d.get("kind") == "Secret" and (d.get("metadata") or {}).get("name") == "ai-commander-webhook-secret"
+    ]
+    assert {(d.get("metadata") or {}).get("namespace") for d in webhook_secrets} == {"system", "observability"}
+    for sec in webhook_secrets:
+        anns = (sec.get("metadata") or {}).get("annotations") or {}
+        assert anns.get("helm.sh/resource-policy") == "keep"

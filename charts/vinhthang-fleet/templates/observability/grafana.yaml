@@ -13,6 +13,21 @@ stringData:
   ADMIN_PASSWORD: {{ required "grafana.adminPassword is required when createSecret=true" .Values.grafana.adminPassword | quote }}
 ---
 {{- end }}
+{{- if and .Values.grafana.enabled .Values.aiIncidentCommander.enabled .Values.aiIncidentCommander.createWebhookSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.aiIncidentCommander.webhookSecretName | default "ai-commander-webhook-secret" }}
+  namespace: observability
+  labels:
+    app: grafana
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  WEBHOOK_AUTH_TOKEN: {{ required "aiIncidentCommander.webhookToken is required when createWebhookSecret=true" .Values.aiIncidentCommander.webhookToken | quote }}
+---
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -495,6 +510,8 @@ data:
             type: webhook
             settings:
               url: http://ai-incident-commander.system.svc.cluster.local:{{ .Values.aiIncidentCommander.port | default 8085 }}/webhook
+              authorization_scheme: Bearer
+              authorization_credentials: "${AI_COMMANDER_WEBHOOK_TOKEN}"
     policies:
       - orgId: 1
         receiver: ai-incident-commander
@@ -543,6 +560,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.grafana.existingSecret | default "grafana-secret" }}
                   key: ADMIN_PASSWORD
+            {{- if .Values.aiIncidentCommander.enabled }}
+            - name: AI_COMMANDER_WEBHOOK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.aiIncidentCommander.webhookSecretName | default "ai-commander-webhook-secret" }}
+                  key: WEBHOOK_AUTH_TOKEN
+            {{- end }}
             - name: GF_SECURITY_ALLOW_EMBEDDING
               value: "true"
             - name: GF_AUTH_ANONYMOUS_ENABLED

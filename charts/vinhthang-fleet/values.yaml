@@ -1,20 +1,24 @@
 aiIncidentCommander:
   enabled: true
   port: 8085
-  model: gemini-3.7-flash # Upgraded to Gemini 3.7 Flash; TestFakeAlertIgnored synthetic alert validated
+  model: gemini-3.8-flash-medium # Validated via agy models on arm10
+  otelEndpoint: otel-collector.observability.svc.cluster.local:4317
+  createWebhookSecret: false
+  webhookSecretName: ai-commander-webhook-secret
+  webhookToken: "" # REQUIRED when createWebhookSecret=true: pass via --set aiIncidentCommander.webhookToken=<token>
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: "0.3.0"
-    digest: sha256:c70f0014ef22d916a76a00c752051fda30439ef8a92efc3ebd8fa47298c68682
+    tag: "0.4.0"
+    digest: sha256:2e7385d61773d9ebd2c928dbffecb4df21a659eb7cc65901df1951c2c99e2cbb
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
   resources:
     limits:
-      memory: 512Mi
+      memory: 1536Mi
     requests:
       cpu: 20m
-      memory: 64Mi
+      memory: 128Mi
 anythingllm:
   createSecret: false
   existingSecret: "anythingllm-secret"

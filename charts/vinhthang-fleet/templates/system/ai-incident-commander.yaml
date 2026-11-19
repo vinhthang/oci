@@ -1,4 +1,19 @@
 {{- if .Values.aiIncidentCommander.enabled }}
+{{- if .Values.aiIncidentCommander.createWebhookSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.aiIncidentCommander.webhookSecretName | default "ai-commander-webhook-secret" }}
+  namespace: system
+  labels:
+    app: ai-incident-commander
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  WEBHOOK_AUTH_TOKEN: {{ required "aiIncidentCommander.webhookToken is required when createWebhookSecret=true" .Values.aiIncidentCommander.webhookToken | quote }}
+---
+{{- end }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -91,18 +106,22 @@ spec:
           env:
             - name: PORT
               value: "{{ .Values.aiIncidentCommander.port | default 8085 }}"
-            - name: GEMINI_MODEL
-              value: "{{ .Values.aiIncidentCommander.model | default "gemini-3.5-flash" }}"
+            - name: AGY_MODEL
+              value: "{{ .Values.aiIncidentCommander.model | default "gemini-3.8-flash-medium" }}"
+            - name: AGY_HOST_AUTH_DIR
+              value: "/mnt/host-gemini-cli"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "{{ .Values.aiIncidentCommander.otelEndpoint | default "otel-collector.observability.svc.cluster.local:4317" }}"
+            - name: WEBHOOK_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.aiIncidentCommander.webhookSecretName | default "ai-commander-webhook-secret" }}
+                  key: WEBHOOK_AUTH_TOKEN
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: GITHUB_TOKEN
-            - name: GEMINI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: gemini-ai-secret
-                  key: GEMINI_EMBEDDING_API_KEY
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -113,14 +132,16 @@ spec:
           resources:
             {{- toYaml .Values.aiIncidentCommander.resources | nindent 12 }}
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /healthz
               port: {{ .Values.aiIncidentCommander.port | default 8085 }}
             initialDelaySeconds: 15
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 3
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /healthz
               port: {{ .Values.aiIncidentCommander.port | default 8085 }}
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -131,7 +152,10 @@ spec:
               mountPath: /usr/local/bin/rtk
             - name: agy-binary
               mountPath: /usr/local/bin/agy
-            - name: agy-config
+            - name: agy-host-auth
+              mountPath: /mnt/host-gemini-cli
+              readOnly: true
+            - name: agy-runtime
               mountPath: /root/.gemini
             {{- if .Values.aiIncidentCommander.prompts }}
             - name: templates
@@ -146,10 +170,12 @@ spec:
           hostPath:
             path: /home/opc/.local/bin/agy
             type: FileOrCreate
-        - name: agy-config
+        - name: agy-host-auth
           hostPath:
-            path: /home/opc/.gemini
+            path: /home/opc/.gemini/antigravity-cli
             type: DirectoryOrCreate
+        - name: agy-runtime
+          emptyDir: {}
         {{- if .Values.aiIncidentCommander.prompts }}
         - name: templates
           configMap:

@@ -12,7 +12,8 @@ Hub-and-spoke WireGuard overlay anchored on `amd10` (`152.70.101.162:51820/UDP`)
 | `10.10.0.2/24` | `oracle10` (retired) | Legacy peer slot (decommissioned) | Reserved / unused |
 | `10.10.0.3/24` | `thang-mac` | Operator macOS workstation | Split tunnel (`10.10.0.0/24`) |
 | `10.10.0.4/24` | `gce10` | GCP `e2-micro` worker & US edge | Connects to `amd10` hub; serves `web-reader` (`:3000`) |
-| `10.10.0.5/24` | `pc-1` | Operator Windows/WSL workstation | Split tunnel (`10.10.0.0/24`); reassigned from `.4` to avoid `gce10` collision |
+| `10.10.0.5/24` | `arm10` | OCI ARM Master control-plane peer | Registered on `amd10` `wg0` (`10.0.0.216`) |
+| `10.10.0.6/24` | `pc-1` | Operator Windows/WSL workstation | Split tunnel (`10.10.0.0/24`); reassigned from `.5` to avoid `arm10` collision; Windows tunnel service `WireGuardTunnel$wg0`, SSH via `ProxyJump` through `amd10` |
 
 ## 2. GCP US Road-Warrior VPN (`wg1` — `10.66.0.0/24`)
 

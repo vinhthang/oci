@@ -1,5 +1,5 @@
 [Interface]
-Address = 10.10.0.5/24
+Address = 10.10.0.6/24
 PrivateKey = <PC1_WIREGUARD_PRIVATE_KEY>
 
 # amd10 Hub Peer (Split Tunnel - ONLY routes personal 10.10.0.0/24 network)

@@ -318,7 +318,7 @@ reviewServer:
   gitlabAllowedHosts: "gitlab.com"
   image:
     repository: ghcr.io/vinhthang/review-server
-    tag: v0.3.1
+    tag: v0.4.0
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -327,6 +327,32 @@ reviewServer:
     limits:
       cpu: 1000m
       memory: 1024Mi
+
+collabMcp:
+  enabled: true
+  port: 8766
+  nodePort: 30016
+  nodeSelector: arm10
+  publicBaseUrl: "https://collab.vinhthang.dev"
+  booksRepo: "vinhthang/collab-books"
+  reviewServerUrl: "http://review-server.apps.svc.cluster.local:8765"
+  storagePath: "/opt/collab-mcp/data"
+  existingSecret: "collab-mcp-secrets"
+  existingReviewSecret: "review-server-secrets"
+  createSecret: false
+  adminToken: ""
+  githubToken: ""
+  image:
+    repository: ghcr.io/vinhthang/collab-mcp
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 umami:
   enabled: true

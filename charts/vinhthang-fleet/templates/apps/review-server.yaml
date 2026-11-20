@@ -40,9 +40,23 @@ stringData:
   FORGEJO_WEBHOOK_SECRET: {{ required "reviewServer.forgejoWebhookSecret is required when createForgejoSecret=true" .Values.reviewServer.forgejoWebhookSecret | quote }}
 ---
 {{- end }}
+{{- if and .Values.reviewServer.enabled .Values.reviewServer.createProxySecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.reviewServer.existingProxySecret | default "review-proxy-auth-secret" }}
+  namespace: {{ .Values.reviewServer.namespace | default "apps" }}
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  PROXY_AUTH_SECRET: {{ required "reviewServer.proxyAuthSecret is required when createProxySecret=true" .Values.reviewServer.proxyAuthSecret | quote }}
+---
+{{- end }}
 {{- if .Values.reviewServer.enabled }}
 {{- $secretName := .Values.reviewServer.existingSecret | default "review-server-secrets" }}
 {{- $forgejoSecretName := .Values.reviewServer.existingForgejoSecret | default "forgejo-review-secrets" }}
+{{- $proxySecretName := .Values.reviewServer.existingProxySecret | default "review-proxy-auth-secret" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,6 +78,11 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.reviewServer.nodeSelector | default .Values.global.armNodeHostname }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: review-server
           image: "{{ .Values.reviewServer.image.repository }}:{{ .Values.reviewServer.image.tag }}"
@@ -72,10 +91,19 @@ spec:
             - containerPort: {{ .Values.reviewServer.port | default 8765 }}
               name: http
           env:
+            - name: NODE_ENV
+              value: "production"
+            - name: HOME
+              value: "/home/node"
             - name: PORT
               value: "{{ .Values.reviewServer.port | default 8765 }}"
             - name: HOST
               value: "0.0.0.0"
+            - name: PROXY_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $proxySecretName }}
+                  key: PROXY_AUTH_SECRET
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -142,13 +170,17 @@ spec:
               value: {{ .Values.reviewServer.forgejoBotUsername | default "review-bot" | quote }}
             - name: AGY_PATH
               value: "/usr/local/bin/agy"
+            - name: AGY_MODE
+              value: {{ .Values.reviewServer.agyMode | default "supervisor" | quote }}
+            - name: AGY_MAX_TURNS_PER_WORKER
+              value: {{ .Values.reviewServer.agyMaxTurnsPerWorker | default "1" | quote }}
           volumeMounts:
             - name: host-agy
               mountPath: /usr/local/bin/agy
             - name: host-gemini
-              mountPath: /root/.gemini
+              mountPath: /home/node/.gemini
             - name: host-config
-              mountPath: /root/.config
+              mountPath: /home/node/.config
           livenessProbe:
             httpGet:
               path: /api/health

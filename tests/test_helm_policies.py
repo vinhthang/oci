@@ -669,7 +669,7 @@ def test_forgejo_deployment_secret_hygiene_and_backup(
     )
 
 
-def test_review_server_v050_forgejo_integration(
+def test_review_server_v100_hardening_and_forgejo_integration(
     vinhthang_fleet_default_docs: list[dict[str, Any]],
 ) -> None:
     review_deps = [
@@ -677,10 +677,28 @@ def test_review_server_v050_forgejo_integration(
         if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "review-server"
     ]
     assert len(review_deps) == 1, "Expected Deployment/review-server"
-    container = review_deps[0]["spec"]["template"]["spec"]["containers"][0]
-    assert container.get("image") == "ghcr.io/vinhthang/review-server:v0.5.0"
+    pod_spec = review_deps[0]["spec"]["template"]["spec"]
+    sec_ctx = pod_spec.get("securityContext") or {}
+    assert sec_ctx.get("runAsNonRoot") is True, "Deployment/review-server must set runAsNonRoot: true"
+    assert sec_ctx.get("runAsUser") == 1000, "Deployment/review-server must run as UID 1000 (node)"
+    assert sec_ctx.get("runAsGroup") == 1000
+
+    container = pod_spec["containers"][0]
+    assert container.get("image") == "ghcr.io/vinhthang/review-server:v1.0.0"
+
+    mount_map = {m.get("name"): m.get("mountPath") for m in (container.get("volumeMounts") or [])}
+    assert mount_map.get("host-gemini") == "/home/node/.gemini"
+    assert mount_map.get("host-config") == "/home/node/.config"
 
     env_map = {e.get("name"): e for e in (container.get("env") or [])}
+    assert (env_map.get("NODE_ENV") or {}).get("value") == "production"
+    assert (env_map.get("HOME") or {}).get("value") == "/home/node"
+    assert (env_map.get("AGY_MODE") or {}).get("value") == "supervisor"
+    assert (env_map.get("AGY_MAX_TURNS_PER_WORKER") or {}).get("value") == "1"
+    proxy_ref = (env_map.get("PROXY_AUTH_SECRET") or {}).get("valueFrom", {}).get("secretKeyRef", {})
+    assert proxy_ref.get("name") == "review-proxy-auth-secret"
+    assert proxy_ref.get("key") == "PROXY_AUTH_SECRET"
+
     assert (env_map.get("FORGEJO_ALLOWED_HOSTS") or {}).get("value") == "git.vinhthang.dev"
     assert (env_map.get("FORGEJO_INTERNAL_API_URL") or {}).get("value") == "http://forgejo.apps.svc.cluster.local:3000/api/v1"
     assert (env_map.get("FORGEJO_AUTO_MERGE_ON_PASS") or {}).get("value") == "true"
@@ -704,17 +722,22 @@ def test_review_server_v050_forgejo_integration(
             "reviewServer.forgejoToken=test-fg-tok",
             "--set",
             "reviewServer.forgejoWebhookSecret=test-fg-wh",
+            "--set",
+            "reviewServer.createProxySecret=true",
+            "--set",
+            "reviewServer.proxyAuthSecret=test-proxy-sec",
         ],
         capture_output=True,
         text=True,
         check=True,
     )
     rendered = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
-    fg_secrets = [
-        d for d in rendered
-        if d.get("kind") == "Secret" and (d.get("metadata") or {}).get("name") == "forgejo-review-secrets"
-    ]
-    assert len(fg_secrets) == 1
-    assert (fg_secrets[0].get("metadata") or {}).get("namespace") == "apps"
-    anns = (fg_secrets[0].get("metadata") or {}).get("annotations") or {}
-    assert anns.get("helm.sh/resource-policy") == "keep"
+    for secret_name in ("forgejo-review-secrets", "review-proxy-auth-secret"):
+        matched = [
+            d for d in rendered
+            if d.get("kind") == "Secret" and (d.get("metadata") or {}).get("name") == secret_name
+        ]
+        assert len(matched) == 1
+        assert (matched[0].get("metadata") or {}).get("namespace") == "apps"
+        anns = (matched[0].get("metadata") or {}).get("annotations") or {}
+        assert anns.get("helm.sh/resource-policy") == "keep"

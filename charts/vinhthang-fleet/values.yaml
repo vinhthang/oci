@@ -341,6 +341,9 @@ reviewServer:
   existingSecret: "review-server-secrets"
   createSecret: false
   bearerToken: ""
+  existingProxySecret: "review-proxy-auth-secret"
+  createProxySecret: false
+  proxyAuthSecret: ""
   gitlabAllowedHosts: "gitlab.com"
   existingForgejoSecret: "forgejo-review-secrets"
   createForgejoSecret: false
@@ -350,9 +353,11 @@ reviewServer:
   forgejoInternalApiUrl: "http://forgejo.apps.svc.cluster.local:3000/api/v1"
   forgejoAutoMergeOnPass: "true"
   forgejoBotUsername: "review-bot"
+  agyMode: "supervisor"
+  agyMaxTurnsPerWorker: "1"
   image:
     repository: ghcr.io/vinhthang/review-server
-    tag: v0.5.0
+    tag: v1.0.0
     pullPolicy: IfNotPresent
   resources:
     requests:

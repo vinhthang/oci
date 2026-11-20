@@ -44,6 +44,9 @@ def test_caddy_security_snippets_and_routes() -> None:
     # 1. Required reusable snippets
     assert "(strip_auth_headers)" in blocks, "Caddyfile must define (strip_auth_headers) snippet"
     assert "(sso_auth)" in blocks, "Caddyfile must define (sso_auth) snippet"
+    assert "header_up -X-Proxy-Auth-Secret" in blocks["(strip_auth_headers)"], (
+        "(strip_auth_headers) must strip spoofed X-Proxy-Auth-Secret"
+    )
 
     # 2. status.vinhthang.dev imports strip_auth_headers and blocks /login* & /admin*
     status_block = blocks.get("status.vinhthang.dev", "")
@@ -99,10 +102,14 @@ def test_caddy_security_snippets_and_routes() -> None:
     )
 
     # 8. review.vinhthang.dev allows GitHub, GitLab, and Forgejo webhooks without SSO redirect
+    #    and injects X-Proxy-Auth-Secret on the SSO reverse_proxy path
     review_block = blocks.get("review.vinhthang.dev", "")
     assert review_block, "Missing review.vinhthang.dev site block"
     for wh_path in ("/api/v1/webhook/github", "/api/v1/webhook/gitlab", "/api/v1/webhook/forgejo"):
         assert wh_path in review_block, f"review.vinhthang.dev missing webhook route {wh_path}"
+    assert "header_up X-Proxy-Auth-Secret {$PROXY_AUTH_SECRET}" in review_block, (
+        "review.vinhthang.dev SSO handle must inject X-Proxy-Auth-Secret {$PROXY_AUTH_SECRET}"
+    )
 
 
 def test_caddy_per_host_metrics_enabled() -> None:

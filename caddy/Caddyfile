@@ -24,6 +24,7 @@
 (strip_auth_headers) {
     header_up -X-Auth-Request-User
     header_up -X-Auth-Request-Email
+    header_up -X-Proxy-Auth-Secret
 }
 
 # Central Google OAuth2 Forward-Auth SSO Snippet
@@ -285,6 +286,7 @@ review.vinhthang.dev {
         import sso_auth
 
         reverse_proxy 10.0.0.216:30015 {
+            header_up X-Proxy-Auth-Secret {$PROXY_AUTH_SECRET}
             flush_interval -1
         }
     }

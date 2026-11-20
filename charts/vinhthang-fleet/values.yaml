@@ -528,4 +528,33 @@ qaFedDatastores:
   nodeHostname: arm10
   image: docker.io/alpine/socat:1.8.0.1
 
+forgejo:
+  enabled: true
+  namespace: apps
+  port: 3000
+  nodePort: 30017
+  nodeSelector: arm10
+  publicDomain: "git.vinhthang.dev"
+  publicBaseUrl: "https://git.vinhthang.dev/"
+  storagePath: "/opt/forgejo/data"
+  configPath: "/opt/forgejo/config"
+  existingSecret: "forgejo-secrets"
+  createSecret: false
+  adminUser: "thang"
+  adminEmail: "admin@vinhthang.dev"
+  adminPassword: ""
+  secretKey: ""
+  internalToken: ""
+  image:
+    repository: codeberg.org/forgejo/forgejo
+    tag: "17.0.2-rootless"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
 

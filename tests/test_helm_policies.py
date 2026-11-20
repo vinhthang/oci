@@ -526,3 +526,135 @@ def test_ai_commander_v050_soak_human_gate_and_daily_report_cronjob(
     assert "-fsS --fail-with-body" not in joined_args, (
         f"CronJob curl must NOT combine -f/-fsS with --fail-with-body, got cmd={joined_args!r}"
     )
+
+
+def test_forgejo_deployment_secret_hygiene_and_backup(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    # 1. Deployment/forgejo invariants
+    forgejo_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "forgejo"
+    ]
+    assert len(forgejo_deps) == 1, "Expected Deployment/forgejo"
+    dep = forgejo_deps[0]
+    assert (dep.get("metadata") or {}).get("namespace") == "apps"
+    assert (dep.get("spec") or {}).get("strategy", {}).get("type") == "Recreate"
+
+    pod_spec = dep["spec"]["template"]["spec"]
+    assert (pod_spec.get("nodeSelector") or {}).get("kubernetes.io/hostname") == "arm10"
+
+    init_map = {c.get("name"): c for c in (pod_spec.get("initContainers") or [])}
+    assert "init-permissions" in init_map, "Deployment/forgejo must include init-permissions initContainer"
+    perm_cmd = " ".join(init_map["init-permissions"].get("command") or []) + " " + " ".join(init_map["init-permissions"].get("args") or [])
+    assert "1000:1000" in perm_cmd and "/var/lib/gitea" in perm_cmd and "/etc/gitea" in perm_cmd
+
+    assert "init-postgres-db" in init_map, "Deployment/forgejo must include init-postgres-db initContainer"
+    db_cmd = " ".join(init_map["init-postgres-db"].get("command") or []) + " " + " ".join(init_map["init-postgres-db"].get("args") or [])
+    assert "postgres-primary.data.svc.cluster.local" in db_cmd and "forgejo" in db_cmd
+
+    containers = pod_spec.get("containers") or []
+    assert len(containers) == 1
+    c = containers[0]
+    assert c.get("image") == "codeberg.org/forgejo/forgejo:17.0.2-rootless"
+    sec_ctx = c.get("securityContext") or {}
+    assert sec_ctx.get("runAsUser") == 1000 and sec_ctx.get("runAsGroup") == 1000
+
+    cports = {p.get("name"): p.get("containerPort") for p in (c.get("ports") or [])}
+    assert cports == {"http": 3000}, f"Forgejo must expose HTTP 3000 only (DISABLE_SSH=true), got {cports!r}"
+    assert 8080 not in cports.values()
+
+    res = c.get("resources") or {}
+    assert (res.get("limits") or {}).get("memory") == "512Mi"
+    assert (res.get("requests") or {}).get("memory") == "128Mi"
+
+    env_map = {e.get("name"): e for e in (c.get("env") or [])}
+    expected_env = {
+        "FORGEJO__server__DOMAIN": "git.vinhthang.dev",
+        "FORGEJO__server__ROOT_URL": "https://git.vinhthang.dev/",
+        "FORGEJO__server__HTTP_PORT": "3000",
+        "FORGEJO__server__DISABLE_SSH": "true",
+        "FORGEJO__database__DB_TYPE": "postgres",
+        "FORGEJO__database__NAME": "forgejo",
+        "FORGEJO__security__INSTALL_LOCK": "true",
+        "FORGEJO__service__DISABLE_REGISTRATION": "true",
+        "FORGEJO__service__REQUIRE_SIGNIN_VIEW": "true",
+        "FORGEJO__repository__DEFAULT_MERGE_STYLE": "squash",
+        "FORGEJO__actions__ENABLED": "true",
+    }
+    for key, val in expected_env.items():
+        assert (env_map.get(key) or {}).get("value") == val, f"Expected env {key}={val!r}, got {env_map.get(key)!r}"
+
+    for probe_name in ("livenessProbe", "readinessProbe"):
+        http_get = (c.get(probe_name) or {}).get("httpGet") or {}
+        assert http_get.get("path") == "/api/healthz", f"{probe_name} must target /api/healthz"
+        assert http_get.get("port") == "http", f"{probe_name} must target port 'http'"
+
+    # 2. Service/forgejo NodePort 30017
+    forgejo_svcs = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Service" and (d.get("metadata") or {}).get("name") == "forgejo"
+    ]
+    assert len(forgejo_svcs) == 1, "Expected Service/forgejo"
+    svc = forgejo_svcs[0]
+    assert (svc.get("metadata") or {}).get("namespace") == "apps"
+    assert (svc.get("spec") or {}).get("type") == "NodePort"
+    svc_ports = svc["spec"].get("ports") or []
+    assert len(svc_ports) == 1, f"Service/forgejo must expose HTTP 3000 -> 30017 only, got {svc_ports!r}"
+    http_port = next((p for p in svc_ports if p.get("port") == 3000), None)
+    assert http_port is not None
+    assert http_port.get("targetPort") == 3000
+    assert http_port.get("nodePort") == 30017
+
+    # 3. Retained Secret renders only when forgejo.createSecret=true with keep policy
+    proc = subprocess.run(
+        [
+            "helm",
+            "template",
+            "test",
+            str(CHARTS_DIR / "vinhthang-fleet"),
+            "--set",
+            "forgejo.createSecret=true",
+            "--set",
+            "forgejo.adminPassword=test-only-pw",
+            "--set",
+            "forgejo.secretKey=test-only-sk",
+            "--set",
+            "forgejo.internalToken=test-only-it",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    rendered_with_secret = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
+    forgejo_secrets = [
+        d for d in rendered_with_secret
+        if d.get("kind") == "Secret" and (d.get("metadata") or {}).get("name") == "forgejo-secrets"
+    ]
+    assert len(forgejo_secrets) == 1
+    assert (forgejo_secrets[0].get("metadata") or {}).get("namespace") == "apps"
+    anns = (forgejo_secrets[0].get("metadata") or {}).get("annotations") or {}
+    assert anns.get("helm.sh/resource-policy") == "keep"
+
+    # 4. CronJob/nightly-fleet-backup includes /opt/forgejo (custom + gitea data) read-only
+    backup_jobs = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "CronJob" and (d.get("metadata") or {}).get("name") == "nightly-fleet-backup"
+    ]
+    assert len(backup_jobs) == 1
+    b_pod = backup_jobs[0]["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+    b_c = b_pod["containers"][0]
+    b_mounts = {m.get("mountPath"): m for m in (b_c.get("volumeMounts") or [])}
+    assert "/backup-src/forgejo" in b_mounts and b_mounts["/backup-src/forgejo"].get("readOnly") is True
+    b_vols = {v.get("name"): v for v in (b_pod.get("volumes") or [])}
+    forgejo_vol = b_vols.get(b_mounts["/backup-src/forgejo"]["name"], {})
+    assert (forgejo_vol.get("hostPath") or {}).get("path") == "/opt/forgejo"
+    b_script = " ".join(b_c.get("command") or []) + " " + " ".join(b_c.get("args") or [])
+    assert "forgejo" in b_script
+
+    # 5. scripts/gitops-sync.sh deploys with --no-hooks so Helm does not re-run install hooks on fleet upgrades
+    sync_script = (CHARTS_DIR.parent / "scripts" / "gitops-sync.sh").read_text(encoding="utf-8")
+    helm_lines = [ln for ln in sync_script.splitlines() if "helm upgrade" in ln]
+    assert helm_lines and all("--no-hooks" in ln for ln in helm_lines), (
+        f"Expected --no-hooks on helm upgrade in scripts/gitops-sync.sh, got {helm_lines!r}"
+    )

@@ -323,6 +323,20 @@ collab.vinhthang.dev {
     }
 }
 
+# 20. Forgejo Private Git & Multi-Agent Control Plane (Native Token/Passkey Auth, REQUIRE_SIGNIN_VIEW=true)
+git.vinhthang.dev {
+    import security_headers
+
+    request_body {
+        max_size 500MB
+    }
+
+    reverse_proxy 10.0.0.216:30017 {
+        import strip_auth_headers
+        flush_interval -1
+    }
+}
+
 :2019 {
     metrics
 }

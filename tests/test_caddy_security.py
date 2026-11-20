@@ -79,6 +79,25 @@ def test_caddy_security_snippets_and_routes() -> None:
         "weaviate.vinhthang.dev must import security_headers"
     )
 
+    # 7. git.vinhthang.dev routes Forgejo with security_headers + strip_auth_headers (no SSO redirect)
+    git_block = blocks.get("git.vinhthang.dev", "")
+    assert git_block, "Missing git.vinhthang.dev site block"
+    assert "import security_headers" in git_block, (
+        "git.vinhthang.dev must import security_headers"
+    )
+    assert "import strip_auth_headers" in git_block, (
+        "git.vinhthang.dev must import strip_auth_headers"
+    )
+    assert "import sso_auth" not in git_block, (
+        "git.vinhthang.dev must not use cookie sso_auth so Git CLI and /api/v1 tokens never get 302-redirected"
+    )
+    assert "max_size 500MB" in git_block, (
+        "git.vinhthang.dev must set request_body max_size 500MB"
+    )
+    assert "10.0.0.216:30017" in git_block, (
+        "git.vinhthang.dev must reverse_proxy to 10.0.0.216:30017"
+    )
+
 
 def test_caddy_per_host_metrics_enabled() -> None:
     content = CADDYFILE_PATH.read_text(encoding="utf-8")

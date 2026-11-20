@@ -6,7 +6,7 @@ echo "🚀 Multi-Cloud Fleet Helm & GitOps Synchronizer"
 echo "=================================================="
 
 echo "📦 1. Upgrading entire fleet via Helm Chart (charts/vinhthang-fleet)..."
-helm upgrade --install fleet ./charts/vinhthang-fleet -n default --kube-context oci-k3s
+helm upgrade --install fleet ./charts/vinhthang-fleet -n default --kube-context oci-k3s --no-hooks
 
 echo "📝 2. Synchronizing Blog & Analytics Tracker to Edge Gateway (amd10)..."
 ssh amd10 "mkdir -p /opt/hugo-blog/content/posts /opt/hugo-blog/layouts/partials"

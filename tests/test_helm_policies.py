@@ -520,3 +520,9 @@ def test_ai_commander_v050_soak_human_gate_and_daily_report_cronjob(
     assert token_ref.get("key") == "WEBHOOK_AUTH_TOKEN"
     joined_args = " ".join(container.get("command") or []) + " " + " ".join(container.get("args") or [])
     assert "/daily-report" in joined_args, f"CronJob must POST /daily-report, got cmd={joined_args!r}"
+    assert "-sS --fail-with-body" in joined_args, (
+        f"CronJob curl must use -sS --fail-with-body, got cmd={joined_args!r}"
+    )
+    assert "-fsS --fail-with-body" not in joined_args, (
+        f"CronJob curl must NOT combine -f/-fsS with --fail-with-body, got cmd={joined_args!r}"
+    )

@@ -16,8 +16,8 @@ aiIncidentCommander:
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: "0.5.0"
-    digest: sha256:3992ca52b070ba1ea2f54a88209b2914f37a05a41a80678a87e306c3156265cd
+    tag: "0.5.1"
+    digest: sha256:69e25b5ede7923bf64c6030e6087bc008044c8b92760cc740901efc42f5dec66
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
   resources:

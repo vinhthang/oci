@@ -170,6 +170,8 @@ spec:
               value: {{ .Values.reviewServer.forgejoBotUsername | default "review-bot" | quote }}
             - name: AGY_PATH
               value: "/usr/local/bin/agy"
+            - name: AGY_MODEL
+              value: {{ .Values.reviewServer.agyModel | default "gemini-3.8-flash-high" | quote }}
             - name: AGY_MODE
               value: {{ .Values.reviewServer.agyMode | default "supervisor" | quote }}
             - name: AGY_MAX_TURNS_PER_WORKER

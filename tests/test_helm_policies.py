@@ -693,6 +693,7 @@ def test_review_server_v100_hardening_and_forgejo_integration(
     env_map = {e.get("name"): e for e in (container.get("env") or [])}
     assert (env_map.get("NODE_ENV") or {}).get("value") == "production"
     assert (env_map.get("HOME") or {}).get("value") == "/home/node"
+    assert (env_map.get("AGY_MODEL") or {}).get("value") == "gemini-3.8-flash-high"
     assert (env_map.get("AGY_MODE") or {}).get("value") == "supervisor"
     assert (env_map.get("AGY_MAX_TURNS_PER_WORKER") or {}).get("value") == "1"
     proxy_ref = (env_map.get("PROXY_AUTH_SECRET") or {}).get("valueFrom", {}).get("secretKeyRef", {})

@@ -152,6 +152,8 @@ spec:
               value: "squash"
             - name: FORGEJO__actions__ENABLED
               value: "true"
+            - name: FORGEJO__webhook__ALLOWED_HOST_LIST
+              value: {{ .Values.forgejo.webhookAllowedHostList | default "review-server.apps.svc.cluster.local,external" | quote }}
           lifecycle:
             postStart:
               exec:

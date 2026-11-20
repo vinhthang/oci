@@ -26,8 +26,23 @@ stringData:
   {{- end }}
 ---
 {{- end }}
+{{- if and .Values.reviewServer.enabled .Values.reviewServer.createForgejoSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.reviewServer.existingForgejoSecret | default "forgejo-review-secrets" }}
+  namespace: {{ .Values.reviewServer.namespace | default "apps" }}
+  annotations:
+    "helm.sh/resource-policy": "keep"
+type: Opaque
+stringData:
+  FORGEJO_TOKEN: {{ required "reviewServer.forgejoToken is required when createForgejoSecret=true" .Values.reviewServer.forgejoToken | quote }}
+  FORGEJO_WEBHOOK_SECRET: {{ required "reviewServer.forgejoWebhookSecret is required when createForgejoSecret=true" .Values.reviewServer.forgejoWebhookSecret | quote }}
+---
+{{- end }}
 {{- if .Values.reviewServer.enabled }}
 {{- $secretName := .Values.reviewServer.existingSecret | default "review-server-secrets" }}
+{{- $forgejoSecretName := .Values.reviewServer.existingForgejoSecret | default "forgejo-review-secrets" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -105,6 +120,26 @@ spec:
                   optional: true
             - name: GITLAB_ALLOWED_HOSTS
               value: {{ .Values.reviewServer.gitlabAllowedHosts | default "gitlab.com" | quote }}
+            - name: FORGEJO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $forgejoSecretName }}
+                  key: FORGEJO_TOKEN
+                  optional: true
+            - name: FORGEJO_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $forgejoSecretName }}
+                  key: FORGEJO_WEBHOOK_SECRET
+                  optional: true
+            - name: FORGEJO_ALLOWED_HOSTS
+              value: {{ .Values.reviewServer.forgejoAllowedHosts | default "git.vinhthang.dev" | quote }}
+            - name: FORGEJO_INTERNAL_API_URL
+              value: {{ .Values.reviewServer.forgejoInternalApiUrl | default "http://forgejo.apps.svc.cluster.local:3000/api/v1" | quote }}
+            - name: FORGEJO_AUTO_MERGE_ON_PASS
+              value: {{ .Values.reviewServer.forgejoAutoMergeOnPass | default "true" | quote }}
+            - name: FORGEJO_BOT_USERNAME
+              value: {{ .Values.reviewServer.forgejoBotUsername | default "review-bot" | quote }}
             - name: AGY_PATH
               value: "/usr/local/bin/agy"
           volumeMounts:

@@ -256,7 +256,7 @@ review.vinhthang.dev {
     # Allow authenticated webhook POST ingestion (raw-body HMAC / GitLab token verified in Fastify)
     @webhook {
         method POST
-        path /api/v1/webhook/github /api/v1/webhook/gitlab
+        path /api/v1/webhook/github /api/v1/webhook/gitlab /api/v1/webhook/forgejo
     }
     handle @webhook {
         request_body {

@@ -98,6 +98,12 @@ def test_caddy_security_snippets_and_routes() -> None:
         "git.vinhthang.dev must reverse_proxy to 10.0.0.216:30017"
     )
 
+    # 8. review.vinhthang.dev allows GitHub, GitLab, and Forgejo webhooks without SSO redirect
+    review_block = blocks.get("review.vinhthang.dev", "")
+    assert review_block, "Missing review.vinhthang.dev site block"
+    for wh_path in ("/api/v1/webhook/github", "/api/v1/webhook/gitlab", "/api/v1/webhook/forgejo"):
+        assert wh_path in review_block, f"review.vinhthang.dev missing webhook route {wh_path}"
+
 
 def test_caddy_per_host_metrics_enabled() -> None:
     content = CADDYFILE_PATH.read_text(encoding="utf-8")

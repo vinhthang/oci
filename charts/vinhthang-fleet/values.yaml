@@ -342,9 +342,17 @@ reviewServer:
   createSecret: false
   bearerToken: ""
   gitlabAllowedHosts: "gitlab.com"
+  existingForgejoSecret: "forgejo-review-secrets"
+  createForgejoSecret: false
+  forgejoToken: ""
+  forgejoWebhookSecret: ""
+  forgejoAllowedHosts: "git.vinhthang.dev"
+  forgejoInternalApiUrl: "http://forgejo.apps.svc.cluster.local:3000/api/v1"
+  forgejoAutoMergeOnPass: "true"
+  forgejoBotUsername: "review-bot"
   image:
     repository: ghcr.io/vinhthang/review-server
-    tag: v0.4.0
+    tag: v0.5.0
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -545,6 +553,7 @@ forgejo:
   adminPassword: ""
   secretKey: ""
   internalToken: ""
+  webhookAllowedHostList: "review-server.apps.svc.cluster.local,external"
   image:
     repository: codeberg.org/forgejo/forgejo
     tag: "17.0.2-rootless"

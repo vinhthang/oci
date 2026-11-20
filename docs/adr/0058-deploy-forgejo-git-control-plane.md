@@ -23,7 +23,11 @@ Coordinating multiple AI coding subscriptions and agents across separate physica
 2. **Expose `amd10` Edge TLS Ingress (`caddy/Caddyfile` — `git.vinhthang.dev`)**:
    - Reverse-proxy `git.vinhthang.dev` -> `10.0.0.216:30017` from `amd10` with `security_headers`, `strip_auth_headers`, `max_size 500MB`, and `flush_interval -1`. Point the `git.vinhthang.dev` DNS `A` record strictly to `amd10` (`152.70.101.162`, since `10.0.0.216:30017` is reachable only inside the private OCI VCN).
    - Omit cookie `sso_auth` so Git HTTPS and `/api/v1/*` personal token clients never hit HTTP 302 OAuth redirects, relying on Forgejo native authentication and `REQUIRE_SIGNIN_VIEW=true`.
-3. **Nightly Backup & Cross-Agent Branch Governance**:
+3. **In-Cluster Forgejo ↔ `review-server` (`v0.5.0`) Webhook & Auto-Merge Gate**:
+   - Permit Forgejo outbound webhooks to the in-cluster `review-server` service via `FORGEJO__webhook__ALLOWED_HOST_LIST=review-server.apps.svc.cluster.local,external` and add `/api/v1/webhook/forgejo` to Caddy's public `@webhook` route on `review.vinhthang.dev`.
+   - Upgrade `reviewServer` (`charts/vinhthang-fleet/templates/apps/review-server.yaml`) to **`v0.5.0`**, wiring `FORGEJO_ALLOWED_HOSTS=git.vinhthang.dev`, cluster-internal `FORGEJO_INTERNAL_API_URL=http://forgejo.apps.svc.cluster.local:3000/api/v1`, `FORGEJO_AUTO_MERGE_ON_PASS=true`, `FORGEJO_BOT_USERNAME=review-bot`, and optional retained Secret `forgejo-review-secrets` (`FORGEJO_TOKEN`, `FORGEJO_WEBHOOK_SECRET`, `createForgejoSecret: false` default).
+   - Dedicated `review-bot` runs `CODE_REVIEW` rounds on PR open/sync, submits `APPROVED` + squash `/merge` on `PASS` or `REQUEST_CHANGES` on `BLOCK`, preventing agents from merging unreviewed code to `main`.
+4. **Nightly Backup & Cross-Agent Branch Governance**:
    - Mount `/opt/forgejo` (covering both `data/` repositories and `config/` state) read-only into `CronJob/nightly-fleet-backup` at `/backup-src/forgejo`.
    - Coordinate workstations via `forge-fleet` CLI branch protections (`main` push restricted to admin; `required_approvals >= 1` blocking self-approval; `merge_when_checks_succeed: true` auto-merge upon 2nd-agent approval) and `google-slot` repo partitioning.
 

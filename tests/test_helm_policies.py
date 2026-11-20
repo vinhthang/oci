@@ -581,6 +581,7 @@ def test_forgejo_deployment_secret_hygiene_and_backup(
         "FORGEJO__service__REQUIRE_SIGNIN_VIEW": "true",
         "FORGEJO__repository__DEFAULT_MERGE_STYLE": "squash",
         "FORGEJO__actions__ENABLED": "true",
+        "FORGEJO__webhook__ALLOWED_HOST_LIST": "review-server.apps.svc.cluster.local,external",
     }
     for key, val in expected_env.items():
         assert (env_map.get(key) or {}).get("value") == val, f"Expected env {key}={val!r}, got {env_map.get(key)!r}"
@@ -658,3 +659,54 @@ def test_forgejo_deployment_secret_hygiene_and_backup(
     assert helm_lines and all("--no-hooks" in ln for ln in helm_lines), (
         f"Expected --no-hooks on helm upgrade in scripts/gitops-sync.sh, got {helm_lines!r}"
     )
+
+
+def test_review_server_v050_forgejo_integration(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    review_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "review-server"
+    ]
+    assert len(review_deps) == 1, "Expected Deployment/review-server"
+    container = review_deps[0]["spec"]["template"]["spec"]["containers"][0]
+    assert container.get("image") == "ghcr.io/vinhthang/review-server:v0.5.0"
+
+    env_map = {e.get("name"): e for e in (container.get("env") or [])}
+    assert (env_map.get("FORGEJO_ALLOWED_HOSTS") or {}).get("value") == "git.vinhthang.dev"
+    assert (env_map.get("FORGEJO_INTERNAL_API_URL") or {}).get("value") == "http://forgejo.apps.svc.cluster.local:3000/api/v1"
+    assert (env_map.get("FORGEJO_AUTO_MERGE_ON_PASS") or {}).get("value") == "true"
+    assert (env_map.get("FORGEJO_BOT_USERNAME") or {}).get("value") == "review-bot"
+
+    for secret_key in ("FORGEJO_TOKEN", "FORGEJO_WEBHOOK_SECRET"):
+        ref = (env_map.get(secret_key) or {}).get("valueFrom", {}).get("secretKeyRef", {})
+        assert ref.get("name") == "forgejo-review-secrets"
+        assert ref.get("key") == secret_key
+        assert ref.get("optional") is True
+
+    proc = subprocess.run(
+        [
+            "helm",
+            "template",
+            "test",
+            str(CHARTS_DIR / "vinhthang-fleet"),
+            "--set",
+            "reviewServer.createForgejoSecret=true",
+            "--set",
+            "reviewServer.forgejoToken=test-fg-tok",
+            "--set",
+            "reviewServer.forgejoWebhookSecret=test-fg-wh",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    rendered = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
+    fg_secrets = [
+        d for d in rendered
+        if d.get("kind") == "Secret" and (d.get("metadata") or {}).get("name") == "forgejo-review-secrets"
+    ]
+    assert len(fg_secrets) == 1
+    assert (fg_secrets[0].get("metadata") or {}).get("namespace") == "apps"
+    anns = (fg_secrets[0].get("metadata") or {}).get("annotations") or {}
+    assert anns.get("helm.sh/resource-policy") == "keep"

@@ -256,7 +256,7 @@ spec:
                 - "-c"
                 - |
                   set -eu
-                  curl -fsS --fail-with-body --max-time 25 -X POST \
+                  curl -sS --fail-with-body --max-time 25 -X POST \
                     -H "Authorization: Bearer ${WEBHOOK_AUTH_TOKEN}" \
                     "http://ai-incident-commander.system.svc.cluster.local:{{ .Values.aiIncidentCommander.port | default 8085 }}/daily-report"
               resources:

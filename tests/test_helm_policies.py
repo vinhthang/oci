@@ -591,6 +591,14 @@ def test_forgejo_deployment_secret_hygiene_and_backup(
         assert http_get.get("path") == "/api/healthz", f"{probe_name} must target /api/healthz"
         assert http_get.get("port") == "http", f"{probe_name} must target port 'http'"
 
+    post_start_cmd = " ".join((((c.get("lifecycle") or {}).get("postStart") or {}).get("exec") or {}).get("command") or [])
+    assert "/var/lib/gitea/custom/conf/app.ini" in post_start_cmd, (
+        "Rootless Forgejo postStart must default config path to /var/lib/gitea/custom/conf/app.ini"
+    )
+    assert "/etc/gitea/app.ini" not in post_start_cmd, (
+        "Rootless Forgejo postStart must NOT reference nonexistent /etc/gitea/app.ini"
+    )
+
     # 2. Service/forgejo NodePort 30017
     forgejo_svcs = [
         d for d in vinhthang_fleet_default_docs

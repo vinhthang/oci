@@ -162,17 +162,19 @@ spec:
                   - "-c"
                   - |
                     (
+                      CFG="${GITEA_APP_INI:-/var/lib/gitea/custom/conf/app.ini}"
+                      WDIR="${GITEA_WORK_DIR:-/var/lib/gitea}"
                       if [ -n "$FORGEJO_ADMIN_USER" ] && [ -n "$FORGEJO_ADMIN_PASSWORD" ]; then
                         i=0
                         while [ "$i" -lt 30 ]; do
-                          if wget -q -O /dev/null http://127.0.0.1:3000/api/healthz 2>/dev/null || curl -fsS http://127.0.0.1:3000/api/healthz >/dev/null 2>&1; then
-                            if ! forgejo --work-path /var/lib/gitea --config /etc/gitea/app.ini admin user list --admin 2>/dev/null | grep -qw "$FORGEJO_ADMIN_USER"; then
-                              if ! forgejo --work-path /var/lib/gitea --config /etc/gitea/app.ini admin user create --admin \
+                          if [ -s "$CFG" ] && (wget -q -O /dev/null http://127.0.0.1:3000/api/healthz 2>/dev/null || curl -fsS http://127.0.0.1:3000/api/healthz >/dev/null 2>&1); then
+                            if ! forgejo --work-path "$WDIR" --config "$CFG" admin user list --admin 2>/dev/null | grep -qw "$FORGEJO_ADMIN_USER"; then
+                              if ! forgejo --work-path "$WDIR" --config "$CFG" admin user create --admin \
                                 --username "$FORGEJO_ADMIN_USER" \
                                 --password "$FORGEJO_ADMIN_PASSWORD" \
                                 --email "${FORGEJO_ADMIN_EMAIL:-admin@vinhthang.dev}" \
-                                --must-change-password=false >/dev/null 2>&1; then
-                                echo "forgejo postStart: admin user already initialized or skipped" >&2
+                                --must-change-password=false; then
+                                echo "forgejo postStart: admin user create returned non-zero" >&2
                               fi
                             fi
                             break

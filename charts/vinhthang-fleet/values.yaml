@@ -354,8 +354,10 @@ reviewServer:
   forgejoAutoMergeOnPass: "true"
   forgejoBotUsername: "review-bot"
   agyMode: "supervisor"
-  agyModel: "gemini-3.8-flash-high"
+  agyModel: "gemini-3.8-flash-medium"
   agyMaxTurnsPerWorker: "1"
+  agyTurnTimeoutMs: "300000"
+  agyMaxTurnDurationMs: "420000"
   image:
     repository: ghcr.io/vinhthang/review-server
     tag: v1.0.0

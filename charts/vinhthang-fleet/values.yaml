@@ -358,6 +358,7 @@ reviewServer:
   agyMaxTurnsPerWorker: "1"
   agyTurnTimeoutMs: "300000"
   agyMaxTurnDurationMs: "420000"
+  agyStartupTimeoutMs: "180000"
   image:
     repository: ghcr.io/vinhthang/review-server
     tag: v1.0.1

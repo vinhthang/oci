@@ -360,7 +360,7 @@ reviewServer:
   agyMaxTurnDurationMs: "420000"
   image:
     repository: ghcr.io/vinhthang/review-server
-    tag: v1.0.0
+    tag: v1.0.1
     pullPolicy: IfNotPresent
   resources:
     requests:

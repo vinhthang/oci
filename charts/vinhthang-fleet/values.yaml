@@ -384,7 +384,7 @@ collabMcp:
   githubToken: ""
   image:
     repository: ghcr.io/vinhthang/collab-mcp
-    tag: v0.2.2
+    tag: v0.2.3
     pullPolicy: IfNotPresent
   resources:
     requests:

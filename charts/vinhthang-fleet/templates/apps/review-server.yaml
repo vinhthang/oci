@@ -176,6 +176,10 @@ spec:
               value: {{ .Values.reviewServer.agyMode | default "supervisor" | quote }}
             - name: AGY_MAX_TURNS_PER_WORKER
               value: {{ .Values.reviewServer.agyMaxTurnsPerWorker | default "1" | quote }}
+            - name: AGY_TURN_TIMEOUT_MS
+              value: {{ .Values.reviewServer.agyTurnTimeoutMs | default "300000" | quote }}
+            - name: AGY_MAX_TURN_DURATION_MS
+              value: {{ .Values.reviewServer.agyMaxTurnDurationMs | default "420000" | quote }}
           volumeMounts:
             - name: host-agy
               mountPath: /usr/local/bin/agy

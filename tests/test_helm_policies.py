@@ -684,7 +684,7 @@ def test_review_server_v100_hardening_and_forgejo_integration(
     assert sec_ctx.get("runAsGroup") == 1000
 
     container = pod_spec["containers"][0]
-    assert container.get("image") == "ghcr.io/vinhthang/review-server:v1.0.0"
+    assert container.get("image") == "ghcr.io/vinhthang/review-server:v1.0.1"
 
     mount_map = {m.get("name"): m.get("mountPath") for m in (container.get("volumeMounts") or [])}
     assert mount_map.get("host-gemini") == "/home/node/.gemini"
@@ -693,9 +693,12 @@ def test_review_server_v100_hardening_and_forgejo_integration(
     env_map = {e.get("name"): e for e in (container.get("env") or [])}
     assert (env_map.get("NODE_ENV") or {}).get("value") == "production"
     assert (env_map.get("HOME") or {}).get("value") == "/home/node"
-    assert (env_map.get("AGY_MODEL") or {}).get("value") == "gemini-3.8-flash-high"
+    assert (env_map.get("AGY_MODEL") or {}).get("value") == "gemini-3.8-flash-medium"
     assert (env_map.get("AGY_MODE") or {}).get("value") == "supervisor"
     assert (env_map.get("AGY_MAX_TURNS_PER_WORKER") or {}).get("value") == "1"
+    assert (env_map.get("AGY_TURN_TIMEOUT_MS") or {}).get("value") == "300000"
+    assert (env_map.get("AGY_MAX_TURN_DURATION_MS") or {}).get("value") == "420000"
+    assert (env_map.get("AGY_STARTUP_TIMEOUT_MS") or {}).get("value") == "180000"
     proxy_ref = (env_map.get("PROXY_AUTH_SECRET") or {}).get("valueFrom", {}).get("secretKeyRef", {})
     assert proxy_ref.get("name") == "review-proxy-auth-secret"
     assert proxy_ref.get("key") == "PROXY_AUTH_SECRET"
@@ -742,3 +745,36 @@ def test_review_server_v100_hardening_and_forgejo_integration(
         assert (matched[0].get("metadata") or {}).get("namespace") == "apps"
         anns = (matched[0].get("metadata") or {}).get("annotations") or {}
         assert anns.get("helm.sh/resource-policy") == "keep"
+
+
+def test_single_replica_operators_disable_leader_elect_and_harden_probes(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    expected = {
+        "psmdb-operator": ("-leader-elect=false", ()),
+        "redis-operator": ("--leader-elect=false", ("--leader-elect",)),
+    }
+    for name, (required_arg, forbidden_args) in expected.items():
+        deps = [
+            d for d in vinhthang_fleet_default_docs
+            if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == name
+        ]
+        assert len(deps) == 1, f"Expected Deployment/{name}"
+        dep = deps[0]
+        assert (dep.get("metadata") or {}).get("namespace") == "operators"
+        assert (dep.get("spec") or {}).get("replicas") == 1
+
+        c = dep["spec"]["template"]["spec"]["containers"][0]
+        args = c.get("args") or []
+        assert required_arg in args, f"{name} args must contain {required_arg!r}, got {args!r}"
+        for bad in forbidden_args:
+            assert bad not in args, f"{name} args must not contain {bad!r}, got {args!r}"
+
+        for probe_name in ("livenessProbe", "readinessProbe"):
+            probe = c.get(probe_name) or {}
+            assert probe.get("timeoutSeconds") == 5, (
+                f"{name} {probe_name}.timeoutSeconds must be 5, got {probe!r}"
+            )
+
+        cpu_limit = ((c.get("resources") or {}).get("limits") or {}).get("cpu")
+        assert cpu_limit == "500m", f"{name} cpu limit expected '500m', got {cpu_limit!r}"

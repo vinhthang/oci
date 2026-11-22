@@ -16,8 +16,8 @@ aiIncidentCommander:
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: "0.5.1"
-    digest: sha256:69e25b5ede7923bf64c6030e6087bc008044c8b92760cc740901efc42f5dec66
+    tag: "0.5.2"
+    digest: sha256:748465897ef27805f26e46834dcbf18eca15cc5bea13e567afe18a4df6022466
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
   resources:
@@ -287,7 +287,7 @@ redisOperator:
   nodeHostname: arm10
   resources:
     limits:
-      cpu: 200m
+      cpu: 500m
       memory: 256Mi
     requests:
       cpu: 50m
@@ -312,7 +312,7 @@ mongodbOperator:
   nodeHostname: arm10
   resources:
     limits:
-      cpu: 200m
+      cpu: 500m
       memory: 256Mi
     requests:
       cpu: 50m

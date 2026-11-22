@@ -128,6 +128,7 @@ spec:
           args:
             - -health-probe-bind-address=:8082
             - -metrics-bind-address=:8083
+            - -leader-elect=false
           env:
             - name: LOG_STRUCTURED
               value: "false"
@@ -154,12 +155,14 @@ spec:
               port: 8082
             initialDelaySeconds: 15
             periodSeconds: 20
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /readyz
               port: 8082
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.mongodbOperator.resources | nindent 12 }}
 {{- end }}

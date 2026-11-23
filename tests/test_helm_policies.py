@@ -901,3 +901,83 @@ def test_custom_services_support_rollout_timestamp_and_digest_overrides(
         if svc != "vietcalendar":
             img = dep["spec"]["template"]["spec"]["containers"][0]["image"]
             assert img.endswith(f"@sha256:{sha}"), f"{svc} expected @sha256 digest image, got {img!r}"
+
+
+def test_ai_commander_v060_runtime_rbac_digest_and_metrics(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    expected_image = (
+        "ghcr.io/vinhthang/ai-incident-commander"
+        "@sha256:ded51700eaadf9ef6adeb5a909a1c392491cc37ee85344b33f144860a0986b46"
+    )
+    commander_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "ai-incident-commander"
+    ]
+    assert len(commander_deps) == 1, "Expected Deployment/ai-incident-commander"
+    container = commander_deps[0]["spec"]["template"]["spec"]["containers"][0]
+    assert container.get("image") == expected_image, (
+        f"Expected {expected_image!r}, got {container.get('image')!r}"
+    )
+
+    env_map = {e.get("name"): e.get("value") for e in (container.get("env") or [])}
+    expected_env = {
+        "ENABLE_RUNTIME_REMEDIATION": "true",
+        "RUNTIME_PROTECTED_NAMESPACES": "kube-system,kube-public,kube-node-lease,data",
+        "RUNTIME_VERIFY_TIMEOUT": "90s",
+        "ENABLE_DAILY_PROACTIVE_FIX": "true",
+        "DAILY_MAX_PROACTIVE_FIXES": "3",
+        "VICTORIALOGS_URL": "http://victorialogs.observability.svc.cluster.local:9428",
+    }
+    for key, val in expected_env.items():
+        assert env_map.get(key) == val, f"Expected env {key}={val!r}, got {env_map.get(key)!r}"
+
+    commander_svcs = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Service" and (d.get("metadata") or {}).get("name") == "ai-incident-commander"
+    ]
+    assert len(commander_svcs) == 1, "Expected Service/ai-incident-commander"
+    svc_anns = (commander_svcs[0].get("metadata") or {}).get("annotations") or {}
+    assert svc_anns.get("prometheus.io/scrape") == "true"
+    assert svc_anns.get("prometheus.io/port") == "8085"
+    assert svc_anns.get("prometheus.io/path") == "/metrics"
+
+    roles = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "ClusterRole" and (d.get("metadata") or {}).get("name") == "ai-incident-commander-reader"
+    ]
+    assert len(roles) == 1, "Expected ClusterRole/ai-incident-commander-reader"
+    rules = roles[0].get("rules") or []
+
+    apps_write_rules = [
+        r for r in rules
+        if "apps" in (r.get("apiGroups") or [])
+        and set(r.get("resources") or []) == {"deployments", "statefulsets"}
+    ]
+    assert len(apps_write_rules) == 1, f"Expected narrow apps deployments/statefulsets rule, got {rules!r}"
+    assert set(apps_write_rules[0].get("verbs") or []) == {"get", "list", "watch", "patch"}
+
+    apps_read_rules = [
+        r for r in rules
+        if "apps" in (r.get("apiGroups") or [])
+        and set(r.get("resources") or []) == {"replicasets", "daemonsets"}
+    ]
+    assert len(apps_read_rules) == 1, f"Expected read-only apps replicasets/daemonsets rule, got {rules!r}"
+    assert set(apps_read_rules[0].get("verbs") or []) == {"get", "list", "watch"}
+
+    batch_rules = [
+        r for r in rules
+        if "batch" in (r.get("apiGroups") or [])
+        and set(r.get("resources") or []) == {"jobs", "cronjobs"}
+    ]
+    assert len(batch_rules) == 1, f"Expected batch jobs/cronjobs rule, got {rules!r}"
+    assert set(batch_rules[0].get("verbs") or []) == {"get", "list", "watch", "delete"}
+
+    for idx, rule in enumerate(rules):
+        resources = set(rule.get("resources") or [])
+        verbs = set(rule.get("verbs") or [])
+        assert "secrets" not in resources, f"rule[{idx}] must NOT grant secrets access"
+        if "" in (rule.get("apiGroups") or []):
+            assert not (verbs & {"create", "update", "patch", "delete"}), (
+                f"Core '' rule[{idx}] must stay read-only, got {verbs!r}"
+            )

@@ -5,6 +5,14 @@ aiIncidentCommander:
   otelEndpoint: otel-collector.observability.svc.cluster.local:4317
   soakDuration: "60s"
   autoMerge: false
+  victoriaLogsUrl: http://victorialogs.observability.svc.cluster.local:9428
+  runtimeRemediation:
+    enabled: true
+    protectedNamespaces: "kube-system,kube-public,kube-node-lease,data"
+    verifyTimeout: "90s"
+  dailyProactiveFix:
+    enabled: true
+    maxFixes: 3
   createWebhookSecret: false
   webhookSecretName: ai-commander-webhook-secret
   webhookToken: "" # REQUIRED when createWebhookSecret=true: pass via --set aiIncidentCommander.webhookToken=<token>
@@ -16,8 +24,8 @@ aiIncidentCommander:
   image:
     pullPolicy: IfNotPresent
     repository: ghcr.io/vinhthang/ai-incident-commander
-    tag: "0.5.2"
-    digest: sha256:748465897ef27805f26e46834dcbf18eca15cc5bea13e567afe18a4df6022466
+    tag: "0.6.0"
+    digest: sha256:ded51700eaadf9ef6adeb5a909a1c392491cc37ee85344b33f144860a0986b46
   nodeSelector: arm10
   prompts: {} # e.g., triage.tmpl, fixer.tmpl, reviewer.tmpl
   resources:

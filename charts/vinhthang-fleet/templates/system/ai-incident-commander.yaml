@@ -45,15 +45,18 @@ rules:
   - apiGroups: ["apps"]
     resources:
       - deployments
-      - replicasets
       - statefulsets
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["apps"]
+    resources:
+      - replicasets
       - daemonsets
     verbs: ["get", "list", "watch"]
   - apiGroups: ["batch"]
     resources:
       - jobs
       - cronjobs
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: ["events.k8s.io"]
     resources:
       - events
@@ -122,6 +125,18 @@ spec:
               value: "{{ .Values.aiIncidentCommander.autoMerge | default false }}"
             - name: VICTORIAMETRICS_URL
               value: "{{ .Values.aiIncidentCommander.dailyReport.victoriametricsUrl | default "http://victoriametrics.observability.svc.cluster.local:8428" }}"
+            - name: VICTORIALOGS_URL
+              value: "{{ .Values.aiIncidentCommander.victoriaLogsUrl | default "http://victorialogs.observability.svc.cluster.local:9428" }}"
+            - name: ENABLE_RUNTIME_REMEDIATION
+              value: {{ if hasKey (.Values.aiIncidentCommander.runtimeRemediation | default dict) "enabled" }}{{ .Values.aiIncidentCommander.runtimeRemediation.enabled | quote }}{{ else }}"true"{{ end }}
+            - name: RUNTIME_PROTECTED_NAMESPACES
+              value: "{{ (.Values.aiIncidentCommander.runtimeRemediation | default dict).protectedNamespaces | default "kube-system,kube-public,kube-node-lease,data" }}"
+            - name: RUNTIME_VERIFY_TIMEOUT
+              value: "{{ (.Values.aiIncidentCommander.runtimeRemediation | default dict).verifyTimeout | default "90s" }}"
+            - name: ENABLE_DAILY_PROACTIVE_FIX
+              value: {{ if hasKey (.Values.aiIncidentCommander.dailyProactiveFix | default dict) "enabled" }}{{ .Values.aiIncidentCommander.dailyProactiveFix.enabled | quote }}{{ else }}"true"{{ end }}
+            - name: DAILY_MAX_PROACTIVE_FIXES
+              value: "{{ (.Values.aiIncidentCommander.dailyProactiveFix | default dict).maxFixes | default 3 }}"
             - name: WEBHOOK_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -199,6 +214,10 @@ kind: Service
 metadata:
   name: ai-incident-commander
   namespace: system
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.aiIncidentCommander.port | default 8085 }}"
+    prometheus.io/path: "/metrics"
 spec:
   type: ClusterIP
   selector:

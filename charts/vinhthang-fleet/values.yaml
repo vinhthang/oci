@@ -471,7 +471,8 @@ victoriaMetrics:
   retentionPeriod: 30d
 vietcalendar:
   enabled: true
-  image: ghcr.io/vinhthang/vietcalendar@sha256:2f42b7961a30d3615730803ec0989be283739c295dabbfada673fbe8b6acf19b
+  image: ghcr.io/vinhthang/vietcalendar:latest
+  imagePullPolicy: Always
   port: 8087
   nodePort: 30006
   nodeSelector: amd11

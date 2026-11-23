@@ -101,12 +101,34 @@ def test_all_charts_helm_lint_clean() -> None:
     assert not failures, "\n".join(failures)
 
 
+ALLOWED_LATEST_DEPLOYMENTS = {
+    ("vinhthang-fleet", "Deployment", "vietcalendar"): "ghcr.io/vinhthang/vietcalendar:latest",
+}
+
+
 def test_no_latest_or_untagged_images(all_rendered_charts: dict[str, list[dict[str, Any]]]) -> None:
     unpinned: list[str] = []
     for chart_name, docs in all_rendered_charts.items():
         for doc in docs:
             kind = doc.get("kind", "")
             name = (doc.get("metadata") or {}).get("name", "<unknown>")
+            allowed_latest = ALLOWED_LATEST_DEPLOYMENTS.get((chart_name, kind, name))
+            if allowed_latest is not None:
+                for pod_spec in _iter_pod_specs(doc):
+                    for container in pod_spec.get("containers") or []:
+                        img = (container.get("image") or "").strip()
+                        is_allowed_latest = (
+                            img == allowed_latest and container.get("imagePullPolicy") == "Always"
+                        )
+                        if img and not is_allowed_latest and not _is_pinned_image(img):
+                            unpinned.append(
+                                f"{chart_name} {kind}/{name}: {img} (imagePullPolicy={container.get('imagePullPolicy')!r})"
+                            )
+                    for container in pod_spec.get("initContainers") or []:
+                        img = (container.get("image") or "").strip()
+                        if img and not _is_pinned_image(img):
+                            unpinned.append(f"{chart_name} {kind}/{name} initContainer: {img}")
+                continue
             for image in _extract_images(doc):
                 if not _is_pinned_image(image):
                     unpinned.append(f"{chart_name} {kind}/{name}: {image}")
@@ -778,3 +800,41 @@ def test_single_replica_operators_disable_leader_elect_and_harden_probes(
 
         cpu_limit = ((c.get("resources") or {}).get("limits") or {}).get("cpu")
         assert cpu_limit == "500m", f"{name} cpu limit expected '500m', got {cpu_limit!r}"
+
+
+def test_vietcalendar_latest_image_and_always_pull_policy(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    vietcal_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "vietcalendar"
+    ]
+    assert len(vietcal_deps) == 1, "Expected Deployment/vietcalendar in vinhthang-fleet"
+    container = vietcal_deps[0]["spec"]["template"]["spec"]["containers"][0]
+    assert container.get("image") == "ghcr.io/vinhthang/vietcalendar:latest", (
+        f"Expected vietcalendar image ghcr.io/vinhthang/vietcalendar:latest, got {container.get('image')!r}"
+    )
+    assert container.get("imagePullPolicy") == "Always", (
+        f"Expected vietcalendar imagePullPolicy Always, got {container.get('imagePullPolicy')!r}"
+    )
+
+    proc = subprocess.run(
+        [
+            "helm",
+            "template",
+            "test",
+            str(CHARTS_DIR / "vinhthang-fleet"),
+            "--set",
+            "vietcalendar.imagePullPolicy=IfNotPresent",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    override_docs = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
+    override_deps = [
+        d for d in override_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "vietcalendar"
+    ]
+    assert len(override_deps) == 1
+    assert override_deps[0]["spec"]["template"]["spec"]["containers"][0].get("imagePullPolicy") == "IfNotPresent"

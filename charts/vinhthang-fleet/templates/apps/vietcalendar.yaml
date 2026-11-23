@@ -22,7 +22,7 @@ spec:
       containers:
         - name: vietcalendar
           image: {{ .Values.vietcalendar.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.vietcalendar.imagePullPolicy | default "IfNotPresent" }}
           env:
             - name: PORT
               value: {{ .Values.vietcalendar.port | default 8087 | quote }}

@@ -16,6 +16,10 @@ spec:
     metadata:
       labels:
         app: vietcalendar
+      {{- if .Values.vietcalendar.rolloutTimestamp }}
+      annotations:
+        vinhthang.dev/rollout-at: {{ .Values.vietcalendar.rolloutTimestamp | quote }}
+      {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.vietcalendar.nodeSelector | default .Values.global.armNodeHostname }}

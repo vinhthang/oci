@@ -35,12 +35,16 @@ spec:
     metadata:
       labels:
         app: collab-mcp
+      {{- if .Values.collabMcp.rolloutTimestamp }}
+      annotations:
+        vinhthang.dev/rollout-at: {{ .Values.collabMcp.rolloutTimestamp | quote }}
+      {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.collabMcp.nodeSelector | default "arm10" }}
       containers:
         - name: collab-mcp
-          image: "{{ .Values.collabMcp.image.repository }}:{{ .Values.collabMcp.image.tag }}"
+          image: "{{ .Values.collabMcp.image.repository }}{{- if .Values.collabMcp.image.digest }}@{{ .Values.collabMcp.image.digest }}{{- else }}:{{ .Values.collabMcp.image.tag }}{{- end }}"
           imagePullPolicy: {{ .Values.collabMcp.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: {{ .Values.collabMcp.port | default 8766 }}

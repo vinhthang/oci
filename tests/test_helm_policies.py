@@ -838,3 +838,66 @@ def test_vietcalendar_latest_image_and_always_pull_policy(
     ]
     assert len(override_deps) == 1
     assert override_deps[0]["spec"]["template"]["spec"]["containers"][0].get("imagePullPolicy") == "IfNotPresent"
+
+
+def test_custom_services_support_rollout_timestamp_and_digest_overrides(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    # 1. gitops-webhook uses checksum/script annotation and persistent /var/lib/gitops-webhook mount
+    webhook_deps = [
+        d for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "Deployment" and (d.get("metadata") or {}).get("name") == "gitops-webhook"
+    ]
+    assert len(webhook_deps) == 1, "Expected Deployment/gitops-webhook"
+    wh_tpl = webhook_deps[0]["spec"]["template"]
+    wh_anns = (wh_tpl.get("metadata") or {}).get("annotations") or {}
+    assert wh_anns.get("checksum/script"), "gitops-webhook must define checksum/script pod annotation"
+    wh_mounts = {m.get("name"): m.get("mountPath") for m in (wh_tpl["spec"]["containers"][0].get("volumeMounts") or [])}
+    assert "/var/lib/gitops-webhook" in wh_mounts.values(), (
+        f"gitops-webhook must mount /var/lib/gitops-webhook, got {wh_mounts!r}"
+    )
+
+    # 2. All 5 custom services render rolloutTimestamp pod annotation and digest overrides cleanly
+    sha = "d" * 64
+    ts = "2026-11-23T04:00:00Z"
+    proc = subprocess.run(
+        [
+            "helm",
+            "template",
+            "test",
+            str(CHARTS_DIR / "vinhthang-fleet"),
+            "--set", f"vietcalendar.rolloutTimestamp={ts}",
+            "--set", f"collabMcp.rolloutTimestamp={ts}",
+            "--set", f"collabMcp.image.digest=sha256:{sha}",
+            "--set", f"reviewServer.rolloutTimestamp={ts}",
+            "--set", f"reviewServer.image.digest=sha256:{sha}",
+            "--set", f"attentionMetricsServer.rolloutTimestamp={ts}",
+            "--set", f"attentionMetricsServer.image.digest=sha256:{sha}",
+            "--set", f"aiIncidentCommander.rolloutTimestamp={ts}",
+            "--set", f"aiIncidentCommander.image.digest=sha256:{sha}",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    docs = [d for d in yaml.safe_load_all(proc.stdout) if isinstance(d, dict)]
+    by_name = {
+        (d.get("metadata") or {}).get("name"): d
+        for d in docs
+        if d.get("kind") == "Deployment"
+    }
+    for svc in (
+        "vietcalendar",
+        "collab-mcp",
+        "review-server",
+        "attention-metrics-server",
+        "ai-incident-commander",
+    ):
+        dep = by_name[svc]
+        anns = (dep["spec"]["template"].get("metadata") or {}).get("annotations") or {}
+        assert anns.get("vinhthang.dev/rollout-at") == ts, (
+            f"{svc} missing vinhthang.dev/rollout-at={ts!r}, got {anns!r}"
+        )
+        if svc != "vietcalendar":
+            img = dep["spec"]["template"]["spec"]["containers"][0]["image"]
+            assert img.endswith(f"@sha256:{sha}"), f"{svc} expected @sha256 digest image, got {img!r}"

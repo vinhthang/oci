@@ -92,6 +92,10 @@ spec:
     metadata:
       labels:
         app: ai-incident-commander
+      {{- if .Values.aiIncidentCommander.rolloutTimestamp }}
+      annotations:
+        vinhthang.dev/rollout-at: {{ .Values.aiIncidentCommander.rolloutTimestamp | quote }}
+      {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.aiIncidentCommander.nodeSelector | default .Values.global.armNodeHostname }}

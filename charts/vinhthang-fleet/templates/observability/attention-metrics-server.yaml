@@ -17,12 +17,16 @@ spec:
     metadata:
       labels:
         app: attention-metrics-server
+      {{- if .Values.attentionMetricsServer.rolloutTimestamp }}
+      annotations:
+        vinhthang.dev/rollout-at: {{ .Values.attentionMetricsServer.rolloutTimestamp | quote }}
+      {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.attentionMetricsServer.nodeSelector | default .Values.global.armNodeHostname }}
       containers:
         - name: attention-metrics-server
-          image: "{{ .Values.attentionMetricsServer.image.repository }}:{{ .Values.attentionMetricsServer.image.tag }}"
+          image: "{{ .Values.attentionMetricsServer.image.repository }}{{- if .Values.attentionMetricsServer.image.digest }}@{{ .Values.attentionMetricsServer.image.digest }}{{- else }}:{{ .Values.attentionMetricsServer.image.tag }}{{- end }}"
           imagePullPolicy: {{ .Values.attentionMetricsServer.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: {{ .Values.attentionMetricsServer.port | default 8086 }}

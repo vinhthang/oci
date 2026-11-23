@@ -75,6 +75,10 @@ spec:
     metadata:
       labels:
         app: review-server
+      {{- if .Values.reviewServer.rolloutTimestamp }}
+      annotations:
+        vinhthang.dev/rollout-at: {{ .Values.reviewServer.rolloutTimestamp | quote }}
+      {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.reviewServer.nodeSelector | default .Values.global.armNodeHostname }}
@@ -85,7 +89,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: review-server
-          image: "{{ .Values.reviewServer.image.repository }}:{{ .Values.reviewServer.image.tag }}"
+          image: "{{ .Values.reviewServer.image.repository }}{{- if .Values.reviewServer.image.digest }}@{{ .Values.reviewServer.image.digest }}{{- else }}:{{ .Values.reviewServer.image.tag }}{{- end }}"
           imagePullPolicy: {{ .Values.reviewServer.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: {{ .Values.reviewServer.port | default 8765 }}

@@ -120,89 +120,7 @@ metadata:
   namespace: system
 data:
   receiver.py: |
-    import hmac
-    import hashlib
-    import json
-    import os
-    import sys
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-
-    SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "").encode("utf-8")
-    PORT = int(os.environ.get("PORT", "9000"))
-
-    class WebhookHandler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            if self.path in ("/healthz", "/"):
-                self.send_response(200)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"OK\n")
-            else:
-                self.send_response(404)
-                self.end_headers()
-
-        def do_POST(self):
-            if not SECRET:
-                self.send_response(503)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"Webhook secret not configured\n")
-                return
-
-            content_len = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_len)
-
-            hub_signature = self.headers.get("X-Hub-Signature-256", "")
-            if not hub_signature.startswith("sha256="):
-                self.send_response(401)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"Missing or invalid signature header\n")
-                return
-
-            expected_sig = "sha256=" + hmac.new(SECRET, body, hashlib.sha256).hexdigest()
-            if not hmac.compare_digest(expected_sig, hub_signature):
-                self.send_response(403)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"Signature verification failed\n")
-                return
-
-            event = self.headers.get("X-GitHub-Event", "push")
-            if event == "ping":
-                self.send_response(200)
-                self.send_header("Content-Type", "text/plain")
-                self.end_headers()
-                self.wfile.write(b"Pong\n")
-                return
-
-            try:
-                payload = json.loads(body.decode("utf-8"))
-                ref = payload.get("ref", "")
-                if ref and ref != "refs/heads/main":
-                    self.send_response(200)
-                    self.send_header("Content-Type", "text/plain")
-                    self.end_headers()
-                    self.wfile.write(b"Ignored non-main branch\n")
-                    return
-            except Exception:
-                pass
-
-            with open("/tmp/gitops-trigger", "w") as f:
-                f.write("trigger\n")
-
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"GitOps Deploy Triggered\n")
-
-        def log_message(self, format, *args):
-            sys.stderr.write(f"[{self.log_date_time_string()}] {format % args}\n")
-
-    if __name__ == "__main__":
-        server = HTTPServer(("0.0.0.0", PORT), WebhookHandler)
-        sys.stderr.write(f"🚀 Authenticated GitOps Webhook Receiver listening on port {PORT}...\n")
-        server.serve_forever()
+{{- .Files.Get "files/receiver.py" | nindent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -222,6 +140,8 @@ spec:
     metadata:
       labels:
         app: gitops-webhook
+      annotations:
+        checksum/script: {{ (.Files.Get "files/receiver.py") | sha256sum }}
     spec:
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.global.armNodeHostname }}
@@ -234,6 +154,8 @@ spec:
           env:
             - name: PORT
               value: {{ (.Values.gitopsWebhook | default dict).port | default 9000 | quote }}
+            - name: WEBHOOK_STATE_PATH
+              value: "/var/lib/gitops-webhook/state.json"
             {{- if and .Values.gitopsWebhook .Values.gitopsWebhook.useSecret }}
             - name: GITHUB_WEBHOOK_SECRET
               valueFrom:
@@ -243,44 +165,9 @@ spec:
                   optional: false
             {{- end }}
           command:
-            - "/bin/sh"
-            - "-c"
-            - |
-              echo "🚀 Initializing GitOps Webhook and Reconcile Daemon..."
-
-              # Background Reconcile Worker
-              reconcile_worker() {
-                while true; do
-                  if [ -f /tmp/gitops-trigger ]; then
-                    flock -n /tmp/gitops.lock /bin/sh -c '
-                      rm -f /tmp/gitops-trigger
-                      echo "⚡ [$(date)] Authenticated GitHub Webhook push event triggered! Starting GitOps reconcile..."
-                      rm -rf /tmp/vinhthang-fleet
-                      if git clone --depth 1 https://github.com/vinhthang/oci.git /tmp/vinhthang-fleet; then
-                        echo "📥 Repository pulled successfully. Upgrading Helm Fleet..."
-                        if helm upgrade --install fleet /tmp/vinhthang-fleet/charts/vinhthang-fleet -n default --no-hooks; then
-                          echo "✅ [$(date)] GitOps reconcile finished successfully!"
-                          if ! curl -fsS -X POST http://10.0.0.235:8999/; then
-                            echo "❌ Caddy edge sync webhook failed!"
-                            kill 1
-                          fi
-                        else
-                          echo "❌ Helm upgrade failed! Crashing pod to trigger Grafana alert..."
-                          kill 1
-                        fi
-                      else
-                        echo "❌ Failed to clone repository. Crashing pod to trigger Grafana alert..."
-                        kill 1
-                      fi
-                    ' || echo "⏳ Reconcile lock held, waiting for active run..."
-                  fi
-                  sleep 2
-                done
-              }
-              reconcile_worker &
-
-              # Start Authenticated Python Webhook Receiver
-              exec python3 /opt/webhook/receiver.py
+            - "python3"
+            - "-u"
+            - "/opt/webhook/receiver.py"
           ports:
             - containerPort: {{ (.Values.gitopsWebhook | default dict).port | default 9000 }}
               name: http
@@ -309,10 +196,16 @@ spec:
           volumeMounts:
             - name: webhook-script
               mountPath: /opt/webhook
+            - name: webhook-state
+              mountPath: /var/lib/gitops-webhook
       volumes:
         - name: webhook-script
           configMap:
             name: gitops-webhook-script
+        - name: webhook-state
+          hostPath:
+            path: /opt/gitops-webhook
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service

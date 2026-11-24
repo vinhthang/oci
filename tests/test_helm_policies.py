@@ -981,3 +981,28 @@ def test_ai_commander_v060_runtime_rbac_digest_and_metrics(
             assert not (verbs & {"create", "update", "patch", "delete"}), (
                 f"Core '' rule[{idx}] must stay read-only, got {verbs!r}"
             )
+
+
+def test_system_cronjobs_define_ttl_seconds_after_finished(
+    vinhthang_fleet_default_docs: list[dict[str, Any]],
+) -> None:
+    expected_cronjobs = {
+        "ai-commander-daily-report",
+        "anythingllm-indexer-cron",
+        "daily-ai-briefing",
+        "nightly-fleet-backup",
+    }
+    cronjobs = {
+        (d.get("metadata") or {}).get("name"): d
+        for d in vinhthang_fleet_default_docs
+        if d.get("kind") == "CronJob"
+    }
+    assert expected_cronjobs.issubset(cronjobs.keys()), (
+        f"Missing expected system CronJobs: {sorted(expected_cronjobs - cronjobs.keys())}"
+    )
+    for name in sorted(expected_cronjobs):
+        job_spec = ((cronjobs[name].get("spec") or {}).get("jobTemplate") or {}).get("spec") or {}
+        assert job_spec.get("ttlSecondsAfterFinished") == 86400, (
+            f"CronJob/{name} must set jobTemplate.spec.ttlSecondsAfterFinished == 86400, "
+            f"got {job_spec.get('ttlSecondsAfterFinished')!r}"
+        )

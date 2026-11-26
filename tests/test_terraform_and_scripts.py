@@ -56,10 +56,21 @@ def test_terraform_infra_and_formatting() -> None:
     gcp_main = REPO_ROOT / "infra" / "gcp" / "main.tf"
     assert gcp_main.is_file(), "infra/gcp/main.tf must exist"
     gcp_text = gcp_main.read_text(encoding="utf-8")
+    addr_block = _extract_hcl_resource_block(gcp_text, "google_compute_address")
+    assert addr_block, "infra/gcp/main.tf must define google_compute_address"
+    assert re.search(r'network_tier\s*=\s*"STANDARD"', addr_block), (
+        "google_compute_address in infra/gcp/main.tf must enforce network_tier = \"STANDARD\""
+    )
     gce_block = _extract_hcl_resource_block(gcp_text, "google_compute_instance")
     assert gce_block, "infra/gcp/main.tf must define google_compute_instance"
     assert re.search(r"prevent_destroy\s*=\s*true", gce_block), (
         "google_compute_instance in infra/gcp/main.tf must set prevent_destroy = true"
+    )
+    assert re.search(r"deletion_protection\s*=\s*true", gce_block), (
+        "google_compute_instance in infra/gcp/main.tf must set deletion_protection = true"
+    )
+    assert re.search(r'network_tier\s*=\s*"STANDARD"', gce_block), (
+        "google_compute_instance access_config in infra/gcp/main.tf must enforce network_tier = \"STANDARD\""
     )
 
     compute_text = (REPO_ROOT / "compute.tf").read_text(encoding="utf-8")

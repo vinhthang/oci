@@ -27,7 +27,7 @@ graph TD
         DNS["AdGuard Home DoH/DoT (:853)"]
     end
 
-    subgraph EdgeGCP["2. US Edge & VPN Outpost (gce10 • GCP e2-micro • 1 GB RAM • 136.111.37.17)"]
+    subgraph EdgeGCP["2. US Edge & VPN Outpost (gce10 • GCP e2-micro • 1 GB RAM • 35.209.149.46)"]
         CaddyUS["Caddy Dual-Edge Blog Mirror & wg1 US VPN (:51820)"]
         VectorUS["Vector Log Harvester"]
     end
@@ -61,7 +61,7 @@ graph TD
 | **`arm10`** | OCI `VM.Standard.A1.Flex` | K3s Control Plane, DBs, AI & Observability | **4 OCPUs / 24 GB RAM / 100 GB** (PAYG `$0/mo` locked via `always-free-payg-guardrail`) | Private Subnet (`10.0.1.0/24`), SSH via `amd10` `ProxyJump` |
 | **`amd10`** | OCI `VM.Standard.E2.1.Micro` | Primary Edge Gateway, Caddy, AdGuard, WireGuard Hub | **1 OCPU / 1 GB RAM / 47 GB** | Public Reserved IP (`152.70.101.162`) |
 | **`amd11`** | OCI `VM.Standard.E2.1.Micro` | Lightweight AMD64 Worker (`FileBrowser`, `VietCalendar`, `Navidrome`) | **1 OCPU / 1 GB RAM / 47 GB** | Private Subnet (`10.0.1.0/24`), SSH via `amd10` `ProxyJump` |
-| **`gce10`** | GCP `e2-micro` (`us-central1`) | US Dual-Edge Blog Mirror, K3s Worker & `wg1` US VPN | **2 vCPU (shared) / 1 GB RAM** | Public IP (`136.111.37.17`), `wg0` (`10.10.0.4/24`) |
+| **`gce10`** | GCP `e2-micro` (`us-central1`) | US Dual-Edge Blog Mirror, K3s Worker & `wg1` US VPN | **2 vCPU (shared) / 1 GB RAM** | Public IP (`35.209.149.46`), `wg0` (`10.10.0.4/24`) |
 
 ---
 

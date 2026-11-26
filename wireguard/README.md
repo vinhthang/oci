@@ -17,7 +17,7 @@ Hub-and-spoke WireGuard overlay anchored on `amd10` (`152.70.101.162:51820/UDP`)
 
 ## 2. GCP US Road-Warrior VPN (`wg1` — `10.66.0.0/24`)
 
-In-kernel WireGuard server on `gce10` (`136.111.37.17:51820/UDP`) providing full-tunnel US IP egress (`0.0.0.0/0, ::/0`) via `eth0` NAT masquerade without interfering with `wg0` or K3s Flannel interfaces (`cni0`, `flannel.1`).
+In-kernel WireGuard server on `gce10` (`35.209.149.46:51820/UDP`) providing full-tunnel US IP egress (`0.0.0.0/0, ::/0`) via `eth0` NAT masquerade without interfering with `wg0` or K3s Flannel interfaces (`cni0`, `flannel.1`).
 
 | VPN IP | Peer | Role |
 | --- | --- | --- |

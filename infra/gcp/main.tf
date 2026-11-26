@@ -5,6 +5,7 @@ resource "google_compute_address" "gce10_static_ip" {
   name         = "gce10-static-ip"
   region       = var.region
   address_type = "EXTERNAL"
+  network_tier = "STANDARD"
   address      = var.static_ip_address
 }
 
@@ -41,12 +42,12 @@ resource "google_compute_firewall" "gce10_wireguard" {
 # Node 4: gce10 (GCP Always Free e2-micro - Oracle Linux 10)
 # ==============================================================================
 resource "google_compute_instance" "gce10" {
-  name                = "gce10"
+  name                = "gce-free-vm"
   machine_type        = "e2-micro"
   zone                = var.zone
   deletion_protection = true
 
-  tags = ["gce10-edge", "http-server", "https-server"]
+  tags = ["http-server", "https-server"]
 
   boot_disk {
     auto_delete = false
@@ -62,7 +63,8 @@ resource "google_compute_instance" "gce10" {
     network = "default"
 
     access_config {
-      nat_ip = google_compute_address.gce10_static_ip.address
+      nat_ip       = google_compute_address.gce10_static_ip.address
+      network_tier = "STANDARD"
     }
   }
 

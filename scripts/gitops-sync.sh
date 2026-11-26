@@ -41,7 +41,7 @@ ssh gce10 "
 "
 
 echo "🔍 6. Post-Sync Edge Ingress & Service Health Verification..."
-curl -fsS -I --max-time 5 "http://136.111.37.17:8088/anon/" >/dev/null || {
+curl -fsS -I --max-time 5 "http://35.209.149.46:8088/anon/" >/dev/null || {
   echo "❌ ERROR: File server on gce10 (:8088/anon/) is DOWN after sync!" >&2
   exit 1
 }

@@ -13,7 +13,7 @@ SPECS_DIR = DOCS_DIR / "specs"
 
 
 def test_adrs_sequential_registered_and_valid_metadata() -> None:
-    expected_numbers = [f"{i:04d}" for i in range(1, 62)]
+    expected_numbers = [f"{i:04d}" for i in range(1, 63)]
     adr_files = sorted(ADR_DIR.glob("*.md"))
     found_by_num: dict[str, Path] = {}
     for adr_file in adr_files:

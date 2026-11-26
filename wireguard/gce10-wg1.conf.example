@@ -6,6 +6,6 @@ DNS = 1.1.1.1, 8.8.8.8
 
 [Peer]
 PublicKey = <GCE10_WG1_PUBLIC_KEY>
-Endpoint = 136.111.37.17:51820
+Endpoint = 35.209.149.46:51820
 AllowedIPs = 0.0.0.0/0, ::/0
 PersistentKeepalive = 25

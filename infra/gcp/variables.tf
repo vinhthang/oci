@@ -18,7 +18,7 @@ variable "zone" {
 variable "static_ip_address" {
   description = "Reserved static external IPv4 address for gce10"
   type        = string
-  default     = "136.111.37.17"
+  default     = "35.209.149.46"
 }
 
 variable "ssh_public_key" {

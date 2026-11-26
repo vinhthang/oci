@@ -70,6 +70,7 @@
 | [**ADR-0059**](adr/0059-review-server-v1-cordis-and-warm-agy-supervisor.md) | **`review-server` v1.0.0 Cordis Monorepo, Warm-Standby `AgySupervisor`, Non-Root UID 1000 & `X-Proxy-Auth-Secret`** | 🟢 Accepted | AI Review Platform, Ingress Security & Fleet Runtime Architecture | Upgrade `review-server` to `v1.0.0` (Cordis 4.0.5 + `--dsw-*` CSS Modules), deploy warm-standby `stream-json` `AgySupervisorService`, enforce `UID 1000` + `X-Proxy-Auth-Secret`, and mirror to private Forgejo. |
 | [**ADR-0060**](adr/0060-automated-ghcr-custom-service-webhook-rollout.md) | **Automated Webhook Rollout for Custom `ghcr.io/vinhthang/*` Services** | 🟢 Accepted | CI/CD / GitOps & Image Automation | Extend `gitops-webhook` (`https://webhook.vinhthang.dev`) with GHCR `package`/`registry_package` + `POST /deploy` handlers, 5-service allowlist, `rolloutTimestamp` annotations, and `--reset-values` override reconciliation. |
 | [**ADR-0061**](adr/0061-ai-incident-commander-v060-runtime-remediation-rbac-and-metrics.md) | **Upgrade `ai-incident-commander` to `v0.6.0`, Extend Narrow Runtime Remediation RBAC & Expose `/metrics`** | 🟢 Accepted | Architecture / SRE Ops & RBAC | Pin `0.6.0` (`sha256:ded51700...`), grant `patch` on `apps` `deployments`/`statefulsets` + `delete` on `batch` `jobs`/`cronjobs` (zero `secrets` or core write verbs), wire runtime/proactive env vars, and annotate `/metrics`. |
+| [**ADR-0062**](adr/0062-gcp-standard-network-tier-and-billing-iam-hardening.md) | **GCP `STANDARD` Network Tier Migration (`35.209.149.46`), Billing Cleanup & Least-Privilege Compute IAM** | 🟢 Accepted | Infrastructure / GCP Networking & Security | Reserve `gce10-static-ip` (`35.209.149.46`) on `STANDARD` Network Tier (`200 GiB/mo` free egress), enforce `deletion_protection = true` on `gce-free-vm`, unlink unused billing project, disable `backupdr` API, and replace `roles/editor` with `roles/logging.logWriter` + `roles/monitoring.metricWriter`. |
 
 ---
 
@@ -93,7 +94,7 @@
 7. **Disaster Recovery**:
    * All stateful host directories are located under `/opt/<service>` on the respective nodes and backed up daily via `nightly-fleet-backup`.
 8. **Network Perimeter Isolation**:
-   * `amd10` and `gce10` are the **public edge gateways** (`152.70.101.162` and `136.111.37.17`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.
+   * `amd10` and `gce10` are the **public edge gateways** (`152.70.101.162` and `35.209.149.46`). `arm10` and `amd11` reside in the **Private Subnet (`10.0.1.0/24`)** with zero public IP addresses, routing outbound internet traffic via the OCI NAT Gateway and accepting administrative SSH traffic strictly via `ProxyJump` through `amd10`.
 9. **Port Allocation Governance (Avoid Port 8080)**:
    * **NEVER USE GENERIC PORT `8080`**: Port `8080` is strictly forbidden for any new custom microservice, daemon, webhook listener, or container. `8080` is a notorious collision magnet across Kubernetes, Caddy, Traefik, Pulsar Admin, and Java runtimes.
    * **Explicit Dedicated Port Allocation**: Always assign explicit dedicated ports (e.g. `8085` for AI Commander, `8088`, or specific NodePort ranges `30001–30015`).

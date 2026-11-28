@@ -486,10 +486,10 @@ vietcalendar:
   nodeSelector: amd11
   resources:
     limits:
-      memory: 80Mi
+      memory: 128Mi
     requests:
       cpu: 10m
-      memory: 20Mi
+      memory: 32Mi
 weaviate:
   enabled: true
   googleApiKey: "" # REQUIRED: pass via --set weaviate.googleApiKey=<key> at deploy time
